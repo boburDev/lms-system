@@ -5,6 +5,9 @@ import { ApolloServer } from 'apollo-server-express'
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { SubscriptionServer } from 'subscriptions-transport-ws'
 import { execute, subscribe } from 'graphql'
+
+import "reflect-metadata"
+
 import dotenv from 'dotenv'
 dotenv.config()
 

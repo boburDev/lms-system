@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
     "target": "esnext",
     "module": "commonjs",
-    "lib": ["esnext"],
+    // "lib": ["esnext"],
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
@@ -10,7 +11,14 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/types",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
