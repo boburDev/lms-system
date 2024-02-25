@@ -1,7 +1,13 @@
-import { Entity, PrimaryGeneratedColumn } from "typeorm";
-
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import Regions from './regions.entity'
 @Entity()
-export class CountryEntity {
+export default class Countries {   
     @PrimaryGeneratedColumn('uuid')
-    id:string
+    country_id: string
+
+    @Column({ length: 64, nullable: false, unique: true})
+    country_name: string
+
+    @OneToMany(() => Regions, (regions) => regions.region_id)
+    regions: Regions[]
 }

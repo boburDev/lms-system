@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "esnext",
+    "lib": ["ES5", "ES6"],
+    "target": "ES6",
     "module": "commonjs",
-    // "lib": ["esnext"],
+    "moduleResolution": "node",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,

@@ -5,8 +5,7 @@ import { ApolloServer } from 'apollo-server-express'
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { SubscriptionServer } from 'subscriptions-transport-ws'
 import { execute, subscribe } from 'graphql'
-
-import "reflect-metadata"
+import AppDataSource from "./config/ormconfig";
 
 import dotenv from 'dotenv'
 dotenv.config()
@@ -14,6 +13,8 @@ dotenv.config()
 import modules from './modules'
 import routes from './express'
 const PORT = process.env.PORT || 8080 
+
+AppDataSource.initialize().then(() => {}).catch((error) => console.log(error))
 
 ;(async () => {
     const app = express()

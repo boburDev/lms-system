@@ -1,8 +1,18 @@
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import User from './users'
+import Countries from './countries'
+import Regions from './regions'
+import Companies from './companies'
 
 export default makeExecutableSchema({
-    typeDefs: [User.schema],
-    resolvers: [User.resolvers]
+    typeDefs: [
+        Countries.schema,
+        Regions.schema,
+        Companies.schema
+    ],
+    resolvers: [
+        Countries.resolvers,
+        Regions.resolvers,
+        Companies.resolvers
+    ]
 })
