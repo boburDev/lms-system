@@ -16,6 +16,8 @@ type Company {
 input AddCompanyInput {
   companyName: String
   companyPhone: String
+  derectorName: String
   derectorPhone: String
   regionId: String
+  password: String
 }`

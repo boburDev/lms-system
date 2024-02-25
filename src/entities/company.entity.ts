@@ -1,20 +1,20 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Regions from "./regions.entity";
-
+import Employers from "./employers.entity";
 @Entity()
-export class CompaniesEntity {   
+export class Companies {   
     @PrimaryGeneratedColumn('uuid')
     company_id: string
     
     @Column({ length: 32, nullable: false, unique: true})
     company_name: string
     
-    @OneToMany(() => CompanyBranchesEntity, branches => branches)
-    branches: CompanyBranchesEntity[]
+    @OneToMany(() => CompanyBranches, branches => branches)
+    branches: CompanyBranches[]
 }
 
 @Entity()
-export class CompanyBranchesEntity {
+export class CompanyBranches {
     @PrimaryGeneratedColumn('uuid')
     company_branch_id: string
     
@@ -25,26 +25,31 @@ export class CompanyBranchesEntity {
     company_branch_status: boolean
     
     @Column({ type: 'numeric', default: 0})
-    company_branch_balance: number 
+    company_branch_balance: number
     
     @Column({ type: 'time', default: () => 'CURRENT_TIMESTAMP'})
     company_branch_created: Date
     
-    @Column('time')
+    @Column({ type: 'time', nullable: true})
     company_branch_deleted: Date
     
     @Column()
     company_branch_subdomen: string
     
-    @ManyToOne(() => CompaniesEntity, companies => companies.branches)
-    companies: CompaniesEntity
-    
     @Column()
     branch_company_id: string
-    
-    @ManyToOne(()=> Regions, regions => regions.region_id)
-    regions: Regions
-    
+
+    @ManyToOne(() => Companies, companies => companies.company_id)
+    @JoinColumn({ name: "branch_company_id"})
+    companies: Companies
+
     @Column()
     branch_region_id: string
+
+    @ManyToOne(()=> Regions, regions => regions.region_id)
+    @JoinColumn({ name: "branch_region_id" })
+    regions: Regions
+
+    @OneToMany(() => Employers, employers => employers)
+    branches: Employers[]
 }

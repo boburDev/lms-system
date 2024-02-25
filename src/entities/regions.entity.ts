@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Countries from './country.entity'
+import { CompanyBranches } from "./company.entity";
 
 @Entity()
 export default class Regions {
@@ -11,9 +12,11 @@ export default class Regions {
 
     @Column()
     country_id: string
-    
-    @ManyToOne(()=> Countries, country => country.regions)
-    @JoinColumn({ name: 'category_id'})
+
+    @ManyToOne(()=> Countries, country => country.country_id)
+    @JoinColumn({ name: 'country_id'})
     countries: Countries
- 
+
+    @OneToMany(() => CompanyBranches, branches => branches)
+    branches: CompanyBranches[]
 }

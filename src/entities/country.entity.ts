@@ -8,6 +8,6 @@ export default class Countries {
     @Column({ length: 64, nullable: false, unique: true})
     country_name: string
 
-    @OneToMany(() => Regions, (regions) => regions.region_id)
+    @OneToMany(() => Regions, (regions) => regions)
     regions: Regions[]
 }
