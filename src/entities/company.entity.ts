@@ -18,7 +18,7 @@ export class CompanyBranches {
     @PrimaryGeneratedColumn('uuid')
     company_branch_id: string
     
-    @Column({ length: 32, unique: true})
+    @Column({ length: 32 })
     company_branch_phone: string
     
     @Column({ default: true})
@@ -27,10 +27,10 @@ export class CompanyBranches {
     @Column({ type: 'numeric', default: 0})
     company_branch_balance: number
     
-    @Column({ type: 'time', default: () => 'CURRENT_TIMESTAMP'})
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     company_branch_created: Date
     
-    @Column({ type: 'time', nullable: true})
+    @Column({ type: 'timestamp', nullable: true})
     company_branch_deleted: Date
     
     @Column()

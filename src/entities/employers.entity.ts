@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+
 @Entity()
 export default class Employers {   
     @PrimaryGeneratedColumn('uuid')
@@ -11,7 +12,7 @@ export default class Employers {
     @Column({ length: 32, nullable: false})
     employer_phone: string
 
-    @Column()
+    @Column({ nullable: true })
     employer_birthday: Date
 
     @Column({ length: 32, nullable: true })
@@ -26,10 +27,10 @@ export default class Employers {
     @Column({ length: 4, default: 'ru' })
     employer_usage_lang: string
     
-    @Column({ type: 'time', default: () => 'CURRENT_TIMESTAMP'})
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     employer_created: Date
     
-    @Column({ type: 'time', nullable: true})
+    @Column({ type: 'timestamp', nullable: true})
     employer_deleted: Date
     
     @Column()
@@ -38,4 +39,5 @@ export default class Employers {
     @ManyToOne(()=> CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'employer_branch_id' })
     branches: CompanyBranches
+
 }

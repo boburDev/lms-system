@@ -6,7 +6,6 @@ const resolvers = {
   Query: {
     regions: async(_parametr: unknown, input: AddRegionInput): Promise<RegionEntity[]> => {
       const regionsRepository = AppDataSource.getRepository(RegionEntity)
-      console.log(await regionsRepository.find())
       
       if (input?.countryId) return await regionsRepository.findBy({ country_id: input.countryId })
       return await regionsRepository.find()

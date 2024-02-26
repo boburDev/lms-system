@@ -7,11 +7,6 @@ type AddCompanyInput = {
     password: string
 }
 
-type Company = {
-    
-}
-
 export {
-    Company,
     AddCompanyInput
 }

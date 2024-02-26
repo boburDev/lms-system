@@ -12,11 +12,11 @@ dotenv.config()
 
 import modules from './modules'
 import routes from './express'
+
 const PORT = process.env.PORT || 8080 
 
-AppDataSource.initialize().then(() => {}).catch((error) => console.log(error))
-
 ;(async () => {
+    AppDataSource.initialize().then(() => {}).catch((error) => console.log(error))
     const app = express()
     app.use(cors())
     app.use(express.json())
