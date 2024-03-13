@@ -4,21 +4,42 @@ import { Companies, CompanyBranches } from '../../entities/company.entity'
 import EmployersEntity from '../../entities/employers.entity'
 import AppDataSource from '../../config/ormconfig'
 import { sign } from '../../utils/jwt'
+import { comparePassword } from '../../utils/bcrypt'
+import { IsNull } from 'typeorm'
+import positionIndicator from '../../utils/employer_positions'
 
 export const login = async (req:Request, res: Response) => {
     try {
-        const { phone_number, password } = req.body
-        
+        const { userphone, password } = req.body
         const employerRepository = AppDataSource.getRepository(EmployersEntity)
-        let employerData = await employerRepository.findOneBy({ employer_phone: phone_number, employer_password: '' })
-        console.log(employerData)
-        
-        
-        console.log(phone_number, password)
-        
-        res.json({data: 'success'})
-    } catch (error) {
-        console.log('Login error:', error)
+        let employerData = await employerRepository.find({ where: { employer_phone: userphone, employer_deleted: IsNull() } })
+        const branchRepository = AppDataSource.getRepository(CompanyBranches)
+
+        const results = []
+        for (const user of employerData) {
+            if (await comparePassword(password, user.employer_password)) {
+                let payload = {
+                    branchId: user.employer_branch_id,
+                    colleagueId: user.employer_id,
+                    role: positionIndicator(user.employer_position)
+                }
+                let branchData = await branchRepository.findOne({
+                    where: { company_branch_id: user.employer_branch_id, company_branch_deleted: IsNull() },
+                    relations: ['companies', 'districts']
+                })
+
+                results.push({
+                    token: sign(payload),
+                    redirect_link: `http://${branchData?.company_branch_subdomen}.localhost:3000/`,
+                    companyName: branchData?.companies.company_name,
+                    userName: user.employer_name,
+                    role: positionIndicator(user.employer_position)
+                })
+            }
+        }
+        res.json({ data: results, error: null })
+    } catch (error:unknown) {
+        res.status(400).json({ data: null, error: (error as Error).message})
     }
 }
 
@@ -46,7 +67,7 @@ export const signup = async (req:Request, res: Response) => {
         let branch = new CompanyBranches()
         branch.company_branch_phone = value.companyPhone
         branch.company_branch_subdomen = value.companyName.replace(/([1234567890]|[\s]|[~`!@#$%^&*()_+{}:";'])/g, "").toLowerCase()
-        branch.branch_region_id = value.regionId
+        branch.branch_district_id = value.districtId
         branch.branch_company_id = companyId.company_id
         let newBranch = await branchRepository.save(branch)
         
@@ -61,12 +82,14 @@ export const signup = async (req:Request, res: Response) => {
         let payload = {
             branchId: newEmployer.employer_branch_id,
             colleagueId: newEmployer.employer_id,
-            role: newEmployer.employer_position
+            role: positionIndicator(newEmployer.employer_position)
         }
-        console.log(payload, newEmployer);
+        // console.log(payload, newEmployer);
         
         res.json({ data: {
-            token: sign(payload)
+            token: sign(payload),
+            redirect_link: `http://${newBranch?.company_branch_subdomen}.localhost:3000/`,
+            role: positionIndicator(newEmployer.employer_position)
         }, error: null })
     } catch (error: unknown) {
         res.status(400).json({ data: null, error: (error as Error).message})

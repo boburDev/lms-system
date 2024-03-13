@@ -1,5 +1,6 @@
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+import bcrypt from 'bcrypt';
 
 @Entity()
 export default class Employers {   
@@ -39,5 +40,10 @@ export default class Employers {
     @ManyToOne(()=> CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'employer_branch_id' })
     branches: CompanyBranches
-
+    
+    @BeforeInsert()
+    async hashPassword() {
+        const saltRounds = 10; // You can adjust the salt rounds as per your requirement
+        this.employer_password = await bcrypt.hash(this.employer_password, saltRounds);
+    }
 }

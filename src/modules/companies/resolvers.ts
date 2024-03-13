@@ -1,5 +1,5 @@
 import AppDataSource from '../../config/ormconfig'
-import { AddCompanyInput, Company } from '../../types/createAccaunt';
+import { AddCompanyInput } from '../../types/createAccaunt';
 import { Companies, CompanyBranches } from "../../entities/company.entity";
 import EmployersEntity from '../../entities/employers.entity';
 

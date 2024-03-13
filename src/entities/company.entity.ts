@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import Regions from "./regions.entity";
+import { Districts } from "./regions.entity";
 import Employers from "./employers.entity";
 @Entity()
 export class Companies {   
@@ -44,11 +44,11 @@ export class CompanyBranches {
     companies: Companies
 
     @Column()
-    branch_region_id: string
+    branch_district_id: string
 
-    @ManyToOne(()=> Regions, regions => regions.region_id)
-    @JoinColumn({ name: "branch_region_id" })
-    regions: Regions
+    @ManyToOne(()=> Districts, district => district.district_id)
+    @JoinColumn({ name: "branch_district_id" })
+    districts: Districts
 
     @OneToMany(() => Employers, employers => employers)
     branches: Employers[]

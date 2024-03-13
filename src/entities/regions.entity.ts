@@ -17,6 +17,25 @@ export default class Regions {
     @JoinColumn({ name: 'country_id'})
     countries: Countries
 
+    @OneToMany(() => Districts, (districts) => districts)
+    districts: Districts[]
+}
+
+@Entity()
+export class Districts {
+    @PrimaryGeneratedColumn('uuid')
+    district_id: string
+
+    @Column({ length: 64, nullable: false})
+    district_name: string
+
+    @Column()
+    region_id: string
+
+    @ManyToOne(()=> Regions, region => region.region_id)
+    @JoinColumn({ name: 'region_id'})
+    regions: Regions
+
     @OneToMany(() => CompanyBranches, branches => branches)
     branches: CompanyBranches[]
 }
