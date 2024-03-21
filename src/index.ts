@@ -12,30 +12,32 @@ dotenv.config()
 
 import modules from './modules'
 import routes from './express'
+import { context } from './utils/apolloContextUtils'
 
-const PORT = process.env.PORT || 8080 
+const PORT = process.env.PORT || 8080
 
-;(async () => {
-    AppDataSource.initialize().then(() => {}).catch((error) => console.log(error))
-    const app = express()
-    app.use(cors())
-    app.use(express.json())
-    app.use('/', routes)
-    // app.use((req, res, next) => { req.psql = psql; return next(); })
-    
-    const httpServer = http.createServer(app);
-    const server = new ApolloServer({
-        schema: modules,
-        plugins: [
-            ApolloServerPluginLandingPageGraphQLPlayground
-        ]
-    })
-    
-    await server.start();	
-    server.applyMiddleware({ app });
-    
-    httpServer.listen(PORT, ()=>{
-        console.log(`http://localhost:${PORT}${server.graphqlPath}`)
-    })
-    
-})()
+    ; (async () => {
+        AppDataSource.initialize().then(() => { }).catch((error) => console.log(error))
+        const app = express()
+        app.use(cors())
+        app.use(express.json())
+        app.use('/', routes)
+        // app.use((req, res, next) => { req.psql = psql; return next(); })
+
+        const httpServer = http.createServer(app);
+        const server = new ApolloServer({
+            schema: modules,
+            context,
+            plugins: [
+                ApolloServerPluginLandingPageGraphQLPlayground
+            ]
+        })
+
+        await server.start();
+        server.applyMiddleware({ app });
+
+        httpServer.listen(PORT, () => {
+            console.log(`http://localhost:${PORT}${server.graphqlPath}`)
+        })
+
+    })()

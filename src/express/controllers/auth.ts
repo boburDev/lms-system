@@ -13,6 +13,8 @@ export const login = async (req:Request, res: Response) => {
         const { userphone, password } = req.body
         const employerRepository = AppDataSource.getRepository(EmployersEntity)
         let employerData = await employerRepository.find({ where: { employer_phone: userphone, employer_deleted: IsNull() } })
+        if (!employerData.length) throw new Error("User not found");
+        
         const branchRepository = AppDataSource.getRepository(CompanyBranches)
 
         const results = []
@@ -64,12 +66,16 @@ export const signup = async (req:Request, res: Response) => {
         company.company_name = value.companyName
         let companyId = await companyRepository.save(company)
         
+        
         let branch = new CompanyBranches()
         branch.company_branch_phone = value.companyPhone
         branch.company_branch_subdomen = value.companyName.replace(/([1234567890]|[\s]|[~`!@#$%^&*()_+{}:";'])/g, "").toLowerCase()
         branch.branch_district_id = value.districtId
         branch.branch_company_id = companyId.company_id
+        
         let newBranch = await branchRepository.save(branch)
+        console.log(11, newBranch);
+        
         
         let employer = new EmployersEntity()
         employer.employer_name = value.derectorName

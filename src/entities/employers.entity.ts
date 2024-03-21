@@ -19,7 +19,7 @@ export default class Employers {
     @Column({ length: 32, nullable: true })
     employer_gender: string
 
-    @Column({ length: 64 })
+    @Column({ length: 64, nullable: true })
     employer_password: string
 
     @Column({ nullable: false })
@@ -44,6 +44,6 @@ export default class Employers {
     @BeforeInsert()
     async hashPassword() {
         const saltRounds = 10; // You can adjust the salt rounds as per your requirement
-        this.employer_password = await bcrypt.hash(this.employer_password, saltRounds);
+        this.employer_password = this.employer_password.length ? await bcrypt.hash(this.employer_password, saltRounds) : ''
     }
 }
