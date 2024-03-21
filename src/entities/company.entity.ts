@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Districts } from "./regions.entity";
 import Employers from "./employers.entity";
+import Rooms from "./room.entity";
 @Entity()
 export class Companies {   
     @PrimaryGeneratedColumn('uuid')
@@ -52,4 +53,7 @@ export class CompanyBranches {
 
     @OneToMany(() => Employers, employers => employers)
     branches: Employers[]
+
+    @OneToMany(() => Rooms, rooms => rooms)
+    rooms: Rooms[]
 }

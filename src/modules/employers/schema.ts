@@ -27,5 +27,4 @@ input AddEmployerInput {
   employerPhone: String!
   employerPosition: String!
   employerPassword: String!
-  employerBranchId: String!
 }`
