@@ -7,7 +7,10 @@ const resolvers = {
   Query: {
     employers: async (_parametr: unknown, {}, context:any): Promise<EmployerEntity[]> => {
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
-      return await employerRepository.find({ where: { employer_branch_id: context.branchId }})
+      let data = await employerRepository.find({ where: { employer_branch_id: context.branchId } })
+      console.log(data)
+      
+      return data
     },
   },
   Mutation: {
@@ -16,7 +19,7 @@ const resolvers = {
 
       let data = await employerRepository.findOneBy({ employer_phone: input.employerPhone, employer_branch_id: context.branchId })
       if (data !== null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
-
+      
       let employer = new EmployerEntity()
       employer.employer_name = input.employerName
       employer.employer_phone = input.employerPhone

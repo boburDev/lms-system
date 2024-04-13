@@ -8,6 +8,6 @@ type Room = {
 }
 
 export {
-    Room,
+    Room,   
     AddRoomInput
 }

@@ -2,6 +2,9 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Districts } from "./regions.entity";
 import Employers from "./employers.entity";
 import Rooms from "./room.entity";
+import Courses from "./course.entity";
+import Students from "./students.entity";
+
 @Entity()
 export class Companies {   
     @PrimaryGeneratedColumn('uuid')
@@ -56,4 +59,10 @@ export class CompanyBranches {
 
     @OneToMany(() => Rooms, rooms => rooms)
     rooms: Rooms[]
+
+    @OneToMany(() => Courses, courses => courses)
+    courses: Courses[]
+
+    @OneToMany(() => Students, students => students)
+    students: Students[]
 }
