@@ -5,12 +5,14 @@ import { AddStudentInput, Student } from "../../types/students";
 const resolvers = {
   Query: {
     students: async (_parametr: unknown, { }, context: any): Promise<StudentEntity[]> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
       return await studentRepository.find({ where: { student_branch_id: context.branchId } })
     }
   },
   Mutation: {
     addStudent: async (_parent: unknown, { input }: { input: AddStudentInput }, context: any): Promise<StudentEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
 
       let data = await studentRepository.findOneBy({ student_phone: input.studentPhone, student_branch_id: context.branchId })

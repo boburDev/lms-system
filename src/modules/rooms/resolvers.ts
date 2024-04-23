@@ -5,12 +5,14 @@ import { AddRoomInput, Room } from "../../types/rooms";
 const resolvers = {
   Query: {
     rooms: async (_parametr: unknown, {}, context:any): Promise<RoomEntity[]> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const roomRepository = AppDataSource.getRepository(RoomEntity)
       return await roomRepository.find({ where: { room_branch_id: context.branchId } })
     },
   },
   Mutation: {
     addRoom: async (_parent: unknown, { input }: { input: AddRoomInput }, context:any): Promise<RoomEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const roomRepository = AppDataSource.getRepository(RoomEntity)
 
       let data = await roomRepository.findOneBy({ room_name: input.roomName, room_branch_id: context.branchId })

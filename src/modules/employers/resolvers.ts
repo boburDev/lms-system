@@ -6,15 +6,17 @@ import positionIndicator from "../../utils/employer_positions";
 const resolvers = {
   Query: {
     employers: async (_parametr: unknown, {}, context:any): Promise<EmployerEntity[]> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+       
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
-      let data = await employerRepository.find({ where: { employer_branch_id: context.branchId } })
-      console.log(data)
-      
+      let data = await employerRepository.find({ where: { employer_branch_id: context.branchId } })   
       return data
     },
   },
   Mutation: {
     addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context:any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 
       let data = await employerRepository.findOneBy({ employer_phone: input.employerPhone, employer_branch_id: context.branchId })

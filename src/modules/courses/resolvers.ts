@@ -5,12 +5,14 @@ import { AddCourseInput, Course } from "../../types/courses";
 const resolvers = {
   Query: {
     courses: async (_parametr: unknown, {}, context:any): Promise<CourseEntity[]> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const courseRepository = AppDataSource.getRepository(CourseEntity)
       return await courseRepository.find({ where: { course_branch_id: context.branchId } })
     },
   },
   Mutation: {
     addCourse: async (_parent: unknown, { input }: { input: AddCourseInput }, context:any): Promise<CourseEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       const courseRepository = AppDataSource.getRepository(CourseEntity)
       
       let data = await courseRepository.findOneBy({ course_name: input.courseName, course_branch_id: context.branchId })
