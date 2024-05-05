@@ -8,7 +8,7 @@ export default new DataSource({
     password: "bobur1907",
     port: 5432,
     username: "postgres",
-    database: "crm",
+    database: "crm1",
     entities: [ path.resolve(__dirname, "..", "entities", "*.entity.{ts,js}") ],
     migrations: [],
     logging: true,
