@@ -1,6 +1,5 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
-import bcrypt from 'bcrypt';
 
 @Entity()
 export default class Groups {   

@@ -12,7 +12,7 @@ const resolvers = {
   Mutation: {
     addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }): Promise<CountryEntity> => {
       let country = new CountryEntity()
-      country.country_name = input.countryName
+      country.country_name = input.groupName
       
       const countryRepository = AppDataSource.getRepository(CountryEntity)
       return await countryRepository.save(country)
