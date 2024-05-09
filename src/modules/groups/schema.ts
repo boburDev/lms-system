@@ -13,13 +13,17 @@ type Group {
   groupId: ID!
   groupName: String!
   courseId: ID!
+  courseName: ID!
   employerId: ID!
+  employerName: ID!
   roomId: ID!
+  roomName: ID!
   startDate: String!
   endDate: String!
   startTime: String!
   endTime: String!
 }
+
 
 input AddGroupInput {
   groupName: String!
@@ -30,5 +34,7 @@ input AddGroupInput {
   endDate: String!
   startTime: String!
   endTime: String!
+  lessonCount: Int!
+  groupDays: [Int]
 }
 `

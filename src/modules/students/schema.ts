@@ -18,8 +18,8 @@ input AddStudentInput {
   studentName: String!
   studentPhone: String!
   studentPassword: String
-  studentStatus: Int!
-  studentBalance: Float!
+  studentStatus: Int
+  studentBalance: Float
   colleagueId: String
   parentsInfo: [ParentInput]
 }

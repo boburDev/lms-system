@@ -2,12 +2,12 @@ import { TokenData } from '../types/verifyToken'
 import { verify } from './jwt'
 export const context = async ({ req }: any) => {
     try {
-        const { access_token } = req.headers
+        const { token } = req.headers
 
-        if (!access_token) {
+        if (!token) {
             return ''
         } else {
-            const tokenDate = verify(access_token)
+            const tokenDate = verify(token)
             if (!tokenDate) {
                 throw new Error("Invalid token")
             }

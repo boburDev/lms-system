@@ -12,7 +12,7 @@ export default class Students {
     @Column({ length: 16, nullable: false })
     student_phone: string
     
-    @Column({ length: 64 })
+    @Column({ length: 64, nullable: true })
     student_password: string
     
     @Column({ type: 'int', default: 1 })

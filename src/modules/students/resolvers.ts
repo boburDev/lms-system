@@ -26,7 +26,8 @@ const resolvers = {
       student.student_balance = input.studentBalance || 0
       student.colleague_id = input.colleagueId
       student.student_branch_id = context.branchId
-
+      console.log(student);
+      
       return await studentRepository.save(student)
     }
   },

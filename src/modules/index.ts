@@ -6,7 +6,7 @@ import Employers from './employers'
 import Rooms from './rooms'
 import Courses from './courses'
 import Students from './students'
-
+import Groups from './groups'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -16,6 +16,7 @@ export default makeExecutableSchema({
         Rooms.schema,
         Courses.schema,
         Students.schema,
+        Groups.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -24,5 +25,6 @@ export default makeExecutableSchema({
         Rooms.resolvers,
         Courses.resolvers,
         Students.resolvers,
+        Groups.resolvers,
     ]
 })
