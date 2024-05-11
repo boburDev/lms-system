@@ -15,17 +15,17 @@ export default class Groups {
     @Column({ nullable: false })
     group_colleague_id: string
 
-    @Column('integer', { array: true })
-    group_days: number[];
+    @Column({ nullable: false })
+    group_days: string;
 
     @Column({ nullable: false })
     group_room_id: string
 
-    @Column({ nullable: false })
-    group_start_date: string
+    @Column({ type: 'timestamp', nullable: false })
+    group_start_date: Date
 
-    @Column({ nullable: false })
-    group_end_date: string
+    @Column({ type: 'timestamp', nullable: false })
+    group_end_date: Date
     
     @Column({ nullable: false })
     group_start_time: string
@@ -46,6 +46,25 @@ export default class Groups {
     group_branch_id: string
 
     @ManyToOne(()=> CompanyBranches, branch => branch.company_branch_id)
-    @JoinColumn({ name: 'employer_branch_id' })
+    @JoinColumn({ name: 'group_branch_id' })
     branches: CompanyBranches
+}
+
+@Entity()
+export class Group_attendences {
+    @PrimaryGeneratedColumn('uuid')
+    group_attendence_id: string
+
+    @Column({ type: 'timestamp' })
+    group_attendence_day: Date
+    
+    @Column({ type: 'int', default: 1 })
+    group_attendence_status: string
+    
+    @Column({ nullable: false })
+    group_attendence_group_id: string
+
+    @ManyToOne(() => Groups, group => group.group_id, { cascade: true })
+    @JoinColumn({ name: 'group_attendence_group_id' })
+    groups: Groups
 }
