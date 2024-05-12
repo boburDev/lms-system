@@ -18,7 +18,7 @@ export default class Students {
     @Column({ type: 'int', default: 1 })
     student_status: number
     
-    @Column({ type: 'int', default: 0 })
+    @Column({ type: 'float', default: 0 })
     student_balance: number
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
