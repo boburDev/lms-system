@@ -1,5 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+import Employers from "./employers.entity";
+import Rooms from "./room.entity";
 
 @Entity()
 export default class Groups {   
@@ -48,6 +50,14 @@ export default class Groups {
     @ManyToOne(()=> CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'group_branch_id' })
     branches: CompanyBranches
+
+    @OneToOne(type => Employers, employer => employer)
+    @JoinColumn({ name: 'group_colleague_id'})
+    employer: Employers;
+    
+    @OneToOne(type => Rooms, room => room)
+    @JoinColumn({ name: 'group_room_id'})
+    room: Rooms;
 }
 
 @Entity()

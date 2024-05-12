@@ -3,7 +3,7 @@ import { verify } from './jwt'
 export const context = async ({ req }: any) => {
     try {
         const { token } = req.headers
-
+        
         if (!token) {
             return ''
         } else {

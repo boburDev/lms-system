@@ -4,9 +4,13 @@ import GroupEntity, { Group_attendences } from "../../entities/groups.entity";
 
 const resolvers = {
   Query: {
-    groups: async(): Promise<GroupEntity[]> => {
-      const countryRepository = AppDataSource.getRepository(GroupEntity)
-      return await countryRepository.find()
+    groups: async (_parametr: unknown, { }, context: any): Promise<GroupEntity[]> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const groupRepository = AppDataSource.getRepository(GroupEntity)
+      let data = await groupRepository.find({ relations: ['employer', 'room'] })
+      
+      return data
+      // { where: { group_branch_id: context.branchId } }
     }
   },
   Mutation: {
@@ -29,7 +33,7 @@ const resolvers = {
       group.group_days = input.groupDays.join(' ')
       group.group_lesson_count = input.lessonCount
       
-      // console.log(group)
+      console.log(group)
       const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
       
       const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
@@ -51,13 +55,14 @@ const resolvers = {
     courseId: (global: Group) => global.group_course_id,
     courseName: (global: Group) => global.group_course_name,
     employerId: (global: Group) => global.group_colleague_id,
-    employerName: (global: Group) => global.group_colleague_name,
+    employerName: (global: Group) => global.employer.employer_name,
     roomId: (global: Group) => global.group_room_id,
-    roomName: (global: Group) => global.group_room_name,
+    roomName: (global: Group) => global.room.room_name,
     startDate: (global: Group) => global.group_start_date,
     endDate: (global: Group) => global.group_end_date,
     startTime: (global: Group) => global.group_start_time,
     endTime: (global: Group) => global.group_end_time,
+    groupDays: (global: Group) => global.group_days.split(' '),
 	}
 };
 

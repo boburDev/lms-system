@@ -1,6 +1,7 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
 import bcrypt from 'bcrypt';
+import Groups from "./groups.entity";
 
 @Entity()
 export default class Employers {   
@@ -40,6 +41,9 @@ export default class Employers {
     @ManyToOne(()=> CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'employer_branch_id' })
     branches: CompanyBranches
+
+    @OneToOne(type => Groups, group => group.group_id)
+    group: Groups;
     
     @BeforeInsert()
     async hashPassword() {

@@ -22,6 +22,7 @@ type Group {
   endDate: String!
   startTime: String!
   endTime: String!
+  groupDays: [String]
 }
 
 

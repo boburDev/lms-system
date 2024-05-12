@@ -17,15 +17,19 @@ type Group = {
     group_course_id: string,
     group_course_name: string,
     group_colleague_id: string,
-    group_colleague_name: string,
+    employer: {
+        employer_name: string
+    },
     group_days: string,
     group_room_id: string,
-    group_room_name: string,
+    room: {
+        room_name: string
+    },
     group_start_date: string,
     group_end_date: string,
     group_start_time: string,
     group_end_time: string,
-    group_lesson_count: string
+    group_lesson_count: string,
 }
 
 export {
