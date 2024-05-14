@@ -22,7 +22,13 @@ type Student = {
     colleague_id: string
 }
 
+type ParentInfo = {
+    parentName: string
+    parentPhone: string
+}
+
 export {
     Student,
+    ParentInfo,
     AddStudentInput
 }

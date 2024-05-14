@@ -1,6 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, ObjectType } from "typeorm";
 import { CompanyBranches } from "./company.entity";
-
+import { ParentInfo } from '../types/students'
 @Entity()
 export default class Students {
     @PrimaryGeneratedColumn('uuid')
@@ -26,6 +26,10 @@ export default class Students {
 
     @Column({ type: 'timestamp', nullable: true })
     student_deleted: Date
+
+    @Column({ type: 'json', nullable: true })
+    parentsInfo: ParentInfo[];
+
 
     @Column()
     student_branch_id: string

@@ -24,9 +24,10 @@ const resolvers = {
       student.student_password = input.studentPassword
       student.student_status = 1
       student.student_balance = input.studentBalance || 0
-      student.colleague_id = input.colleagueId
+      student.colleague_id = input.colleagueId || context.colleagueId
       student.student_branch_id = context.branchId
-      console.log(student);
+      student.parentsInfo = input.parentsInfo
+      console.log(student, context);
       
       return await studentRepository.save(student)
     }
