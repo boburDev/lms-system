@@ -1,28 +1,37 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
-import Groups from "./groups.entity";
 
 @Entity()
-export default class Rooms {
+export default class Costs {
     @PrimaryGeneratedColumn('uuid')
-    room_id: string
+    cost_id: string
 
     @Column({ length: 64, nullable: false })
-    room_name: string
+    cost_name: string
+   
+    @Column({ type: 'int' })
+    cost_amount: number
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    room_created: Date
+    @Column({ type: 'varchar', length: 20 })
+    colleague_name: string
 
     @Column({ type: 'timestamp', nullable: true })
-    room_deleted: Date
+    cost_payed_at: Date
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    cost_created: Date
+
+    @Column({ type: 'timestamp', nullable: true })
+    cost_deleted: Date
 
     @Column()
-    room_branch_id: string
+    cost_branch_id: string
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
-    @JoinColumn({ name: 'room_branch_id' })
+    @JoinColumn({ name: 'cost_branch_id' })
     branches: CompanyBranches
-
-    @OneToMany(type => Groups, group => group.group_id)
-    group: Groups;
 }
+
+// create table costs(
+//     buyer varchar(64),
+// );

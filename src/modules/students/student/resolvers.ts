@@ -1,6 +1,6 @@
-import StudentEntity from "../../entities/students.entity";
-import AppDataSource from "../../config/ormconfig";
-import { AddStudentInput, Student } from "../../types/students";
+import StudentEntity from "../../../entities/students.entity";
+import AppDataSource from "../../../config/ormconfig";
+import { AddStudentInput, Student } from "../../../types/students";
 
 const resolvers = {
   Query: {

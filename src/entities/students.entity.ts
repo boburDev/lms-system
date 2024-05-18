@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, ObjectType } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, ObjectType, OneToMany } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+import Student_payments, { Student_cashes } from './student_payments'
 import { ParentInfo } from '../types/students'
 @Entity()
 export default class Students {
@@ -30,7 +31,6 @@ export default class Students {
     @Column({ type: 'json', nullable: true })
     parentsInfo: ParentInfo[];
 
-
     @Column()
     student_branch_id: string
 
@@ -40,4 +40,10 @@ export default class Students {
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'student_branch_id' })
     branches: CompanyBranches
+
+    @OneToMany(() => Student_payments, payment => payment)
+    student_payment: Student_payments[]
+
+    @OneToMany(() => Student_cashes, payment => payment)
+    student_cash: Student_cashes[]
 }

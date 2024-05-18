@@ -2,6 +2,7 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, Primary
 import { CompanyBranches } from "./company.entity";
 import bcrypt from 'bcrypt';
 import Groups from "./groups.entity";
+import Student_payments from "./student_payments";
 
 @Entity()
 export default class Employers {   
@@ -43,7 +44,10 @@ export default class Employers {
     branches: CompanyBranches
 
     @OneToMany(type => Groups, group => group.group_id)
-    group: Groups;
+    group: Groups[];
+
+    @OneToMany(() => Student_payments, payment => payment)
+    student_payment: Student_payments[]
     
     @BeforeInsert()
     async hashPassword() {

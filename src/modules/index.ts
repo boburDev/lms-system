@@ -5,7 +5,7 @@ import Regions from './regions'
 import Employers from './employers'
 import Rooms from './rooms'
 import Courses from './courses'
-import Students from './students'
+import Students from './students/student'
 import Groups from './groups'
 
 export default makeExecutableSchema({
