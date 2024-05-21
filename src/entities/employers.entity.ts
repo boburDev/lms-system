@@ -2,7 +2,7 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, Primary
 import { CompanyBranches } from "./company.entity";
 import bcrypt from 'bcrypt';
 import Groups from "./groups.entity";
-import Student_payments from "./student_payments";
+import Student_payments from "./student_payments.entity";
 
 @Entity()
 export default class Employers {   

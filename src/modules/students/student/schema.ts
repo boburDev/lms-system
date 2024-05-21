@@ -20,6 +20,8 @@ input AddStudentInput {
   studentPassword: String
   studentStatus: Int
   studentBalance: Float
+  studentBithday: String
+  studentGender: Int
   colleagueId: String
   parentsInfo: [ParentInput]
 }
@@ -29,7 +31,6 @@ type Parent {
   parentPhone: String!
 }
 
-
 type Student {
     studentId: ID!
     studentName: String!
@@ -37,6 +38,8 @@ type Student {
     studentStatus: Int!
     studentBalance: Float!
     colleagueId: String
+    studentBithday: String
+    studentGender: Int
     parentsInfo: [Parent]
 }
 `

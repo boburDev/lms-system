@@ -4,7 +4,7 @@ import Employers from "./employers.entity";
 import Rooms from "./room.entity";
 import Courses from "./course.entity";
 import Students from "./students.entity";
-import Student_payments from "./student_payments";
+import Student_payments from "./student_payments.entity";
 
 @Entity()
 export class Companies {   

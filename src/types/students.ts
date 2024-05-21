@@ -4,6 +4,8 @@ type AddStudentInput = {
     studentPassword: string
     studentStatus: number
     studentBalance: number
+    studentBithday: string
+    studentGender: number
     colleagueId: string
     parentsInfo: [Parent]
 }
@@ -17,6 +19,8 @@ type Student = {
     student_id: string,
     student_name: string
     student_phone: string
+    student_gender: number
+    student_birthday: number
     student_status: number
     student_balance: number
     colleague_id: string

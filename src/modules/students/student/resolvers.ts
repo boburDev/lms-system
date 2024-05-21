@@ -23,6 +23,8 @@ const resolvers = {
       student.student_phone = input.studentPhone
       student.student_password = input.studentPassword
       student.student_status = 1
+      student.student_birthday = new Date(input.studentBithday)
+      student.student_gender = input.studentGender
       student.student_balance = input.studentBalance || 0
       student.colleague_id = input.colleagueId || context.colleagueId
       student.student_branch_id = context.branchId
@@ -38,6 +40,8 @@ const resolvers = {
     studentPhone: (global: Student) => global.student_phone,
     studentStatus: (global: Student) => global.student_status,
     studentBalance: (global: Student) => global.student_balance,
+    studentBithday: (global: Student) => global.student_birthday,
+    studentGender: (global: Student) => global.student_gender,
     colleagueId: (global: Student) => global.colleague_id
   }
 };

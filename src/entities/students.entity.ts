@@ -1,7 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, ObjectType, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToMany, Check } from "typeorm";
 import { CompanyBranches } from "./company.entity";
-import Student_payments, { Student_cashes } from './student_payments'
-import { ParentInfo } from '../types/students'
+import Student_payments from './student_payments.entity'
+import { ParentInfo } from "../types/students"
+import Student_cashes from "./student_cashes.entity";
+
 @Entity()
 export default class Students {
     @PrimaryGeneratedColumn('uuid')
@@ -15,6 +17,13 @@ export default class Students {
     
     @Column({ length: 64, nullable: true })
     student_password: string
+    
+    @Column({ type: 'timestamp', nullable: true })
+    student_birthday: Date
+    
+    @Column({ type: 'int', nullable: true })
+    @Check(`"student_gender" IS NULL OR "student_gender" IN (1, 2)`)
+    student_gender: number
     
     @Column({ type: 'int', default: 1 })
     student_status: number
@@ -41,9 +50,9 @@ export default class Students {
     @JoinColumn({ name: 'student_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Student_payments, payment => payment)
+    @OneToMany(() => Student_payments, payment => payment.student)
     student_payment: Student_payments[]
 
-    @OneToMany(() => Student_cashes, payment => payment)
+    @OneToMany(() => Student_cashes, cash => cash.student)
     student_cash: Student_cashes[]
 }
