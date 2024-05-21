@@ -93,7 +93,7 @@ const resolvers = {
     endTime: (global: Group) => global.group_end_time,
     groupDays: (global: Group) => global.group_days.split(' '),
 	groupAttendence: (global: Group) => {
-		return global.attendence.map(i => {
+    return global.attendence && global.attendence.map(i => {
 			return {
 				attendId: i.group_attendence_id,
 				attendDay: i.group_attendence_day,
