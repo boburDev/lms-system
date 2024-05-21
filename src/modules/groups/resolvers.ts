@@ -1,23 +1,52 @@
 import { AddGroupInput, Group } from '../../types/groups';
 import AppDataSource from "../../config/ormconfig";
-import GroupEntity, { Group_attendences } from "../../entities/groups.entity";
+import GroupEntity, { Group_attendences } from "../../entities/group/groups.entity";
 
 const resolvers = {
   Query: {
     groups: async (_parametr: unknown, { }, context: any): Promise<GroupEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
-      let data = await groupRepository.find({ relations: ['employer', 'room'] })
+      let data = await groupRepository.find({
+        where: {
+          group_branch_id: context.branchId
+        },
+        relations: ['employer', 'room', 'course']
+      })
+      return data
+    },
+    groupByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+
+      let groupRepository = AppDataSource.getRepository(GroupEntity)
+      let data
+
+      if (input.startDate && input.endDate) {
+      } else if (input.Id) {
+        data = await groupRepository.findOne({ 
+            where: {
+              group_branch_id: context.branchId,
+              group_id: input.Id
+            },
+          relations: ['attendence', 'employer', 'room', 'course']
+         })
+         if (data) {
+           let days = data.group_days.split(" ") 
+           let attendence = data.attendence
+           let daysResult =attendence.filter(day => {
+             if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
+               return day
+            }
+           })
+         }
+      }
       
       return data
-      // { where: { group_branch_id: context.branchId } }
     }
   },
   Mutation: {
     addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any) => {
-      
       let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
-      
       if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
       
       let group = new GroupEntity()
@@ -53,7 +82,7 @@ const resolvers = {
     groupId: (global: Group) => global.group_id,
     groupName: (global: Group) => global.group_name,
     courseId: (global: Group) => global.group_course_id,
-    courseName: (global: Group) => global.group_course_name,
+    courseName: (global: Group) => global.course.course_name,
     employerId: (global: Group) => global.group_colleague_id,
     employerName: (global: Group) => global.employer.employer_name,
     roomId: (global: Group) => global.group_room_id,
@@ -63,6 +92,16 @@ const resolvers = {
     startTime: (global: Group) => global.group_start_time,
     endTime: (global: Group) => global.group_end_time,
     groupDays: (global: Group) => global.group_days.split(' '),
+	groupAttendence: (global: Group) => {
+		return global.attendence.map(i => {
+			return {
+				attendId: i.group_attendence_id,
+				attendDay: i.group_attendence_day,
+				attendStatus: i.group_attendence_status,
+				groupId: i.group_attendence_group_id
+			}
+		})
+	},
 	}
 };
 

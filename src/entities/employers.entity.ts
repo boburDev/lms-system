@@ -1,8 +1,8 @@
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
 import bcrypt from 'bcrypt';
-import Groups from "./groups.entity";
-import Student_payments from "./student_payments.entity";
+import Groups from "./group/groups.entity";
+import Student_payments from "./student/student_payments.entity";
 
 @Entity()
 export default class Employers {   
@@ -43,7 +43,7 @@ export default class Employers {
     @JoinColumn({ name: 'employer_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(type => Groups, group => group.group_id)
+    @OneToMany(() => Groups, group => group.group_id)
     group: Groups[];
 
     @OneToMany(() => Student_payments, payment => payment)

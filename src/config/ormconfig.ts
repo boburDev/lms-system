@@ -9,7 +9,11 @@ export default new DataSource({
     port: 5432,
     username: "postgres",
     database: "crm",
-    entities: [ path.resolve(__dirname, "..", "entities", "*.entity.{ts,js}") ],
+    entities: [
+        path.resolve(__dirname, "..", "entities", "*.entity.{ts,js}"),
+        path.resolve(__dirname, "..", "entities", "student", "*.entity.{ts,js}"),
+        path.resolve(__dirname, "..", "entities", "group", "*.entity.{ts,js}")
+    ],
     migrations: [],
     logging: true,
     synchronize: true

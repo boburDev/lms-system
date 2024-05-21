@@ -23,6 +23,7 @@ input AddStudentInput {
   studentBithday: String
   studentGender: Int
   colleagueId: String
+  groupId: String
   parentsInfo: [ParentInput]
 }
 

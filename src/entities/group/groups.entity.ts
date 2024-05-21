@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { CompanyBranches } from "./company.entity";
-import Employers from "./employers.entity";
-import Rooms from "./room.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { CompanyBranches } from "../company.entity";
+import Employers from "../employers.entity";
+import Rooms from "../room.entity";
+import Courses from "../course.entity";
 
 @Entity()
 export default class Groups {   
@@ -10,9 +11,6 @@ export default class Groups {
     
     @Column({ length: 32, nullable: false})
     group_name: string
-    
-    @Column({ nullable: false})
-    group_course_id: string
 
     @Column({ nullable: false })
     group_colleague_id: string
@@ -23,6 +21,9 @@ export default class Groups {
     @Column({ nullable: false })
     group_room_id: string
 
+    @Column({ nullable: false })
+    group_course_id: string
+    
     @Column({ type: 'timestamp', nullable: false })
     group_start_date: Date
 
@@ -58,6 +59,13 @@ export default class Groups {
     @ManyToOne(type => Rooms, room => room)
     @JoinColumn({ name: 'group_room_id'})
     room: Rooms;
+    
+    @ManyToOne(type => Courses, course => course)
+    @JoinColumn({ name: 'group_course_id'})
+    course: Courses;
+
+    @OneToMany(() => Group_attendences, attendence => attendence.groups)
+    attendence: Group_attendences[]
 }
 
 @Entity()

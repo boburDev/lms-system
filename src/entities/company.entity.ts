@@ -3,8 +3,8 @@ import { Districts } from "./regions.entity";
 import Employers from "./employers.entity";
 import Rooms from "./room.entity";
 import Courses from "./course.entity";
-import Students from "./students.entity";
-import Student_payments from "./student_payments.entity";
+import Students from "./student/students.entity";
+import Student_payments from "./student/student_payments.entity";
 
 @Entity()
 export class Companies {   

@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+import Groups from "./group/groups.entity";
 
 @Entity()
 export default class Courses {
@@ -27,4 +28,7 @@ export default class Courses {
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'course_branch_id' })
     branches: CompanyBranches
+
+    @OneToMany(() => Groups, group => group.group_id)
+    group: Groups[];
 }

@@ -1,4 +1,4 @@
-import StudentEntity from "../../../entities/students.entity";
+import StudentEntity from "../../../entities/student/students.entity";
 import AppDataSource from "../../../config/ormconfig";
 import { AddStudentInput, Student } from "../../../types/students";
 
