@@ -3,6 +3,7 @@ import { CompanyBranches } from "../company.entity";
 import Employers from "../employers.entity";
 import Rooms from "../room.entity";
 import Courses from "../course.entity";
+import Student_groups from "../student/student_groups.entity";
 
 @Entity()
 export default class Groups {   
@@ -66,6 +67,9 @@ export default class Groups {
 
     @OneToMany(() => Group_attendences, attendence => attendence.groups)
     attendence: Group_attendences[]
+
+    @OneToMany(() => Student_groups, st_group => st_group.group)
+    student_group: Student_groups[]
 }
 
 @Entity()

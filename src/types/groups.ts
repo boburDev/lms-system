@@ -43,7 +43,14 @@ type Attendence = {
     group_attendence_group_id: string
 }
 
+type AddStudentGroupInput = {
+    studentId: string
+    groupId: string
+    addedDate: string
+}
+
 export {
     Group,   
-    AddGroupInput
+    AddGroupInput,
+    AddStudentGroupInput
 }

@@ -24,14 +24,6 @@ type Group {
   startTime: String!
   endTime: String!
   groupDays: [String]
-  groupAttendence: [Attendence]
-}
-
-type Attendence {
-	attendId: ID!
-	attendDay: String!
-	attendStatus: Int!
-	groupId: ID!
 }
 
 

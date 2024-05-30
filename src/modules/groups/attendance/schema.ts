@@ -1,0 +1,19 @@
+import { gql } from 'apollo-server-express'
+
+export default gql`
+    type Query {
+        groupAttendenceByIdOrDate(Id: String startDate: String endDate: String): GroupAttendence
+    }
+
+    type GroupAttendence {
+        groupAttendence: [Attendence]
+        studentsAttendence: [Attendence]
+    }
+
+    type Attendence {
+        attendId: ID!
+        attendDay: String!
+        attendStatus: Int!
+        groupId: ID!
+    }
+`

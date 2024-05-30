@@ -1,6 +1,6 @@
-import { AddGroupInput, Group } from '../../types/groups';
-import AppDataSource from "../../config/ormconfig";
-import GroupEntity, { Group_attendences } from "../../entities/group/groups.entity";
+import { AddGroupInput, Group } from '../../../types/groups';
+import AppDataSource from "../../../config/ormconfig";
+import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 
 const resolvers = {
   Query: {
@@ -28,24 +28,25 @@ const resolvers = {
               group_branch_id: context.branchId,
               group_id: input.Id
             },
-          relations: ['attendence', 'employer', 'room', 'course']
+          relations: ['employer', 'room', 'course']
+          // relations: ['attendence', 'employer', 'room', 'course']
          })
-         if (data) {
-           let days = data.group_days.split(" ") 
-           let attendence = data.attendence
-           let daysResult =attendence.filter(day => {
-             if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
-               return day
-            }
-           })
-         }
+        //  if (data) {
+        //    let days = data.group_days.split(" ") 
+        //    let attendence = data.attendence
+        //    let daysResult =attendence.filter(day => {
+        //      if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
+        //        return day
+        //     }
+        //    })
+        //  }
       }
       
       return data
     }
   },
   Mutation: {
-    addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any) => {
+    addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise< GroupEntity> => {
       let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
       if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
       
@@ -62,7 +63,6 @@ const resolvers = {
       group.group_days = input.groupDays.join(' ')
       group.group_lesson_count = input.lessonCount
       
-      console.log(group)
       const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
       
       const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
@@ -92,16 +92,16 @@ const resolvers = {
     startTime: (global: Group) => global.group_start_time,
     endTime: (global: Group) => global.group_end_time,
     groupDays: (global: Group) => global.group_days.split(' '),
-	groupAttendence: (global: Group) => {
-    return global.attendence && global.attendence.map(i => {
-			return {
-				attendId: i.group_attendence_id,
-				attendDay: i.group_attendence_day,
-				attendStatus: i.group_attendence_status,
-				groupId: i.group_attendence_group_id
-			}
-		})
-	},
+    // groupAttendence: (global: Group) => {
+    //   return global.attendence && global.attendence.map(i => {
+    //     return {
+    //       attendId: i.group_attendence_id,
+    //       attendDay: i.group_attendence_day,
+    //       attendStatus: i.group_attendence_status,
+    //       groupId: i.group_attendence_group_id
+    //     }
+    //   })
+    // },
 	}
 };
 
