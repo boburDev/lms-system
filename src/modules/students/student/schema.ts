@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
   students: [Student!]!
+  studentById(Id: String): Student
 }
 
 type Mutation {
@@ -24,6 +25,7 @@ input AddStudentInput {
   studentGender: Int
   colleagueId: String
   groupId: String
+  addedDate: String
   parentsInfo: [ParentInput]
 }
 

@@ -7,7 +7,6 @@ import { getDays } from "../../../utils/date";
 const resolvers = {
     Mutation: {
         addStudentGroup: async (_parent: unknown, { input }: { input: AddStudentGroupInput }, context: any) => {
-            console.log(input)
             if (!context?.branchId) throw new Error("Not exist access token!");
             const GroupRepository = AppDataSource.getRepository(Groups)
             let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })

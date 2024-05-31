@@ -7,6 +7,7 @@ type AddStudentInput = {
     studentBithday: string
     studentGender: number
     groupId: string
+    addedDate: string
     colleagueId: string
     parentsInfo: [Parent]
 }
