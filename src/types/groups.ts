@@ -1,3 +1,5 @@
+import { StudentAttendenceData } from "./students"
+
 type AddGroupInput = {
     Id: string
     groupName: string
@@ -34,6 +36,7 @@ type Group = {
     group_end_time: string,
     group_lesson_count: string,
     attendence: [Attendence]
+    student_attendences: [StudentAttendenceData]
 }
 
 type Attendence = {

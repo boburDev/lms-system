@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node dist/index.js",
+    "build": "tsc",
     "dev": "nodemon ./src/index.ts",
     "migration:generate": "npx typeorm-ts-node-esm migration:generate ./src/migrations/table -d ./src/config/ormconfig.ts",
     "migration:run": "npx typeorm-ts-node-esm migration:run -d ./src/config/ormconfig.ts",

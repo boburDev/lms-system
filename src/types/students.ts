@@ -32,8 +32,23 @@ type ParentInfo = {
     parentPhone: string
 }
 
+type StudentAttendenceData =  {
+    student_id: string
+    student_name: string
+    student_days: [StudentAttendence]
+}
+
+type StudentAttendence = {
+    student_attendence_id: string,
+    student_attendence_day: string,
+    student_attendence_status: number,
+    student_attendence_group_id: string
+}
+
+
 export {
     Student,
     ParentInfo,
-    AddStudentInput
+    AddStudentInput,
+    StudentAttendenceData
 }

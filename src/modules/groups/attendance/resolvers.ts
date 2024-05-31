@@ -1,6 +1,7 @@
 import { AddGroupInput, AddStudentGroupInput, Group } from "../../../types/groups";
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity from "../../../entities/group/groups.entity";
+import { StudentAttendenceData } from "../../../types/students";
 
 const resolvers = {
     Query: {
@@ -12,23 +13,54 @@ const resolvers = {
 
             if (input.Id && input.startDate && input.endDate) {
                 let date = { startDay: new Date(input.startDate), endDay: new Date(input.endDate) }
-                data = await groupRepository.createQueryBuilder("group")
-                    .leftJoinAndSelect("group.attendence", "attendence")
-                    .where("group.group_branch_id = :branchId", { branchId: context.branchId })
-                    .andWhere("group.group_id = :groupId", { groupId: input.Id })
-                    .andWhere("attendence.group_attendence_day BETWEEN :startDay AND :endDay", date)
-                    .getOne();
+				data = await groupRepository.createQueryBuilder("group")
+					.leftJoinAndSelect("group.attendence", "attendence")
+					.leftJoinAndSelect("group.student_attendences", "student_attendence")
+					.leftJoinAndSelect("student_attendence.students", "student")
+					.where("group.group_branch_id = :branchId", { branchId: context.branchId })
+					.andWhere("group.group_id = :groupId", { groupId: input.Id })
+					.andWhere("attendence.group_attendence_day BETWEEN :startDay AND :endDay", date)
+					.andWhere("student_attendence.student_attendence_day BETWEEN :startDay AND :endDay", date)
+					.getOne();
                 
-                 if (data) {
-                   let days = data.group_days.split(" ") 
-                   let attendence = data.attendence
-                   let daysResult =attendence.filter(day => {
-                    if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
-                        return day
-                    }
-                   })
-                    data.attendence = daysResult
-                 }
+				if (data) {
+					let days = data.group_days.split(" ") 
+					let attendence = data.attendence
+					let studentAttendence = data.student_attendences
+					let daysResult = attendence.filter(day => {
+					if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
+						return day
+					}
+					})
+					data.attendence = daysResult
+
+					let daysStudentResult = studentAttendence.filter(day => {
+						if (days.includes(new Date(day.student_attendence_day).getDay() + '')) {
+							return day
+						}
+					})
+					
+					const groupedData = daysStudentResult.reduce((acc:any, curr) => {
+						const { student_id, student_name } = curr.students;
+						const student_attendance = {
+							student_attendence_id: curr.student_attendence_id,
+							student_attendence_day: curr.student_attendence_day,
+							student_attendence_status: curr.student_attendence_status,
+							student_attendence_group_id: curr.student_attendence_group_id,
+							student_attendence_student_id: curr.student_attendence_student_id
+						};
+						if (!acc[student_id]) {
+							acc[student_id] = {
+								student_id: student_id,
+								student_name: student_name,
+								student_days: []
+							};
+						}
+						acc[student_id].student_days.push(student_attendance);
+						return acc;
+					}, {});
+					data.student_attendences = Object.values(groupedData)
+				}
             }
             return data
         }
@@ -44,6 +76,25 @@ const resolvers = {
             }
           })
         },
+		studentsAttendence: (global: Group) => {
+			console.log(global.student_attendences)
+			return global.student_attendences && global.student_attendences.map(i => {
+				let data = i.student_days.map(j => {
+					return {
+						attendId: j.student_attendence_id,
+						attendDay: j.student_attendence_day,
+						attendStatus: j.student_attendence_status,
+						groupId: j.student_attendence_group_id
+					}
+				})
+				return {
+					studentId: i.student_id,
+					studentName: i.student_name,
+					attendence: data
+				}
+
+			})
+		}
     }
 }
 

@@ -7,9 +7,14 @@ export default gql`
 
     type GroupAttendence {
         groupAttendence: [Attendence]
-        studentsAttendence: [Attendence]
+        studentsAttendence: [studentsAttendenceData]
     }
 
+    type studentsAttendenceData {
+        studentId: ID
+        studentName: String
+        attendence: [Attendence]
+    }
     type Attendence {
         attendId: ID!
         attendDay: String!

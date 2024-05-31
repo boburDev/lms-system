@@ -3,7 +3,7 @@ import { CompanyBranches } from "../company.entity";
 import Student_payments from './student_payments.entity'
 import { ParentInfo } from "../../types/students"
 import Student_cashes from "./student_cashes.entity";
-import Student_groups from "./student_groups.entity";
+import Student_groups, { Student_attendences } from "./student_groups.entity";
 
 @Entity()
 export default class Students {
@@ -59,4 +59,7 @@ export default class Students {
 
     @OneToMany(() => Student_cashes, cash => cash.student)
     student_cash: Student_cashes[]
+    
+    @OneToMany(() => Student_attendences, student => student.students)
+    student_attendence: Student_attendences[]
 }

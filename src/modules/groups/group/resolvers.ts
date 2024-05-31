@@ -1,6 +1,7 @@
 import { AddGroupInput, Group } from '../../../types/groups';
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
+import { getDays } from '../../../utils/date';
 
 const resolvers = {
   Query: {
@@ -123,16 +124,4 @@ async function checkGroup(employerId: string, roomId: string, branchId: string, 
   ]);
 
   return result[0];
-}
-
-function getDays(startDate: Date, endDate: Date): Date[] {
-  let dates: Date[] = [];
-  let theDate: Date = new Date(startDate.getTime());
-
-  while (theDate.getTime() <= endDate.getTime()) {
-    dates = [...dates, new Date(theDate)];
-    theDate.setDate(theDate.getDate() + 1);
-  }
-
-  return dates;
 }

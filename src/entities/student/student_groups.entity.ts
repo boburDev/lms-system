@@ -42,3 +42,29 @@ export default class Student_groups {
     @JoinColumn({ name: 'student_id' })
     student: Students
 }
+
+@Entity()
+export class Student_attendences {
+    @PrimaryGeneratedColumn('uuid')
+    student_attendence_id: string
+
+    @Column({ type: 'timestamp' })
+    student_attendence_day: Date
+
+    @Column({ type: 'int', default: 1 })
+    student_attendence_status: string
+
+    @Column({ nullable: false })
+    student_attendence_group_id: string
+    
+    @Column({ nullable: false })
+    student_attendence_student_id: string
+
+    @ManyToOne(() => Groups, group => group.group_id, { cascade: true })
+    @JoinColumn({ name: 'student_attendence_group_id' })
+    student_attendence: Groups
+
+    @ManyToOne(() => Students, student => student.student_id, { cascade: true })
+    @JoinColumn({ name: 'student_attendence_student_id' })
+    students: Students
+}
