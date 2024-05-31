@@ -16,7 +16,7 @@ const resolvers = {
             studentGroup.student_group_add_time = new Date(input.addedDate)
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.groupId
-
+            await studentGroupRepository.save(studentGroup)
         }
     },
 }
