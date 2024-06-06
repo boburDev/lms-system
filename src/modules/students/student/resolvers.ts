@@ -4,6 +4,8 @@ import { AddStudentInput, Student } from "../../../types/students";
 import Groups from "../../../entities/group/groups.entity";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import { getDays } from "../../../utils/date";
+import Student_payments from "../../../entities/student/student_payments.entity";
+import Student_cashes from "../../../entities/student/student_cashes.entity";
 
 const resolvers = {
   Query: {
@@ -31,7 +33,10 @@ const resolvers = {
       student.student_phone = input.studentPhone
       student.student_password = input.studentPassword
       student.student_status = 1
-      student.student_birthday = new Date(input.studentBithday)
+      student.student_balance = input.studentCash || 0
+      if (input.studentBithday) {
+        student.student_birthday = new Date(input.studentBithday)
+      }
       student.student_gender = input.studentGender
       student.student_balance = input.studentBalance || 0
       student.colleague_id = input.colleagueId || context.colleagueId
@@ -69,7 +74,31 @@ const resolvers = {
           await groupAttendenceRepository.save(studentAttendence);
         }
       }
-      
+      if (input.studentCash) {
+        const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+        let studentCash = new Student_cashes()
+        let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
+        studentCash.cash_amount = input.studentCash
+        studentCash.check_number = count.length + 1
+        studentCash.student_cash_payed_at = new Date()
+        studentCash.branch_id = context.branchId
+        studentCash.student_id = studentData.student_id
+        
+        let studentCashData = await studentCashCountRepository.save(studentCash)
+
+        const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
+        let studentPayment = new Student_payments()
+        studentPayment.student_payment_debit = input.studentCash
+        studentPayment.student_payment_type = input.studentCashType
+        studentPayment.student_payment_payed_at = new Date()
+        studentPayment.student_id = studentData.student_id
+        studentPayment.employer_id = input.colleagueId || context.colleagueId
+        studentPayment.student_cash_id = studentCashData.student_cash_id
+
+        let studentPaymentData = await studentPaymentRepository.save(studentPayment)
+        console.log(studentPaymentData)
+        
+      }
       return studentData
     }
   },

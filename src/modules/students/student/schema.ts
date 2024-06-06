@@ -23,6 +23,8 @@ input AddStudentInput {
   studentBalance: Float
   studentBithday: String
   studentGender: Int
+  studentCash: Float
+  studentCashType: Int
   colleagueId: String
   groupId: String
   addedDate: String

@@ -3,6 +3,8 @@ type AddStudentInput = {
     studentPhone: string
     studentPassword: string
     studentStatus: number
+    studentCash: number
+    studentCashType: number
     studentBalance: number
     studentBithday: string
     studentGender: number

@@ -14,8 +14,8 @@ export default class Student_payments {
     @Column({ type: 'float', default: 0 })
     student_payment_credit: number
 
-    @Column({ length: 32, nullable: false })
-    student_payment_type: string
+    @Column({ nullable: false })
+    student_payment_type: number
 
     @Column({ type: 'timestamp' })
     student_payment_payed_at: Date
