@@ -36,7 +36,18 @@ type Group = {
     group_end_time: string,
     group_lesson_count: string,
     attendence: [Attendence]
-    student_attendences: [StudentAttendenceData]
+    student_attendences: [StudentAttendenceData],
+    student_group: [StudentGroupInfo]
+}
+
+type StudentGroupInfo = {
+    student_group_id: string
+    student: {
+        student_name: string
+    }
+    student_group_add_time: string
+    student_group_status: number
+    student_group_credit: number
 }
 
 type Attendence = {

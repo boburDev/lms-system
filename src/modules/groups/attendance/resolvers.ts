@@ -77,7 +77,6 @@ const resolvers = {
           })
         },
 		studentsAttendence: (global: Group) => {
-			console.log(global.student_attendences)
 			return global.student_attendences && global.student_attendences.map(i => {
 				let data = i.student_days.map(j => {
 					return {

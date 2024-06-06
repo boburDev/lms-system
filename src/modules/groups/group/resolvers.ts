@@ -12,7 +12,7 @@ const resolvers = {
         where: {
           group_branch_id: context.branchId
         },
-        relations: ['employer', 'room', 'course']
+        relations: ['employer', 'room', 'course', 'student_group']
       })
       return data
     },
@@ -24,14 +24,22 @@ const resolvers = {
 
       if (input.startDate && input.endDate) {
       } else if (input.Id) {
-        data = await groupRepository.findOne({ 
-            where: {
-              group_branch_id: context.branchId,
-              group_id: input.Id
-            },
-          relations: ['employer', 'room', 'course']
-          // relations: ['attendence', 'employer', 'room', 'course']
-         })
+        data = await groupRepository.createQueryBuilder("group")
+          .leftJoinAndSelect("group.employer", "employer")
+          .leftJoinAndSelect("group.room", "room")
+          .leftJoinAndSelect("group.course", "course")
+          .leftJoinAndSelect("group.student_group", "student_group")
+          .leftJoinAndSelect("student_group.student", "student")
+          .where("group.group_branch_id = :branchId", { branchId: context.branchId })
+          .andWhere("group.group_id = :groupId", { groupId: input.Id })
+          .getOne();
+        // data = await groupRepository.findOne({ 
+        //     where: {
+        //       group_branch_id: context.branchId,
+        //       group_id: input.Id
+        //     },
+        //   relations: ['employer', 'room', 'course', 'student_group']
+        //  })
         //  if (data) {
         //    let days = data.group_days.split(" ") 
         //    let attendence = data.attendence
@@ -93,16 +101,33 @@ const resolvers = {
     startTime: (global: Group) => global.group_start_time,
     endTime: (global: Group) => global.group_end_time,
     groupDays: (global: Group) => global.group_days.split(' '),
-    // groupAttendence: (global: Group) => {
-    //   return global.attendence && global.attendence.map(i => {
-    //     return {
-    //       attendId: i.group_attendence_id,
-    //       attendDay: i.group_attendence_day,
-    //       attendStatus: i.group_attendence_status,
-    //       groupId: i.group_attendence_group_id
-    //     }
-    //   })
-    // },
+    studentCount: (global: Group) => Array.isArray(global.student_group) ? global.student_group.length : 0,
+	},
+  GroupById: {
+    groupId: (global: Group) => global.group_id,
+    groupName: (global: Group) => global.group_name,
+    courseId: (global: Group) => global.group_course_id,
+    courseName: (global: Group) => global.course.course_name,
+    employerId: (global: Group) => global.group_colleague_id,
+    employerName: (global: Group) => global.employer.employer_name,
+    roomId: (global: Group) => global.group_room_id,
+    roomName: (global: Group) => global.room.room_name,
+    startDate: (global: Group) => global.group_start_date,
+    endDate: (global: Group) => global.group_end_date,
+    startTime: (global: Group) => global.group_start_time,
+    endTime: (global: Group) => global.group_end_time,
+    groupDays: (global: Group) => global.group_days.split(' '),
+    students: (global: Group) => {
+      return global.student_group && global.student_group.map(i => {
+        return {
+          studentId: i.student_group_id,
+          studentName: i.student.student_name,
+          studentStatus: i.student_group_status,
+          studentBalance: i.student_group_credit,
+          studentAddDate: i.student_group_add_time
+        }
+      })
+    }
 	}
 };
 
