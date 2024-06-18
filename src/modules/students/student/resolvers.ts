@@ -12,17 +12,17 @@ const resolvers = {
     students: async (_parametr: unknown, { page, count }: { page: number, count: number }, context: any): Promise<StudentEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-      console.log(page, count);
-      
+
       let data = await studentRepository.createQueryBuilder("students")
         .leftJoinAndSelect("students.student_group", "student_group")
         .leftJoinAndSelect("student_group.group", "group")
         .leftJoinAndSelect("group.employer", "employer")
         .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("students.student_deleted IS NULL")
         .take(count)
         .skip((page - 1) * count)
         .getMany();
-      
+
       return data
     },
     studentById: async (_parametr: unknown, Id: any, context: any) => {
@@ -56,18 +56,18 @@ const resolvers = {
 
       let studentData = await studentRepository.save(student)
       if (input.groupId && input.addedDate) {
-          const GroupRepository = AppDataSource.getRepository(Groups)
-          let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
-          if (!dataGroup) throw new Error("Gruppa mavjud emas");
-          if (
-            new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
-            new Date(dataGroup.group_end_date) < new Date(input.addedDate)
-          ) throw new Error("Gruppani tugash vaqti qushilish vaqtidan kichkina!")
+        const GroupRepository = AppDataSource.getRepository(Groups)
+        let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
+        if (!dataGroup) throw new Error("Gruppa mavjud emas");
+        if (
+          new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
+          new Date(dataGroup.group_end_date) < new Date(input.addedDate)
+        ) throw new Error("Gruppani tugash vaqti qushilish vaqtidan kichkina!")
 
         const studentGroupRepository = AppDataSource.getRepository(Student_groups)
         let data = await studentGroupRepository.findOneBy({ student_id: studentData.student_id, group_id: input.groupId })
         if (data !== null) throw new Error(`Bu gruppada uquvchi uqimoqda`)
-          
+
         let studentGroup = new Student_groups()
         studentGroup.student_group_add_time = new Date(input.addedDate)
         studentGroup.student_id = studentData.student_id
@@ -94,7 +94,7 @@ const resolvers = {
         studentCash.student_cash_payed_at = new Date()
         studentCash.branch_id = context.branchId
         studentCash.student_id = studentData.student_id
-        
+
         let studentCashData = await studentCashCountRepository.save(studentCash)
 
         const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
@@ -111,18 +111,20 @@ const resolvers = {
       return studentData
     },
     deleteStudent: async (_parent: unknown, { studentId }: { studentId: string }, context: any) => {
-      console.log(studentId);
-      if (!context?.branchId) throw new Error("Not exist access token!");
-      const studentRepository = AppDataSource.getRepository(StudentEntity)
+      try {
+        if (!context?.branchId) throw new Error("Not exist access token!");
+        const studentRepository = AppDataSource.getRepository(StudentEntity)
 
-      let data = await studentRepository.findOneBy({ student_id: studentId })
-      console.log(data)
-      
-      if (data === null) throw new Error(`Siz tanlagan uquvchi mavjud`)
-      data.student_deleted = new Date()
-      await studentRepository.save(user);
+        let data = await studentRepository.findOneBy({ student_id: studentId })
+        console.log(data)
 
-      return ''
+        if (data === null) throw new Error(`Siz tanlagan uquvchi mavjud`)
+        data.student_deleted = new Date()
+        await studentRepository.save(data);
+        return 'success'
+      } catch (error) {
+        throw error;
+      }
     }
   },
   Student: {
@@ -138,12 +140,12 @@ const resolvers = {
       let results = []
       if (global.student_group.length) {
         for (const i of global.student_group) {
-            results.push({
-              groupId: i.group.group_id,
-              groupName: i.group.group_name,
-              colleagueName: i.group.employer.employer_name,
-              lessonStartTime: i.group.group_start_time,
-            })
+          results.push({
+            groupId: i.group.group_id,
+            groupName: i.group.group_name,
+            colleagueName: i.group.employer.employer_name,
+            lessonStartTime: i.group.group_start_time,
+          })
         }
       }
       return results
