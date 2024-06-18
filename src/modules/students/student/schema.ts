@@ -8,6 +8,7 @@ type Query {
 
 type Mutation {
   addStudent(input: AddStudentInput): Student!
+  deleteStudent(studentId: String): String!
 }
 
 input ParentInput {

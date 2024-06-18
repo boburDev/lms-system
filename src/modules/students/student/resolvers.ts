@@ -109,6 +109,20 @@ const resolvers = {
         let studentPaymentData = await studentPaymentRepository.save(studentPayment)
       }
       return studentData
+    },
+    deleteStudent: async (_parent: unknown, { studentId }: { studentId: string }, context: any) => {
+      console.log(studentId);
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const studentRepository = AppDataSource.getRepository(StudentEntity)
+
+      let data = await studentRepository.findOneBy({ student_id: studentId })
+      console.log(data)
+      
+      if (data === null) throw new Error(`Siz tanlagan uquvchi mavjud`)
+      data.student_deleted = new Date()
+      await studentRepository.save(user);
+
+      return ''
     }
   },
   Student: {
