@@ -54,7 +54,7 @@ export default class Students {
     @OneToMany(() => Student_payments, payment => payment.student)
     student_payment: Student_payments[]
 
-    @OneToMany(() => Student_groups, st_group => st_group.group)
+    @OneToMany(() => Student_groups, st_group => st_group.student)
     student_group: Student_groups[]
 
     @OneToMany(() => Student_cashes, cash => cash.student)

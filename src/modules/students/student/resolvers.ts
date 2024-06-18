@@ -9,10 +9,21 @@ import Student_cashes from "../../../entities/student/student_cashes.entity";
 
 const resolvers = {
   Query: {
-    students: async (_parametr: unknown, { }, context: any): Promise<StudentEntity[]> => {
+    students: async (_parametr: unknown, { page, count }: { page: number, count: number }, context: any): Promise<StudentEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-      return await studentRepository.find({ where: { student_branch_id: context.branchId } })
+      console.log(page, count);
+      
+      let data = await studentRepository.createQueryBuilder("students")
+        .leftJoinAndSelect("students.student_group", "student_group")
+        .leftJoinAndSelect("student_group.group", "group")
+        .leftJoinAndSelect("group.employer", "employer")
+        .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .take(count)
+        .skip((page - 1) * count)
+        .getMany();
+      
+      return data
     },
     studentById: async (_parametr: unknown, Id: any, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
@@ -96,8 +107,6 @@ const resolvers = {
         studentPayment.student_cash_id = studentCashData.student_cash_id
 
         let studentPaymentData = await studentPaymentRepository.save(studentPayment)
-        console.log(studentPaymentData)
-        
       }
       return studentData
     }
@@ -110,7 +119,21 @@ const resolvers = {
     studentBalance: (global: Student) => global.student_balance,
     studentBithday: (global: Student) => global.student_birthday,
     studentGender: (global: Student) => global.student_gender,
-    colleagueId: (global: Student) => global.colleague_id
+    colleagueId: (global: Student) => global.colleague_id,
+    studentGroup: (global: Student) => {
+      let results = []
+      if (global.student_group.length) {
+        for (const i of global.student_group) {
+            results.push({
+              groupId: i.group.group_id,
+              groupName: i.group.group_name,
+              colleagueName: i.group.employer.employer_name,
+              lessonStartTime: i.group.group_start_time,
+            })
+        }
+      }
+      return results
+    }
   }
 };
 

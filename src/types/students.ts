@@ -28,6 +28,16 @@ type Student = {
     student_status: number
     student_balance: number
     colleague_id: string
+    student_group: [{
+        group: {
+            group_id: string
+            group_name: string
+            group_start_time: string
+            employer: {
+                employer_name: string
+            }
+        }
+    }]
 }
 
 type ParentInfo = {

@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  students: [Student!]!
+  students(page: Int! count: Int!): [Student!]!
   studentById(Id: String): Student
 }
 
@@ -46,5 +46,14 @@ type Student {
     studentBithday: String
     studentGender: Int
     parentsInfo: [Parent]
+    studentGroup: [StudentGroups]
+    
+}
+
+type StudentGroups {
+  groupId: String
+  groupName: String
+  colleagueName: String
+  lessonStartTime: String
 }
 `

@@ -33,22 +33,6 @@ const resolvers = {
           .where("group.group_branch_id = :branchId", { branchId: context.branchId })
           .andWhere("group.group_id = :groupId", { groupId: input.Id })
           .getOne();
-        // data = await groupRepository.findOne({ 
-        //     where: {
-        //       group_branch_id: context.branchId,
-        //       group_id: input.Id
-        //     },
-        //   relations: ['employer', 'room', 'course', 'student_group']
-        //  })
-        //  if (data) {
-        //    let days = data.group_days.split(" ") 
-        //    let attendence = data.attendence
-        //    let daysResult =attendence.filter(day => {
-        //      if (days.includes(new Date(day.group_attendence_day).getDay() + '')) {
-        //        return day
-        //     }
-        //    })
-        //  }
       }
       
       return data
