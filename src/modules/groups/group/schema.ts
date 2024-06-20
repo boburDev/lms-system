@@ -2,12 +2,14 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  groups: [Group]
+  groups(page: Int! count: Int!): [Group]
+  groupCount: Int!
   groupByIdOrDate(Id: String startDate: String endDate: String): GroupById
 }
 
 type Mutation {
   addGroup(input: AddGroupInput!): Group!
+  deleteGroup(Id: String): String!
 }
 
 type Group {

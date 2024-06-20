@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
   students(page: Int! count: Int!): [Student!]!
+  studentCount: Int!
   studentById(Id: String): Student
 }
 

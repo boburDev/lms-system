@@ -25,6 +25,14 @@ const resolvers = {
 
       return data
     },
+    studentCount: async (_parametr: unknown, {}, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const studentRepository = AppDataSource.getRepository(StudentEntity)
+      return await studentRepository.createQueryBuilder("students")
+        .where("students.student_deleted IS NULL")
+        .andWhere("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .getCount();
+    },
     studentById: async (_parametr: unknown, Id: any, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
@@ -35,8 +43,14 @@ const resolvers = {
     addStudent: async (_parent: unknown, { input }: { input: AddStudentInput }, context: any): Promise<StudentEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-
-      let data = await studentRepository.findOneBy({ student_phone: input.studentPhone, student_branch_id: context.branchId })
+      
+      let data = await studentRepository.createQueryBuilder("students")
+        .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("students.student_phone = :phone", { phone: input.studentPhone })
+        .andWhere("students.student_deleted IS NULL")
+        .getOne()
+        
+      console.log(data);
       if (data !== null) throw new Error(`Bu uquv markazida "${input.studentPhone}" raqamli uquvchi mavjud`)
 
       let student = new StudentEntity()

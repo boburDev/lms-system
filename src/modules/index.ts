@@ -9,6 +9,7 @@ import Students from './students/student'
 import StudentsGroup from './students/group'
 import Groups from './groups/group'
 import GroupAttendance from './groups/attendance'
+import Tasks from './tasks'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -21,6 +22,7 @@ export default makeExecutableSchema({
         StudentsGroup.schema,
         Groups.schema,
         GroupAttendance.schema,
+        Tasks.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -32,5 +34,6 @@ export default makeExecutableSchema({
         StudentsGroup.resolvers,
         Groups.resolvers,
         GroupAttendance.resolvers,
+        Tasks.resolvers,
     ]
 })

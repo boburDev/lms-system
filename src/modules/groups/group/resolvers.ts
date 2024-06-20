@@ -5,16 +5,29 @@ import { getDays } from '../../../utils/date';
 
 const resolvers = {
   Query: {
-    groups: async (_parametr: unknown, { }, context: any): Promise<GroupEntity[]> => {
+    groups: async (_parametr: unknown, { page, count }: { page: number, count: number }, context: any): Promise<GroupEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
-      let data = await groupRepository.find({
-        where: {
-          group_branch_id: context.branchId
-        },
-        relations: ['employer', 'room', 'course', 'student_group']
-      })
+      let data = await groupRepository.createQueryBuilder("group")
+        .leftJoinAndSelect("group.employer", "employer")
+        .leftJoinAndSelect("group.room", "room")
+        .leftJoinAndSelect("group.course", "course")
+        .leftJoinAndSelect("group.student_group", "student_group")
+        .where("group.group_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("group.group_deleted IS NULL")
+        .skip((page - 1) * count)
+        .take(count)
+        .getMany();
       return data
+    },
+    groupCount: async (_parametr: unknown, {}, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const groupRepository = AppDataSource.getRepository(GroupEntity)
+      return await groupRepository.createQueryBuilder("groups")
+        .where("groups.group_deleted IS NULL")
+        .andWhere("groups.group_branch_id = :branchId", { branchId: context.branchId })
+        .getCount();
+      
     },
     groupByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
@@ -70,6 +83,22 @@ const resolvers = {
 
       return groupRepository
     },
+    deleteGroup: async (_parent: unknown, { Id }: { Id: string }, context: any) => {
+      console.log(Id, context);
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const groupRepository = AppDataSource.getRepository(GroupEntity)
+
+      let data = await groupRepository.createQueryBuilder("group")
+        .where("group.group_id = :id", { id: Id })
+        .andWhere("group.group_deleted IS NULL")
+        .getOne()
+      console.log(data)
+
+      if (data === null) throw new Error(`Siz guruh mavjud emas`)
+      data.group_deleted = new Date()
+      await groupRepository.save(data);
+      return 'success'
+    }
   },
   Group: {
     groupId: (global: Group) => global.group_id,
@@ -121,7 +150,7 @@ async function checkGroup(employerId: string, roomId: string, branchId: string, 
   const query = `select eg.* from groups as eg
   where(eg.group_colleague_id = $1 or eg.group_room_id = $2)
   and(select check_group(eg.group_days,
-      $4, eg.group_start_time, group_end_time, $5, $6)) = true and eg.group_branch_id = $3
+  $4, eg.group_start_time, group_end_time, $5, $6)) = true and eg.group_branch_id = $3 and eg.group_deleted IS NULL
   `;
   const result = await AppDataSource.query(query, [
     employerId,
