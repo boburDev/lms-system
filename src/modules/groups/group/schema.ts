@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  groups(page: Int! count: Int!): [Group]
+  groups(page: Int! count: Int! isArchive: Boolean!): [Group]
   groupCount: Int!
   groupByIdOrDate(Id: String startDate: String endDate: String): GroupById
 }

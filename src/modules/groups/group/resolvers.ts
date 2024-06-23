@@ -5,15 +5,22 @@ import { getDays } from '../../../utils/date';
 
 const resolvers = {
   Query: {
-    groups: async (_parametr: unknown, { page, count }: { page: number, count: number }, context: any): Promise<GroupEntity[]> => {
+    groups: async (_parametr: unknown, { page, count, isArchive }: { page: number, count: number, isArchive: boolean }, context: any): Promise<GroupEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      console.log(1, today.toISOString().split('T')[0])
+      const endDateCondition = isArchive ? "<" : ">";
+
       let data = await groupRepository.createQueryBuilder("group")
         .leftJoinAndSelect("group.employer", "employer")
         .leftJoinAndSelect("group.room", "room")
         .leftJoinAndSelect("group.course", "course")
         .leftJoinAndSelect("group.student_group", "student_group")
         .where("group.group_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere(`group.group_end_date ${endDateCondition} :endDate`, { endDate: today.toISOString().split('T')[0] })
         .andWhere("group.group_deleted IS NULL")
         .skip((page - 1) * count)
         .take(count)

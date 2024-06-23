@@ -8,13 +8,13 @@ export default class Student_groups {
     student_group_id: string
 
     @Column({ type: 'float', default: 0.0 })
-    student_group_sale: number
+    student_group_discount: number
 
     @Column({ type: 'timestamp', nullable: true })
-    student_group_sale_start: Date
+    student_group_discount_start: Date
 
     @Column({ type: 'timestamp', nullable: true })
-    student_group_sale_end: Date
+    student_group_discount_end: Date
     
     @Column({ type: 'timestamp', nullable: false })
     student_group_add_time: Date
