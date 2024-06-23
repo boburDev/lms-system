@@ -5,11 +5,12 @@ type Query {
   students(page: Int! count: Int!): [Student!]!
   studentCount: Int!
   studentById(Id: String): Student
+  studentGroups(studentId: String): [Group]!
 }
 
 type Mutation {
   addStudent(input: AddStudentInput): Student!
-  deleteStudent(studentId: String): String!
+  deleteStudent(studentId: String): Student!
 }
 
 input ParentInput {

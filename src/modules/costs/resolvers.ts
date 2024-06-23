@@ -7,7 +7,10 @@ const resolvers = {
     costs: async (_parametr: unknown, {}, context:any): Promise<RoomEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const roomRepository = AppDataSource.getRepository(RoomEntity)
-      return await roomRepository.find({ where: { room_branch_id: context.branchId } })
+      return await roomRepository.find({
+        where: { room_branch_id: context.branchId },
+        order: { room_created: "DESC" }
+      })
     },
   },
   Mutation: {

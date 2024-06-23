@@ -6,7 +6,8 @@ type Query {
 }
 
 type Mutation {
-  addRoom(input: AddRoomInput) : Room!
+  addRoom(input: AddRoomInput): Room!
+  deleteRoom(roomId: String!): Room!
 }
 
 type Room {

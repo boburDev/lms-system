@@ -5,7 +5,6 @@ type AddStudentInput = {
     studentStatus: number
     studentCash: number
     studentCashType: number
-    studentBalance: number
     studentBithday: string
     studentGender: number
     groupId: string

@@ -9,7 +9,7 @@ type Query {
 
 type Mutation {
   addGroup(input: AddGroupInput!): Group!
-  deleteGroup(Id: String): String!
+  deleteGroup(Id: String): Group!
 }
 
 type Group {

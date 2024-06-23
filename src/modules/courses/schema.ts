@@ -3,10 +3,12 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
   courses: [Course]!
+  courseGroups(courseId: String!): [Group]!
 }
 
 type Mutation {
   addCourse(input: AddCourseInput) : Course!
+  deleteCourse(courseId: String!) : Course!
 }
 
 type Course {

@@ -17,6 +17,7 @@ const resolvers = {
         .andWhere("group.group_deleted IS NULL")
         .skip((page - 1) * count)
         .take(count)
+        .orderBy("group.group_created", "DESC")
         .getMany();
       return data
     },
@@ -84,7 +85,6 @@ const resolvers = {
       return groupRepository
     },
     deleteGroup: async (_parent: unknown, { Id }: { Id: string }, context: any) => {
-      console.log(Id, context);
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
 
@@ -92,12 +92,11 @@ const resolvers = {
         .where("group.group_id = :id", { id: Id })
         .andWhere("group.group_deleted IS NULL")
         .getOne()
-      console.log(data)
 
       if (data === null) throw new Error(`Siz guruh mavjud emas`)
       data.group_deleted = new Date()
       await groupRepository.save(data);
-      return 'success'
+      return data
     }
   },
   Group: {
@@ -144,8 +143,6 @@ const resolvers = {
 	}
 };
 
-export default resolvers;
-
 async function checkGroup(employerId: string, roomId: string, branchId: string, groupDays: string, startTime: string, endTime: string) {
   const query = `select eg.* from groups as eg
   where(eg.group_colleague_id = $1 or eg.group_room_id = $2)
@@ -163,3 +160,5 @@ async function checkGroup(employerId: string, roomId: string, branchId: string, 
 
   return result[0];
 }
+
+export default resolvers;

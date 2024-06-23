@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
   addEmployer(input: AddEmployerInput): Employer!
+  deleteEmployer(employerId: String!): Employer!
 }
 
 type Employer {

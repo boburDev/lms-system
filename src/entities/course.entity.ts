@@ -21,6 +21,9 @@ export default class Courses {
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     course_created_at: Date
+    
+    @Column({ type: 'timestamp', nullable: true })
+    course_deleted: Date
 
     @Column()
     course_branch_id: string
@@ -29,6 +32,6 @@ export default class Courses {
     @JoinColumn({ name: 'course_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Groups, group => group.group_id)
+    @OneToMany(() => Groups, group => group.course)
     group: Groups[];
 }

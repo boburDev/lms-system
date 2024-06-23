@@ -7,7 +7,10 @@ const resolvers = {
         tasks: async (_parametr: unknown, { }, context: any): Promise<TasksEntity[]> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const tasksRepository = AppDataSource.getRepository(TasksEntity)
-            return await tasksRepository.find({ where: { task_branch_id: context.branchId } })
+            return await tasksRepository.find({
+                where: { task_branch_id: context.branchId },
+                order: { task_created: "DESC" }
+            })
         }
     },
     Mutation: {

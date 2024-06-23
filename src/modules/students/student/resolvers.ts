@@ -21,11 +21,12 @@ const resolvers = {
         .andWhere("students.student_deleted IS NULL")
         .take(count)
         .skip((page - 1) * count)
+        .orderBy("students.student_created", "DESC")
         .getMany();
 
       return data
     },
-    studentCount: async (_parametr: unknown, {}, context: any) => {
+    studentCount: async (_parametr: unknown, { }, context: any): Promise<number> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
       return await studentRepository.createQueryBuilder("students")
@@ -33,24 +34,52 @@ const resolvers = {
         .andWhere("students.student_branch_id = :branchId", { branchId: context.branchId })
         .getCount();
     },
-    studentById: async (_parametr: unknown, Id: any, context: any) => {
+    studentById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<StudentEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-      return await studentRepository.findOneBy({ student_id: Id.Id })
+      let data = await studentRepository.findOneBy({ student_id: Id })
+      if (!data) throw new Error("Student not found");
+      return data
+    },
+    studentGroups: async (_parametr: unknown, { studentId }: { studentId: string }, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const studentRepository = AppDataSource.getRepository(StudentEntity)
+
+      let res = await studentRepository.createQueryBuilder("students")
+        .leftJoinAndSelect("students.student_group", "student_group")
+        .leftJoinAndSelect("student_group.group", "group")
+        .leftJoinAndSelect("group.employer", "employer")
+        .leftJoinAndSelect("group.room", "room")
+        .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .where("students.student_id = :studentId", { studentId: studentId })
+        .andWhere("students.student_deleted IS NULL")
+        .andWhere("group.group_deleted IS NULL")
+        .getOne();
+      let data = res?.student_group.map(i => {
+        return {
+          group_id: i.group.group_id,
+          group_name: i.group.group_name,
+          group_days: i.group.group_days,
+          group_colleague_id: i.group.group_colleague_id,
+          group_room_id: i.group.group_room_id,
+          employer: { employer_name: i.group.employer.employer_name },
+          room: { room_name: i.group.room.room_name }
+        }
+      })
+      return data
     }
   },
   Mutation: {
     addStudent: async (_parent: unknown, { input }: { input: AddStudentInput }, context: any): Promise<StudentEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-      
+
       let data = await studentRepository.createQueryBuilder("students")
         .where("students.student_branch_id = :branchId", { branchId: context.branchId })
         .andWhere("students.student_phone = :phone", { phone: input.studentPhone })
         .andWhere("students.student_deleted IS NULL")
         .getOne()
-        
-      console.log(data);
+
       if (data !== null) throw new Error(`Bu uquv markazida "${input.studentPhone}" raqamli uquvchi mavjud`)
 
       let student = new StudentEntity()
@@ -63,7 +92,6 @@ const resolvers = {
         student.student_birthday = new Date(input.studentBithday)
       }
       student.student_gender = input.studentGender
-      student.student_balance = input.studentBalance || 0
       student.colleague_id = input.colleagueId || context.colleagueId
       student.student_branch_id = context.branchId
       student.parentsInfo = input.parentsInfo
@@ -130,12 +158,11 @@ const resolvers = {
         const studentRepository = AppDataSource.getRepository(StudentEntity)
 
         let data = await studentRepository.findOneBy({ student_id: studentId })
-        console.log(data)
 
         if (data === null) throw new Error(`Siz tanlagan uquvchi mavjud`)
         data.student_deleted = new Date()
         await studentRepository.save(data);
-        return 'success'
+        return data
       } catch (error) {
         throw error;
       }
