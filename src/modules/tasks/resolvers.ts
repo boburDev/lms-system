@@ -7,10 +7,11 @@ const resolvers = {
         tasks: async (_parametr: unknown, { }, context: any): Promise<TasksEntity[]> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const tasksRepository = AppDataSource.getRepository(TasksEntity)
-            return await tasksRepository.find({
-                where: { task_branch_id: context.branchId },
-                order: { task_created: "DESC" }
-            })
+            return await tasksRepository.createQueryBuilder("task")
+                .where("task.task_branch_id = :branchId", { branchId: context.branchId })
+                .andWhere("task.task_deleted IS NULL")
+                .orderBy("task.task_created", "DESC")
+                .getMany();
         }
     },
     Mutation: {
@@ -29,6 +30,20 @@ const resolvers = {
             task.task_branch_id = context.branchId
 
             return await taskRepository.save(task)
+        },
+        deleteTask: async (_parent: unknown, { taskId }: { taskId: string }, context: any): Promise<TasksEntity> =>  {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const taskRepository = AppDataSource.getRepository(TasksEntity)
+
+            let data = await taskRepository.createQueryBuilder("task")
+                .where("task.task_id = :id", { id: taskId })
+                .andWhere("task.task_deleted IS NULL")
+                .getOne()
+
+            if (data === null) throw new Error(`Bu vazifa mavjud emas`)
+            data.task_deleted = new Date()
+            await taskRepository.save(data)
+            return data
         }
     },
     Task: {
