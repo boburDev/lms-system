@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-    studentPayments(studentId: ID! type: Int! startDate: String endDate: String): clientPaymentsByString
+    studentPayments(studentId: ID! type: Int! startDate: String endDate: String): studentPaymentsByType
 }
 
 type Mutation {
@@ -10,7 +10,7 @@ type Mutation {
 }
 
 type studentPaymentsByType {
-    studentCashes: [studentCash]
+    studentCash: [studentCash]
     PaymentHistory: [PaymentHistory]
 }
 
@@ -18,6 +18,7 @@ type studentCash {
     studentCashId: ID
     studentId: ID
     studentName: String
+    employerName: String
     checkNumber: Int
     cashAmount: Int
     paymentType: String

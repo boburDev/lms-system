@@ -96,15 +96,22 @@ const resolvers = {
       student.student_branch_id = context.branchId
       student.parentsInfo = input.parentsInfo
 
-      let studentData = await studentRepository.save(student)
+      let studentData:any = await studentRepository.save(student)
+      
       if (input.groupId && input.addedDate) {
         const GroupRepository = AppDataSource.getRepository(Groups)
-        let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
+        let dataGroup = await GroupRepository.createQueryBuilder("group")
+          .leftJoinAndSelect("group.employer", "employer")
+          .where("group.group_branch_id = :branchId", { branchId: context.branchId })
+          .andWhere("group.group_id = :groupId", { groupId: input.groupId })
+          .getOne();
         if (!dataGroup) throw new Error("Gruppa mavjud emas");
-        if (
-          new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
-          new Date(dataGroup.group_end_date) < new Date(input.addedDate)
-        ) throw new Error("Gruppani tugash vaqti qushilish vaqtidan kichkina!")
+           
+        const addedDate: Date = new Date(input.addedDate);
+        const groupStartDate: Date = new Date(dataGroup.group_start_date);
+        const groupEndDate: Date = new Date(dataGroup.group_end_date);
+        
+        if (!((groupStartDate < addedDate) && (addedDate < groupEndDate))) throw new Error("Guruhning tugash voqti utib ketgandan ken qushomisiz!")
 
         const studentGroupRepository = AppDataSource.getRepository(Student_groups)
         let data = await studentGroupRepository.findOneBy({ student_id: studentData.student_id, group_id: input.groupId })
@@ -126,6 +133,7 @@ const resolvers = {
           studentAttendence.student_attendence_day = i
           await groupAttendenceRepository.save(studentAttendence);
         }
+        studentData.student_group = [{ group: dataGroup }]
       }
       if (input.studentCash) {
         const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
@@ -179,6 +187,8 @@ const resolvers = {
     colleagueId: (global: Student) => global.colleague_id,
     studentGroup: (global: Student) => {
       let results = []
+      console.log(global)
+      
       if (global.student_group.length) {
         for (const i of global.student_group) {
           results.push({

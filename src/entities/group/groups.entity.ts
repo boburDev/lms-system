@@ -84,7 +84,7 @@ export class Group_attendences {
     group_attendence_day: Date
     
     @Column({ type: 'int', default: 1 })
-    group_attendence_status: string
+    group_attendence_status: number
     
     @Column({ nullable: false })
     group_attendence_group_id: string

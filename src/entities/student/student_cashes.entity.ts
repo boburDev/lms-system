@@ -14,6 +14,9 @@ export default class Student_cashes {
     @Column({ type: 'int', nullable: false })
     check_number: number
 
+    @Column({ type: 'int', nullable: false, default: 1 })
+    check_type: number
+
     @Column({ type: 'timestamp' })
     student_cash_payed_at: Date
 
@@ -29,7 +32,7 @@ export default class Student_cashes {
     @Column()
     student_id: string
 
-    @OneToOne(() => Student_payments, payment => payment.student_payment_id)
+    @OneToOne(() => Student_payments, payment => payment.cashes)
     payment: Student_payments;
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)

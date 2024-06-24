@@ -6,6 +6,7 @@ import Employers from './employers'
 import Rooms from './rooms'
 import Courses from './courses'
 import Students from './students/student'
+import StudentsCash from './students/payment'
 import StudentsGroup from './students/group'
 import Groups from './groups/group'
 import GroupAttendance from './groups/attendance'
@@ -19,6 +20,7 @@ export default makeExecutableSchema({
         Rooms.schema,
         Courses.schema,
         Students.schema,
+        StudentsCash.schema,
         StudentsGroup.schema,
         Groups.schema,
         GroupAttendance.schema,
@@ -31,6 +33,7 @@ export default makeExecutableSchema({
         Rooms.resolvers,
         Courses.resolvers,
         Students.resolvers,
+        StudentsCash.resolvers,
         StudentsGroup.resolvers,
         Groups.resolvers,
         GroupAttendance.resolvers,

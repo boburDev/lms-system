@@ -23,7 +23,6 @@ input AddStudentInput {
   studentPhone: String!
   studentPassword: String
   studentStatus: Int
-  studentBalance: Float
   studentBithday: String
   studentGender: Int
   studentCash: Float

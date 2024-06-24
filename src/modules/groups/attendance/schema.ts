@@ -5,6 +5,11 @@ export default gql`
         groupAttendenceByIdOrDate(Id: String startDate: String endDate: String): GroupAttendence
     }
 
+    type Mutation {
+        updateStudentAttendanceStatus(input: updateStudentAttendenceStatus!): String!
+        updateGroupAttendanceStatus(input: updateGroupAttendenceStatus!): String!
+    }
+
     type GroupAttendence {
         groupAttendence: [Attendence]
         studentsAttendence: [studentsAttendenceData]
@@ -20,5 +25,17 @@ export default gql`
         attendDay: String!
         attendStatus: Int!
         groupId: ID!
+    }
+
+    input updateStudentAttendenceStatus {
+        attendId: ID!
+        groupId: ID!
+        attendStatus: Int!
+        studentId: ID!
+    }
+    input updateGroupAttendenceStatus {
+        attendId: ID!
+        groupId: ID!
+        attendStatus: Int!
     }
 `

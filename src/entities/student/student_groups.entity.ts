@@ -52,7 +52,7 @@ export class Student_attendences {
     student_attendence_day: Date
 
     @Column({ type: 'int', default: 1 })
-    student_attendence_status: string
+    student_attendence_status: number
 
     @Column({ nullable: false })
     student_attendence_group_id: string

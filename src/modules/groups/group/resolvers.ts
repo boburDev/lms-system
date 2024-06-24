@@ -154,7 +154,7 @@ async function checkGroup(employerId: string, roomId: string, branchId: string, 
   const query = `select eg.* from groups as eg
   where(eg.group_colleague_id = $1 or eg.group_room_id = $2)
   and(select check_group(eg.group_days,
-  $4, eg.group_start_time, group_end_time, $5, $6)) = true and eg.group_branch_id = $3 and eg.group_deleted IS NULL
+  $4, eg.group_start_time, group_end_time, $5, $6)) = true and eg.group_branch_id = $3 and eg.group_deleted IS NOT NULL
   `;
   const result = await AppDataSource.query(query, [
     employerId,

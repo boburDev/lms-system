@@ -1,13 +1,14 @@
 import { AddGroupInput, AddStudentGroupInput, Group } from "../../../types/groups";
 import AppDataSource from "../../../config/ormconfig";
-import GroupEntity from "../../../entities/group/groups.entity";
+import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 import { StudentAttendenceData } from "../../../types/students";
+import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
+import { Student_attendences } from "../../../entities/student/student_groups.entity";
 
 const resolvers = {
     Query: {
         groupAttendenceByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-
             let groupRepository = AppDataSource.getRepository(GroupEntity)
             let data
 
@@ -65,6 +66,26 @@ const resolvers = {
             return data
         }
     },
+	Mutation: {
+		updateStudentAttendanceStatus: async (_parent: unknown, { input }: { input: updateStudentAttendenceStatus }, context: any) => {
+			if (!context?.branchId) throw new Error("Not exist access token!");
+			let studentAttendanceRepository = AppDataSource.getRepository(Student_attendences)
+			let data = await studentAttendanceRepository.findOneBy({ student_attendence_id: input.attendId, student_attendence_group_id: input.groupId })
+			if (data === null) throw new Error(`Bu o'quvchining malumotlari mavjud emas`)
+			data.student_attendence_status = input.attendStatus
+			await studentAttendanceRepository.save(data)
+			return 'success'
+		},
+		updateGroupAttendanceStatus: async (_parent: unknown, { input }: { input: updateGroupAttendanceStatus }, context: any) => {
+			if (!context?.branchId) throw new Error("Not exist access token!");
+			let groupAttendanceRepository = AppDataSource.getRepository(Group_attendences)
+			let data = await groupAttendanceRepository.findOneBy({ group_attendence_id: input.attendId, group_attendence_group_id: input.groupId })
+			if (data === null) throw new Error(`Bu guruhning malumotlari mavjud emas`)
+			data.group_attendence_status = input.attendStatus
+			await groupAttendanceRepository.save(data)
+			return 'success'
+		}
+	},
     GroupAttendence: {
         groupAttendence: (global: Group) => {
           return global.attendence && global.attendence.map(i => {
