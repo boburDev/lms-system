@@ -11,6 +11,7 @@ import StudentsGroup from './students/group'
 import Groups from './groups/group'
 import GroupAttendance from './groups/attendance'
 import Tasks from './tasks'
+import Calendar from './groups/calendar'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -23,6 +24,7 @@ export default makeExecutableSchema({
         StudentsCash.schema,
         StudentsGroup.schema,
         Groups.schema,
+        Calendar.schema,
         GroupAttendance.schema,
         Tasks.schema,
     ],
@@ -36,6 +38,7 @@ export default makeExecutableSchema({
         StudentsCash.resolvers,
         StudentsGroup.resolvers,
         Groups.resolvers,
+        Calendar.resolvers,
         GroupAttendance.resolvers,
         Tasks.resolvers,
     ]

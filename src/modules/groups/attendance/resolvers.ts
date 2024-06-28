@@ -22,6 +22,7 @@ const resolvers = {
 					.andWhere("group.group_id = :groupId", { groupId: input.Id })
 					.andWhere("attendence.group_attendence_day BETWEEN :startDay AND :endDay", date)
 					.andWhere("student_attendence.student_attendence_day BETWEEN :startDay AND :endDay", date)
+					.orderBy("attendence.group_attendence_day", "ASC")
 					.getOne();
                 
 				if (data) {

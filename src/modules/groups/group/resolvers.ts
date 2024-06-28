@@ -61,6 +61,7 @@ const resolvers = {
   },
   Mutation: {
     addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise< GroupEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
       let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
       if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
       

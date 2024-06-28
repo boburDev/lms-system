@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
     addStudentCash(input: AddStudentCashInput): studentCash
+    returnStudentCash(input: AddStudentCashInput): String
 }
 
 type studentPaymentsByType {

@@ -20,6 +20,7 @@ const resolvers = {
                     .leftJoinAndSelect("payment.employer", "employer")
                     .leftJoinAndSelect("cash.student", "student")
                     .where("cash.branch_id = :branchId", { branchId: context.branchId })
+                    .orderBy("cash.student_cash_created", "DESC")
                     .getMany();
                 let result = []
                 for (const i of data) {
@@ -41,16 +42,18 @@ const resolvers = {
                 let data = await studentPaymentCountRepository.createQueryBuilder("payment")
                     .leftJoinAndSelect("payment.employer", "employer")
                     .where("payment.student_id = :studentId", { studentId: input.studentId })
+                    .orderBy("payment.student_payment_created", "DESC")
                     .getMany();
                 results.PaymentHistory = data
             }
+            console.log(results)
+            
             return results
         }
     },
     Mutation: {
         addStudentCash: async (_parent: unknown, { input }: { input: AddstudentPayment }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-
             const studentRepository = AppDataSource.getRepository(StudentEntity)
 
             let data = await studentRepository.createQueryBuilder("students")
@@ -106,6 +109,51 @@ const resolvers = {
                 student_name: data.student_name,
                 student_phone: data.student_phone,
                 employer_name: dataEmployer.employer_name,
+            }
+        },
+        returnStudentCash: async (_parent: unknown, { input }: { input: AddstudentPayment }, context: any) => {
+            console.log(input);
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const studentRepository = AppDataSource.getRepository(StudentEntity)
+
+            let data = await studentRepository.createQueryBuilder("students")
+                .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+                .andWhere("students.student_id = :Id", { Id: input.studentId })
+                .andWhere("students.student_deleted IS NULL")
+                .getOne()
+
+            if (data === null) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
+
+            if (data.student_balance >= input.cashAmount) {
+                data.student_balance = data.student_balance - input.cashAmount
+                await studentRepository.save(data)
+                
+                const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+                let studentCash = new Student_cashes()
+                let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
+                studentCash.cash_amount = -input.cashAmount
+                studentCash.check_type = input.paymentType
+                studentCash.check_number = count.length + 1
+                studentCash.student_cash_payed_at = new Date()
+                studentCash.branch_id = context.branchId
+                studentCash.student_id = input.studentId
+
+                let studentCashData = await studentCashCountRepository.save(studentCash)
+
+                const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
+                let studentPayment = new Student_payments()
+                studentPayment.student_payment_credit = input.cashAmount
+                studentPayment.student_payment_type = input.paymentType
+                studentPayment.student_payment_payed_at = new Date()
+                studentPayment.student_id = input.studentId
+                studentPayment.employer_id = context.colleagueId
+                studentPayment.student_cash_id = studentCashData.student_cash_id
+
+                let studentPaymentData = await studentPaymentRepository.save(studentPayment)
+
+                return "success"
+            } else {
+                return "failed"
             }
         }
     },
