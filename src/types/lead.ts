@@ -12,11 +12,11 @@ type Lead = {
     lead_status: number
     lead_funnel_column_id: string
     lead_course_id: string
-    course: {
+    courses: {
         course_name: string
     }
     lead_employer_id: string
-    employer: {
+    employers: {
         employer_name: string
     }
 }

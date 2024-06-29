@@ -18,6 +18,8 @@ const resolvers = {
 
             let leads = await leadRepository.createQueryBuilder("leads")
                 .leftJoinAndSelect("leads.funnel_columns", "column")
+                .leftJoinAndSelect("leads.employers", "employers")
+                .leftJoinAndSelect("leads.courses", "courses")
                 .where("column.funnel_id = :funnelId", { funnelId: funnelId })
                 .andWhere("column.funnel_column_deleted IS NULL")
                 .andWhere("leads.lead_deleted IS NULL")
@@ -73,9 +75,9 @@ const resolvers = {
             lead.lead_employer_id = context.colleagueId
             lead.lead_branch_id = context.branchId
             let resData: any = await leadRepository.save(lead)
-            resData.employer = employer
+            resData.employers = employer
             if (course) {
-                resData.course = course
+                resData.courses = course
             }
             return resData
         }
@@ -87,9 +89,9 @@ const resolvers = {
         leadStatus: (global: Lead) => global.lead_status,
         columnId: (global: Lead) => global.lead_funnel_column_id,
         courseId: (global: Lead) => global.lead_course_id,
-        courseName: (global: Lead) => global?.course?.course_name,
+        courseName: (global: Lead) => global?.courses?.course_name,
         colleagueId: (global: Lead) => global.lead_employer_id,
-        colleagueName: (global: Lead) => global.employer.employer_name
+        colleagueName: (global: Lead) => global.employers.employer_name
     }
 }
 
