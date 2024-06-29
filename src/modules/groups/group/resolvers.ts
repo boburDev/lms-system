@@ -1,4 +1,4 @@
-import { AddGroupInput, Group } from '../../../types/groups';
+import { AddGroupInput, Group } from '../../../types/group';
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 import { getDays } from '../../../utils/date';

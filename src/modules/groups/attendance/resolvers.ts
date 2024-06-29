@@ -1,7 +1,7 @@
-import { AddGroupInput, AddStudentGroupInput, Group } from "../../../types/groups";
+import { AddGroupInput, AddStudentGroupInput, Group } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
-import { StudentAttendenceData } from "../../../types/students";
+import { StudentAttendenceData } from "../../../types/student";
 import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
 import { Student_attendences } from "../../../entities/student/student_groups.entity";
 

@@ -1,5 +1,5 @@
 import AppDataSource from "../../config/ormconfig";
-import { AddTaskInput, Task } from "../../types/tasks";
+import { AddTaskInput, Task } from "../../types/task";
 import TasksEntity from "../../entities/tasks.entity";
 
 const resolvers = {

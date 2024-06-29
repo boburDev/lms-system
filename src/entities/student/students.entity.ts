@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToMany, Check } from "typeorm";
 import { CompanyBranches } from "../company.entity";
 import Student_payments from './student_payments.entity'
-import { ParentInfo } from "../../types/students"
+import { ParentInfo } from "../../types/student"
 import Student_cashes from "./student_cashes.entity";
 import Student_groups, { Student_attendences } from "./student_groups.entity";
 

@@ -7,8 +7,10 @@ type AddCostInput = {
 }
 
 type Cost = {
-    room_id: string,
-    room_name: string
+    cost_id: string,
+    cost_name: string
+    cost_amount: number
+    cost_payed_at: string
 }
 
 export {

@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "../company.entity";
 import Funnel_Columns from "./columns.entity";
 import Courses from "../course.entity";
+import Employers from "../employers.entity";
 
 @Entity()
 export default class Leads {
@@ -23,8 +24,11 @@ export default class Leads {
     @Column({ type: 'timestamp', nullable: true })
     lead_deleted: Date
 
-    @Column()
+    @Column({ nullable: true })
     lead_course_id: string
+
+    @Column()
+    lead_employer_id: string
     
     @Column()
     lead_funnel_column_id: string
@@ -39,6 +43,10 @@ export default class Leads {
     @ManyToOne(() => Funnel_Columns, funnel_column => funnel_column)
     @JoinColumn({ name: 'lead_funnel_column_id' })
     funnel_columns: Funnel_Columns
+
+    @ManyToOne(() => Employers, employers => employers)
+    @JoinColumn({ name: 'lead_employer_id' })
+    employers: Employers
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'lead_branch_id' })

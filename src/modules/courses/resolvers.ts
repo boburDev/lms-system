@@ -1,6 +1,6 @@
 import CourseEntity from "../../entities/course.entity";
 import AppDataSource from "../../config/ormconfig";
-import { AddCourseInput, Course } from "../../types/courses";
+import { AddCourseInput, Course } from "../../types/course";
 
 const resolvers = {
   Query: {

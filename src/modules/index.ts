@@ -13,6 +13,9 @@ import GroupAttendance from './groups/attendance'
 import Tasks from './tasks'
 import Calendar from './groups/calendar'
 import Costs from './costs'
+import Funnels from './leads/funnels'
+import FunnelColumns from './leads/columns'
+import Leads from './leads/leads'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -29,6 +32,9 @@ export default makeExecutableSchema({
         GroupAttendance.schema,
         Tasks.schema,
         Costs.schema,
+        Funnels.schema,
+        FunnelColumns.schema,
+        Leads.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -44,5 +50,8 @@ export default makeExecutableSchema({
         GroupAttendance.resolvers,
         Tasks.resolvers,
         Costs.resolvers,
+        Funnels.resolvers,
+        FunnelColumns.resolvers,
+        Leads.resolvers,
     ]
 })

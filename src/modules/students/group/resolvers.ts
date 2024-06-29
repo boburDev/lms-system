@@ -1,4 +1,4 @@
-import { AddStudentGroupInput } from "../../../types/groups";
+import { AddStudentGroupInput } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import Groups from "../../../entities/group/groups.entity";

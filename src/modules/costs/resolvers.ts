@@ -1,6 +1,6 @@
 import CostEntity from "../../entities/costs.entity";
 import AppDataSource from "../../config/ormconfig";
-import { AddCostInput } from "../../types/cost";
+import { AddCostInput, Cost } from "../../types/cost";
 
 const resolvers = {
   Query: {
@@ -24,13 +24,12 @@ const resolvers = {
       cost.colleague_id = input.costColleagueId
       cost.cost_payed_at = new Date(input.costPayed)
       cost.cost_branch_id = context.branchId
-
       return await costRepository.save(cost)
     }
   },
-  Room:{
-    roomId: (global: Room) => global.room_id,
-    roomName: (global: Room) => global.room_name,
+  Cost:{
+    costId: (global: Cost) => global.cost_id,
+    costName: (global: Cost) => global.cost_name,
   }
 };
 

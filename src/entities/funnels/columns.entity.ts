@@ -10,7 +10,10 @@ export default class Funnel_Columns {
     funnel_column_name: string
 
     @Column({ type: 'varchar', length: 32 })
-    funnel_column_color: number
+    funnel_column_color: string
+
+    @Column({ type: 'int', default: 1 })
+    funnel_column_order: number
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     funnel_column_created: Date

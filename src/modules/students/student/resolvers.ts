@@ -1,6 +1,6 @@
 import StudentEntity from "../../../entities/student/students.entity";
 import AppDataSource from "../../../config/ormconfig";
-import { AddStudentInput, Student } from "../../../types/students";
+import { AddStudentInput, Student } from "../../../types/student";
 import Groups from "../../../entities/group/groups.entity";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import { getDays } from "../../../utils/date";

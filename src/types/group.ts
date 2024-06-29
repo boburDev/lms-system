@@ -1,4 +1,4 @@
-import { StudentAttendenceData } from "./students"
+import { StudentAttendenceData } from "./student"
 
 type AddGroupInput = {
     Id: string

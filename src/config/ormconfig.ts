@@ -12,7 +12,8 @@ export default new DataSource({
     entities: [
         path.resolve(__dirname, "..", "entities", "*.entity.{ts,js}"),
         path.resolve(__dirname, "..", "entities", "student", "*.entity.{ts,js}"),
-        path.resolve(__dirname, "..", "entities", "group", "*.entity.{ts,js}")
+        path.resolve(__dirname, "..", "entities", "group", "*.entity.{ts,js}"),
+        path.resolve(__dirname, "..", "entities", "funnels", "*.entity.{ts,js}")
     ],
     migrations: [],
     logging: true,

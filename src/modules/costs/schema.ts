@@ -11,7 +11,7 @@ type Mutation {
 
 type Cost {
 	costId: String!
-  costName: Int!
+  costName: String!
   costType: String!
   costPrice: Int!
   costSelectedDate: String!

@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import Groups from "./group/groups.entity";
 import Student_payments from "./student/student_payments.entity";
 import Tasks from "./tasks.entity";
+import Leads from "./funnels/leads.entity";
 
 @Entity()
 export default class Employers {   
@@ -52,6 +53,9 @@ export default class Employers {
 
     @OneToMany(() => Tasks, tasks => tasks)
     branch_task: Tasks[]
+
+    @OneToMany(() => Leads, leads => leads)
+    leads: Leads[]
     
     @BeforeInsert()
     async hashPassword() {

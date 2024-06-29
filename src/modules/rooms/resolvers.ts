@@ -1,6 +1,6 @@
 import RoomEntity from "../../entities/room.entity";
 import AppDataSource from "../../config/ormconfig";
-import { AddRoomInput, Room } from "../../types/rooms";
+import { AddRoomInput, Room } from "../../types/room";
 
 const resolvers = {
   Query: {
