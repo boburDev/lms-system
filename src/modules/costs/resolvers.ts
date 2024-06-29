@@ -1,31 +1,31 @@
-import RoomEntity from "../../entities/room.entity";
+import CostEntity from "../../entities/costs.entity";
 import AppDataSource from "../../config/ormconfig";
-import { AddRoomInput, Room } from "../../types/rooms";
+import { AddCostInput } from "../../types/cost";
 
 const resolvers = {
   Query: {
-    costs: async (_parametr: unknown, {}, context:any): Promise<RoomEntity[]> => {
+    costs: async (_parametr: unknown, { }, context: any): Promise<CostEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const roomRepository = AppDataSource.getRepository(RoomEntity)
-      return await roomRepository.find({
-        where: { room_branch_id: context.branchId },
-        order: { room_created: "DESC" }
+      const costRepository = AppDataSource.getRepository(CostEntity)
+      return await costRepository.find({
+        where: { cost_branch_id: context.branchId },
+        order: { cost_created: "DESC" }
       })
     },
   },
   Mutation: {
-    addCost: async (_parent: unknown, { input }: { input: AddRoomInput }, context:any): Promise<RoomEntity> => {
+    addCost: async (_parent: unknown, { input }: { input: AddCostInput }, context: any): Promise<CostEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const roomRepository = AppDataSource.getRepository(RoomEntity)
+      const costRepository = AppDataSource.getRepository(CostEntity)
 
-      let data = await roomRepository.findOneBy({ room_name: input.roomName, room_branch_id: context.branchId })
-      if (data !== null) throw new Error(`Bu uquv markazida "${input.roomName}" nomli hona mavjud`)
+      let cost = new CostEntity()
+      cost.cost_name = input.costName
+      cost.cost_amount = input.costPrice
+      cost.colleague_id = input.costColleagueId
+      cost.cost_payed_at = new Date(input.costPayed)
+      cost.cost_branch_id = context.branchId
 
-      let room = new RoomEntity()
-      room.room_name = input.roomName
-      room.room_branch_id = context.branchId
-
-      return await roomRepository.save(room)
+      return await costRepository.save(cost)
     }
   },
   Room:{

@@ -12,6 +12,7 @@ import Groups from './groups/group'
 import GroupAttendance from './groups/attendance'
 import Tasks from './tasks'
 import Calendar from './groups/calendar'
+import Costs from './costs'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -27,6 +28,7 @@ export default makeExecutableSchema({
         Calendar.schema,
         GroupAttendance.schema,
         Tasks.schema,
+        Costs.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -41,5 +43,6 @@ export default makeExecutableSchema({
         Calendar.resolvers,
         GroupAttendance.resolvers,
         Tasks.resolvers,
+        Costs.resolvers,
     ]
 })

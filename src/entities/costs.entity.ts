@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
+import Employers from "./employers.entity";
 
 @Entity()
 export default class Costs {
@@ -12,9 +13,6 @@ export default class Costs {
     @Column({ type: 'int' })
     cost_amount: number
 
-    @Column({ type: 'varchar', length: 20 })
-    colleague_name: string
-
     @Column({ type: 'timestamp', nullable: true })
     cost_payed_at: Date
 
@@ -25,11 +23,18 @@ export default class Costs {
     cost_deleted: Date
 
     @Column()
+    colleague_id: string
+
+    @Column()
     cost_branch_id: string
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'cost_branch_id' })
     branches: CompanyBranches
+
+    @ManyToOne(() => Employers, employer => employer)
+    @JoinColumn({ name: 'colleague_id' })
+    colleagues: Employers
 }
 
 // create table costs(

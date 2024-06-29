@@ -5,6 +5,7 @@ import Rooms from "./room.entity";
 import Courses from "./course.entity";
 import Students from "./student/students.entity";
 import Student_payments from "./student/student_payments.entity";
+import Funnels from "./funnels/funnels.entity";
 
 @Entity()
 export class Companies {   
@@ -66,6 +67,9 @@ export class CompanyBranches {
 
     @OneToMany(() => Students, students => students)
     students: Students[]
+
+    @OneToMany(() => Funnels, funnels => funnels)
+    funnels: Funnels[]
 
     @OneToMany(() => Student_payments, payment => payment)
     student_payment: Student_payments[]
