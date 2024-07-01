@@ -1,6 +1,6 @@
 import { AddFunnelInput, Funnel } from "../../../types/funnel";
 import AppDataSource from "../../../config/ormconfig";
-import FunnelsEnitity from "../../../entities/funnels/funnels.entity";
+import FunnelsEnitity from "../../../entities/funnel/funnels.entity";
 
 const resolvers = {
     Query: {

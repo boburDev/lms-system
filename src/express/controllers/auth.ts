@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { validateObjectSignup } from '../../utils/validation'
 import { Companies, CompanyBranches } from '../../entities/company.entity'
-import EmployersEntity from '../../entities/employers.entity'
+import EmployersEntity from '../../entities/employer/employers.entity'
 import AppDataSource from '../../config/ormconfig'
 import { sign } from '../../utils/jwt'
 import { comparePassword } from '../../utils/bcrypt'

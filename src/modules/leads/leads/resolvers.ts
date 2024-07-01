@@ -1,9 +1,9 @@
-import LeadsEntity from "../../../entities/funnels/leads.entity";
+import LeadsEntity from "../../../entities/funnel/leads.entity";
 import AppDataSource from "../../../config/ormconfig";
 import { AddLeadInput, Lead } from "../../../types/lead";
-import EmployersEntity from "../../../entities/employers.entity";
+import EmployersEntity from "../../../entities/employer/employers.entity";
 import CoursesEntity from "../../../entities/course.entity";
-import FunnelColumnsEntity from "../../../entities/funnels/columns.entity";
+import FunnelColumnsEntity from "../../../entities/funnel/columns.entity";
 
 const resolvers = {
     Query: {

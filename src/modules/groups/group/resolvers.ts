@@ -34,7 +34,6 @@ const resolvers = {
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      // console.log(1, today.toISOString().split('T')[0])
       const endDateCondition = isArchive ? "<" : ">";
 
       return await groupRepository.createQueryBuilder("groups")

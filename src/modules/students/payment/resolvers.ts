@@ -3,7 +3,7 @@ import AppDataSource from "../../../config/ormconfig";
 import Student_payments from "../../../entities/student/student_payments.entity";
 import Student_cashes from "../../../entities/student/student_cashes.entity";
 import StudentEntity from "../../../entities/student/students.entity";
-import EmployerEntity from "../../../entities/employers.entity";
+import EmployerEntity from "../../../entities/employer/employers.entity";
 
 const resolvers = {
     Query: {

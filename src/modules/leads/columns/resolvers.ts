@@ -1,5 +1,5 @@
 import AppDataSource from "../../../config/ormconfig";
-import FunnelColumnsEntity from "../../../entities/funnels/columns.entity";
+import FunnelColumnsEntity from "../../../entities/funnel/columns.entity";
 import { AddFunnelColumnInput, FunnelColumn } from "../../../types/funnel";
 
 const resolvers = {

@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "../company.entity";
 import Funnel_Columns from "./columns.entity";
 import Courses from "../course.entity";
-import Employers from "../employers.entity";
+import Employers from "../employer/employers.entity";
 
 @Entity()
 export default class Leads {

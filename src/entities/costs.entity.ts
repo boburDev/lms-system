@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
-import Employers from "./employers.entity";
+import Employers from "./employer/employers.entity";
 
 @Entity()
 export default class Costs {

@@ -1,11 +1,11 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Districts } from "./regions.entity";
-import Employers from "./employers.entity";
+import Employers from "./employer/employers.entity";
 import Rooms from "./room.entity";
 import Courses from "./course.entity";
 import Students from "./student/students.entity";
 import Student_payments from "./student/student_payments.entity";
-import Funnels from "./funnels/funnels.entity";
+import Funnels from "./funnel/funnels.entity";
 
 @Entity()
 export class Companies {   

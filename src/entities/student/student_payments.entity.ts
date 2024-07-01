@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToOne } from "typeorm";
 import Students from "./students.entity";
-import Employers from "../employers.entity";
+import Employers from "../employer/employers.entity";
 import Student_cashes from "./student_cashes.entity";
 
 @Entity()

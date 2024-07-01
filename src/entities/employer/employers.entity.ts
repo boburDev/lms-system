@@ -1,10 +1,12 @@
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { CompanyBranches } from "./company.entity";
+import { CompanyBranches } from "../company.entity";
 import bcrypt from 'bcrypt';
-import Groups from "./group/groups.entity";
-import Student_payments from "./student/student_payments.entity";
-import Tasks from "./tasks.entity";
-import Leads from "./funnels/leads.entity";
+import Groups from "../group/groups.entity";
+import Student_payments from "../student/student_payments.entity";
+import Tasks from "../tasks.entity";
+import Leads from "../funnel/leads.entity";
+import Salary_History from "./salary-history.entity";
+import Forget_Password from "../options/forget_password.entity";
 
 @Entity()
 export default class Employers {   
@@ -48,11 +50,18 @@ export default class Employers {
     @OneToMany(() => Groups, group => group.group_id)
     group: Groups[];
 
+    @OneToMany(() => Salary_History, history => history.salary_history_id)
+    salary_histories: Salary_History[];
+
+
     @OneToMany(() => Student_payments, payment => payment)
     student_payment: Student_payments[]
 
     @OneToMany(() => Tasks, tasks => tasks)
     branch_task: Tasks[]
+
+    @OneToMany(() => Forget_Password, tasks => tasks)
+    forget_passwords: Forget_Password[]
 
     @OneToMany(() => Leads, leads => leads)
     leads: Leads[]
