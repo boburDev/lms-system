@@ -11,7 +11,7 @@ const resolvers = {
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      console.log(1, today.toISOString().split('T')[0])
+      // console.log(1, today.toISOString().split('T')[0])
       const endDateCondition = isArchive ? "<" : ">";
 
       let data = await groupRepository.createQueryBuilder("group")
@@ -28,14 +28,20 @@ const resolvers = {
         .getMany();
       return data
     },
-    groupCount: async (_parametr: unknown, {}, context: any) => {
+    groupCount: async (_parametr: unknown, { isArchive }: { isArchive: boolean }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      // console.log(1, today.toISOString().split('T')[0])
+      const endDateCondition = isArchive ? "<" : ">";
+
       return await groupRepository.createQueryBuilder("groups")
         .where("groups.group_deleted IS NULL")
         .andWhere("groups.group_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere(`groups.group_end_date ${endDateCondition} :endDate`, { endDate: today.toISOString().split('T')[0] })
         .getCount();
-      
     },
     groupByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
