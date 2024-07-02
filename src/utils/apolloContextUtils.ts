@@ -11,16 +11,21 @@ export const context = async ({ req }: any) => {
             return ''
         } else {
             let tokenDate: TokenData | null = verify(token)
-            const employerRepository = AppDataSource.getRepository(EmployersEntity)
 
-            let data = await employerRepository.createQueryBuilder("employer")
-                .where("employer.employer_id = :Id", { Id: tokenDate?.colleagueId })
-                .andWhere("employer.employer_branch_id = :id", { id: tokenDate?.branchId })
-                .andWhere("employer.employer_deleted IS NULL")
-                .getOne()
-
-            if (!tokenDate || !data) {
+            if (!tokenDate) {
                 throw new Error("Invalid token")
+            }  else {
+                const employerRepository = AppDataSource.getRepository(EmployersEntity)
+
+                let data = await employerRepository.createQueryBuilder("employer")
+                    .where("employer.employer_id = :Id", { Id: tokenDate?.colleagueId })
+                    .andWhere("employer.employer_branch_id = :id", { id: tokenDate?.branchId })
+                    .andWhere("employer.employer_deleted IS NULL")
+                    .getOne()
+
+                if (!data) {
+                    throw new Error("This user not found")
+                }
             }
             return tokenDate
         }
