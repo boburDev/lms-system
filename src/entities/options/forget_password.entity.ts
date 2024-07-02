@@ -7,7 +7,7 @@ export default class Forget_Password {
     @Column({ type: 'int' })
     sended_code: number
 
-    @Column({ length: 6 })
+    @PrimaryGeneratedColumn('uuid')
     sender_id: string
 
     @CreateDateColumn({ type: 'timestamptz', default: () => "CURRENT_TIMESTAMP + interval '2 minutes'" })

@@ -187,9 +187,8 @@ const resolvers = {
     colleagueId: (global: Student) => global.colleague_id,
     studentGroup: (global: Student) => {
       let results = []
-      console.log(global)
       
-      if (global.student_group.length) {
+      if (global.student_group && global.student_group.length) {
         for (const i of global.student_group) {
           results.push({
             groupId: i.group.group_id,

@@ -37,7 +37,7 @@ const resolvers = {
             let funnelColumn = new FunnelColumnsEntity()
             funnelColumn.funnel_column_name = input.funnelColumnName
             funnelColumn.funnel_column_color = input.funnelColumnColor
-            funnelColumn.funnel_column_order = dataFunnelColumnOrders[0].funnel_column_order + 1
+            funnelColumn.funnel_column_order = (dataFunnelColumnOrders[0]?.funnel_column_order + 1) || 1
             funnelColumn.funnel_id = input.funnelId
             return await funnelColumnRepository.save(funnelColumn)
         }
