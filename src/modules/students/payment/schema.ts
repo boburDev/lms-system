@@ -21,7 +21,7 @@ type studentCash {
     studentName: String
     employerName: String
     checkNumber: Int
-    cashAmount: Int
+    cashAmount: String
     paymentType: String
     payedAt: String
     createdAt: String

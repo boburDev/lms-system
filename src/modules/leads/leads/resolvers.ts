@@ -1,6 +1,6 @@
 import LeadsEntity from "../../../entities/funnel/leads.entity";
 import AppDataSource from "../../../config/ormconfig";
-import { AddLeadInput, Lead } from "../../../types/lead";
+import { AddLeadInput, Lead, UpdateLeadColumnInput } from "../../../types/lead";
 import EmployersEntity from "../../../entities/employer/employers.entity";
 import CoursesEntity from "../../../entities/course.entity";
 import FunnelColumnsEntity from "../../../entities/funnel/columns.entity";
@@ -80,6 +80,22 @@ const resolvers = {
                 resData.courses = course
             }
             return resData
+        },
+        updateLeadColumn: async (_parent: unknown, { input }: { input: UpdateLeadColumnInput }, context: any): Promise<LeadsEntity> => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+
+            const leadRepository = AppDataSource.getRepository(LeadsEntity)
+
+            let data = await leadRepository.createQueryBuilder("leads")
+                .where("leads.lead_id = :id", { id: input.leadId })
+                .andWhere("leads.lead_deleted IS NULL")
+                .getOne()
+
+            if (!data) throw new Error(`Bu lead mavjud emas`)
+
+            data.lead_funnel_column_id = input.columnId
+            await leadRepository.save(data)
+            return data
         }
     },
     Lead: {

@@ -18,4 +18,8 @@ type Room {
 input AddRoomInput {
   roomName: String!
 }
+
+type Subscription {
+  room: Room
+}
 `

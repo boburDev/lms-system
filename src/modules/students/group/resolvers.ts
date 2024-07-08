@@ -1,4 +1,4 @@
-import { AddStudentGroupInput } from "../../../types/group";
+import { AddStudentGroupInput, UpdateStudentAddedGroupDateInput } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import Groups from "../../../entities/group/groups.entity";
@@ -14,7 +14,7 @@ const resolvers = {
             if (
                 new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
                 new Date(dataGroup.group_end_date) < new Date(input.addedDate)
-            ) throw new Error("Gruppani tugash vaqti qushilish vaqtidan kichkina!")
+            ) throw new Error("Gruppani boshlanish yoki tugash vaqtiga tugri kelmadi!")
             
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
             let data = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.groupId })
@@ -37,6 +37,20 @@ const resolvers = {
                 await groupAttendenceRepository.save(studentAttendence);
             }
             return 'succeed'
+        },
+        updateStudentAddedGroupDate: async (_parent: unknown, { input }: { input: UpdateStudentAddedGroupDateInput }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const GroupRepository = AppDataSource.getRepository(Groups)
+            let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
+            if (!dataGroup) throw new Error("Gruppa mavjud emas");
+            if (
+                new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
+                new Date(dataGroup.group_end_date) < new Date(input.addedDate)
+            ) throw new Error("Gruppani boshlanish yoki tugash vaqtiga tugri kelmadi!")
+
+            const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+            let data = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.groupId })
+
         }
     },
 }

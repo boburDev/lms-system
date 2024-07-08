@@ -13,7 +13,7 @@ const resolvers = {
                 studentCash: [],
                 PaymentHistory: []
             }
-            if (input.type === 1) {
+            if (input.type == 1) {
                 const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
                 let data = await studentCashCountRepository.createQueryBuilder("cash")
                     .leftJoinAndSelect("cash.payment", "payment")
@@ -28,7 +28,7 @@ const resolvers = {
                         student_cash_id: i.student_cash_id,
                         student_id: i.student_id,
                         student_name: i.student.student_name,
-                        employer_name: i.payment.employer.employer_name,
+                        employer_name: i.payment?.employer?.employer_name,
                         check_number: i.check_number,
                         cash_amount: i.cash_amount,
                         cash_type: i.check_type,
@@ -37,7 +37,7 @@ const resolvers = {
                     })
                 }
                 results.studentCash.push(...result)
-            } else if (input.type === 2) {
+            } else if (input.type == 2) {
                 const studentPaymentCountRepository = AppDataSource.getRepository(Student_payments)
                 let data = await studentPaymentCountRepository.createQueryBuilder("payment")
                     .leftJoinAndSelect("payment.employer", "employer")
@@ -46,8 +46,6 @@ const resolvers = {
                     .getMany();
                 results.PaymentHistory = data
             }
-            console.log(results)
-            
             return results
         }
     },
@@ -127,7 +125,7 @@ const resolvers = {
             if (data.student_balance >= input.cashAmount) {
                 data.student_balance = data.student_balance - input.cashAmount
                 await studentRepository.save(data)
-                
+
                 const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
                 let studentCash = new Student_cashes()
                 let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })

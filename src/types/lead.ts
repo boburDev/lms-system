@@ -5,6 +5,11 @@ type AddLeadInput = {
     courseId: string
 }
 
+type UpdateLeadColumnInput = {
+    leadId: string
+    columnId: string
+}
+
 type Lead = {
     lead_id: string
     lead_name: string
@@ -23,5 +28,6 @@ type Lead = {
 
 export {
     Lead,
-    AddLeadInput
+    AddLeadInput,
+    UpdateLeadColumnInput
 }

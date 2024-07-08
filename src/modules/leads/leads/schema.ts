@@ -7,6 +7,7 @@ type Query {
 
  type Mutation {
     addLead(input: AddLeadInput): Lead!
+    updateLeadColumn(input: UpdateLeadColumnInput): Lead!
 }
 
 input AddLeadInput {
@@ -14,6 +15,11 @@ input AddLeadInput {
     leadPhone: String!
     columnId: ID!
     courseId: ID
+}
+
+input UpdateLeadColumnInput {
+    leadId: String!
+    columnId: ID!
 }
 
 type Lead {

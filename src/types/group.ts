@@ -63,8 +63,15 @@ type AddStudentGroupInput = {
     addedDate: string
 }
 
+type UpdateStudentAddedGroupDateInput = {
+    studentId: string
+    groupId: string
+    addedDate: string
+}
+
 export {
     Group,   
     AddGroupInput,
-    AddStudentGroupInput
+    AddStudentGroupInput,
+    UpdateStudentAddedGroupDateInput
 }

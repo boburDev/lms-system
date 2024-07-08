@@ -6,7 +6,6 @@ import EmployersEntity from '../entities/employer/employers.entity';
 export const context = async ({ req }: any) => {
     try {
         const { token } = req.headers
-        
         if (!token) {
             return ''
         } else {
@@ -29,13 +28,10 @@ export const context = async ({ req }: any) => {
             }
             return tokenDate
         }
-            
-        
     } catch (error: unknown) {
         let message = (error as Error).message
         // if (message === 'No token') {
         // } else if (false) {
-            
         // } else {
         // }
         throw new Error(message)
