@@ -1,7 +1,8 @@
 type TokenData = {
-    branchId: string,
-    colleagueId: string,
-    role: string,
+    branchId: string
+    colleagueId: string
+    role: string
+    adminId: string
     iat: number
     exp: number
 }

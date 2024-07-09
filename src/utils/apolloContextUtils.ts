@@ -2,15 +2,16 @@ import { TokenData } from '../types/verifyToken'
 import { verify } from './jwt'
 import AppDataSource from "../config/ormconfig";
 import EmployersEntity from '../entities/employer/employers.entity';
+import { authentification } from './authentification';
 
 export const context = async ({ req }: any) => {
     try {
         const { token } = req.headers
         if (!token) {
-            return ''
+            throw new Error("Token does not exist")
         } else {
             let tokenDate: TokenData | null = verify(token)
-
+            // console.log(tokenDate, await authentification(token))
             if (!tokenDate) {
                 throw new Error("Invalid token")
             }  else {
@@ -21,8 +22,7 @@ export const context = async ({ req }: any) => {
                     .andWhere("employer.employer_branch_id = :id", { id: tokenDate?.branchId })
                     .andWhere("employer.employer_deleted IS NULL")
                     .getOne()
-
-                if (!data) {
+                if (!data && !(tokenDate && tokenDate.adminId)) {
                     throw new Error("This user not found")
                 }
             }
@@ -36,6 +36,4 @@ export const context = async ({ req }: any) => {
         // }
         throw new Error(message)
     }
-
-
 }

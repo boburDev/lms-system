@@ -15,9 +15,10 @@ export default new DataSource({
         path.resolve(__dirname, "..", "entities", "group", "*.entity.{ts,js}"),
         path.resolve(__dirname, "..", "entities", "funnel", "*.entity.{ts,js}"),
         path.resolve(__dirname, "..", "entities", "employer", "*.entity.{ts,js}"),
-        path.resolve(__dirname, "..", "entities", "options", "*.entity.{ts,js}")
+        path.resolve(__dirname, "..", "entities", "options", "*.entity.{ts,js}"),
+        path.resolve(__dirname, "..", "entities", "company", "*.entity.{ts,js}")
     ],
     migrations: [],
-    logging: true,
+    logging: false,
     synchronize: true
 })

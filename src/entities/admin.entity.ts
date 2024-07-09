@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import bcrypt from 'bcrypt';
 
 @Entity()
 export default class Admin {
@@ -14,7 +15,7 @@ export default class Admin {
     @Column({ length: 16 })
     admin_lastname: string
 
-    @Column({ length: 16 })
+    @Column({ length: 16, unique: true })
     admin_phone: string
 
     @Column({ length: 64 })
@@ -25,4 +26,10 @@ export default class Admin {
 
     @Column({ type: 'int', default: 1 })
     admin_status: number
+
+    @BeforeInsert()
+    async hashPassword() {
+        const saltRounds = 10; // You can adjust the salt rounds as per your requirement
+        this.admin_password =  await bcrypt.hash(this.admin_password, saltRounds)
+    }
 }

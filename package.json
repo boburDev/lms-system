@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "tsc && node dist/index.js",
     "build": "tsc",
@@ -45,7 +44,6 @@
     "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.14.10",
-    "@types/ws": "^8.5.10",
-    "typescript": "^5.5.3"
+    "@types/ws": "^8.5.10"
   }
 }

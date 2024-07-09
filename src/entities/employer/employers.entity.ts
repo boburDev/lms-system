@@ -1,5 +1,5 @@
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { CompanyBranches } from "../company.entity";
+import { CompanyBranches } from "../company/company.entity";
 import bcrypt from 'bcrypt';
 import Groups from "../group/groups.entity";
 import Student_payments from "../student/student_payments.entity";

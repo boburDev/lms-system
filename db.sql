@@ -1,27 +1,3 @@
-create table company_branch_activities (
-	company_branch_activity_id uuid not null default uuid_generate_v4() primary key,
-	company_branch_id uuid not null references company_branches(company_branch_id) on delete cascade,
-	start_date timestamp not null,
-	end_date timestamp not null,
-	is_active boolean default true
-);
-
-create table company_branch_payment_history (
-	payment_history_id uuid not null default uuid_generate_v4() primary key,
-	company_branch_id uuid not null references company_branches(company_branch_id) on delete cascade,
-	is_payment boolean default true,
-	payment_ammount bigint not null,
-	payment_app_type varchar(8) not null check(payment_app_type in ('payme', 'click')),
-	create_at timestamp default current_timestamp
-);
-
-create table prices (
-	price_id uuid not null default uuid_generate_v4() primary key,
-	from_count int not null,
-	to_count int not null,
-	price int not null
-);
-
 create table sms_prices (
 	sms_price_id uuid not null default uuid_generate_v4() primary key,
 	from_count int not null,

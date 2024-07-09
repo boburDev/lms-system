@@ -11,3 +11,15 @@ export const validateObjectSignup = (input: object) => {
     })
     return schema.validate(input)
 }
+
+export const validateObjectCreateAdmin = (input: object) => {
+    const schema = Joi.object().keys({
+        username: Joi.string().min(2).required(),
+        name: Joi.string().min(2).required(),
+        lastname: Joi.string().min(2).required(),
+        phone: Joi.string().min(12).max(12).required(),
+        role: Joi.number().required().valid(1, 2, 3),
+        password: Joi.string().min(5).required()
+    })
+    return schema.validate(input)
+}

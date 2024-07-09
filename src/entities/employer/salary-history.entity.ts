@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { CompanyBranches } from "../company.entity";
+import { CompanyBranches } from "../company/company.entity";
 import Employers from "./employers.entity";
 import Groups from "../group/groups.entity";
 

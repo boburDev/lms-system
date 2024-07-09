@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { CompanyBranches } from "../company.entity";
+import { CompanyBranches } from "../company/company.entity";
 import Employers from "../employer/employers.entity";
 
 @Entity()

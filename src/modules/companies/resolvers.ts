@@ -1,6 +1,6 @@
 import AppDataSource from '../../config/ormconfig'
 import { AddCompanyInput } from '../../types/createAccaunt';
-import { Companies, CompanyBranches } from "../../entities/company.entity";
+import { Companies, CompanyBranches } from "../../entities/company/company.entity";
 import EmployersEntity from '../../entities/employer/employers.entity';
 
 const resolvers = {

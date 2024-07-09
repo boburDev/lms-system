@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Countries from './country.entity'
-import { CompanyBranches } from "./company.entity";
+import { CompanyBranches } from "./company/company.entity";
 
 @Entity()
 export default class Regions {

@@ -16,7 +16,7 @@ import { context } from './utils/apolloContextUtils'
 
 const PORT = process.env.PORT || 8080
 
-    ; (async () => {
+    ;(async () => {
         AppDataSource.initialize().then(() => { }).catch((error) => console.log(error))
         const app = express()
         app.use(cors())

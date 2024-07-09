@@ -11,10 +11,11 @@ const resolvers = {
   },
   Mutation: {
     addCountry: async(_parent: unknown, { input }: { input: AddCountryInput }): Promise<CountryEntity> => {
+      const countryRepository = AppDataSource.getRepository(CountryEntity)
+      
       let country = new CountryEntity()
       country.country_name = input.countryName
       
-      const countryRepository = AppDataSource.getRepository(CountryEntity)
       return await countryRepository.save(country)
     },
   },

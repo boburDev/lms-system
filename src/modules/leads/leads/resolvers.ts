@@ -107,7 +107,7 @@ const resolvers = {
         courseId: (global: Lead) => global.lead_course_id,
         courseName: (global: Lead) => global?.courses?.course_name,
         colleagueId: (global: Lead) => global.lead_employer_id,
-        colleagueName: (global: Lead) => global.employers.employer_name
+        colleagueName: (global: Lead) => global?.employers?.employer_name
     }
 }
 

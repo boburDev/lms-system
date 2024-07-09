@@ -1,12 +1,13 @@
 import { Request, Response } from 'express'
 import { validateObjectSignup } from '../../utils/validation'
-import { Companies, CompanyBranches } from '../../entities/company.entity'
+import { Companies, CompanyBranches } from '../../entities/company/company.entity'
 import EmployersEntity from '../../entities/employer/employers.entity'
 import AppDataSource from '../../config/ormconfig'
 import { sign } from '../../utils/jwt'
 import { comparePassword } from '../../utils/bcrypt'
 import { IsNull } from 'typeorm'
 import positionIndicator from '../../utils/employer_positions'
+import BranchActivityEntity from '../../entities/company/company_activity.entity'
 
 export const login = async (req:Request, res: Response) => {
     try {
@@ -52,6 +53,7 @@ export const signup = async (req:Request, res: Response) => {
         const companyRepository = AppDataSource.getRepository(Companies)
         const branchRepository = AppDataSource.getRepository(CompanyBranches)
         const employerRepository = AppDataSource.getRepository(EmployersEntity)
+        const activityRepository = AppDataSource.getRepository(BranchActivityEntity)
         
         let employerData = await employerRepository.findOneBy({ employer_phone: value.derectorPhone, employer_position: 1 })
         if (employerData !== null) throw new Error(`Bu "${value.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`)
@@ -65,7 +67,7 @@ export const signup = async (req:Request, res: Response) => {
         let company = new Companies()
         company.company_name = value.companyName
         let companyId = await companyRepository.save(company)
-        
+
         
         let branch = new CompanyBranches()
         branch.company_branch_phone = value.companyPhone
@@ -74,8 +76,17 @@ export const signup = async (req:Request, res: Response) => {
         branch.branch_company_id = companyId.company_id
         
         let newBranch = await branchRepository.save(branch)
-        console.log(11, newBranch);
-        
+
+        let daysToAdd = 7
+        const startDate = new Date();
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + daysToAdd);
+
+        let activity = new BranchActivityEntity()
+        activity.group_start_date = startDate
+        activity.group_end_date = endDate
+        activity.branch_id = newBranch.company_branch_id
+        await activityRepository.save(activity)
         
         let employer = new EmployersEntity()
         employer.employer_name = value.derectorName

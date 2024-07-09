@@ -8,6 +8,6 @@ router
     .post('/login', authController.login)
     .post('/signup', authController.signup)
     .post('/create-admin', authAdminController.create)
-    .post('/admin', authAdminController.login)
+    .post('/login-admin', authAdminController.login)
 
 export default router
