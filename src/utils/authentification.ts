@@ -60,6 +60,7 @@ const activeBranch = async (branchId:string) => {
 export const authentification = async (token:string) => {
     try {
         let isActive = true;
+        let isAdmin = false;
         let tokenDate: TokenData | null = verify(token)
 
         if (tokenDate && tokenDate.adminId) {
@@ -69,6 +70,7 @@ export const authentification = async (token:string) => {
                 .andWhere("admin.admin_status = 1")
                 .getOne()
             if (!data || data.admin_status < 0) return { isActive: false }
+            isAdmin = true
         } else if (tokenDate && tokenDate.branchId && tokenDate.colleagueId) {
             const employerRepository = AppDataSource.getRepository(EmployersEntity)
             const activityRepository = AppDataSource.getRepository(BranchActivityEntity)
@@ -77,7 +79,7 @@ export const authentification = async (token:string) => {
                 .andWhere("employer.employer_branch_id = :id", { id: tokenDate.branchId })
                 .andWhere("employer.employer_deleted IS NULL")
                 .getOne()
-            if (!employer) return { isActive: false }
+            if (!employer) return { isActive: false, isAdmin }
 
             let activity = await activityRepository.createQueryBuilder("activity")
                 .where("activity.branch_activity_status = true")
@@ -103,7 +105,7 @@ export const authentification = async (token:string) => {
             }
 
         }
-        return { ...tokenDate, isActive }
+        return { ...tokenDate, isAdmin, isActive }
     } catch (error) {
         return false
     }

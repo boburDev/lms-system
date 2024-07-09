@@ -12,7 +12,7 @@ dotenv.config()
 
 import modules from './modules'
 import routes from './express'
-import { context } from './utils/apolloContextUtils'
+import context from './utils/apolloContextUtils'
 
 const PORT = process.env.PORT || 8080
 
