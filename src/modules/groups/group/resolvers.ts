@@ -40,6 +40,7 @@ const resolvers = {
         .where("groups.group_deleted IS NULL")
         .andWhere("groups.group_branch_id = :branchId", { branchId: context.branchId })
         .andWhere(`groups.group_end_date ${endDateCondition} :endDate`, { endDate: today.toISOString().split('T')[0] })
+        .andWhere("groups.group_deleted IS NULL")
         .getCount();
     },
     groupByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
@@ -58,6 +59,7 @@ const resolvers = {
           .leftJoinAndSelect("student_group.student", "student")
           .where("group.group_branch_id = :branchId", { branchId: context.branchId })
           .andWhere("group.group_id = :groupId", { groupId: input.Id })
+          .andWhere("group.group_deleted IS NULL")
           .getOne();
       }
       

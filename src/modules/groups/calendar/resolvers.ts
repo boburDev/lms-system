@@ -38,6 +38,7 @@ const resolvers = {
                         .leftJoinAndSelect("group.room", "room")
                         .leftJoinAndSelect("group.course", "course")
                         .where("group.group_branch_id = :branchId", { branchId: context.branchId })
+                        .andWhere("group.group_id = :groupId", { groupId: j.group_attendence_group_id })
                         .andWhere("group.group_deleted IS NULL")
                         .getOne();
                     let days = group?.group_days.split(" ")
