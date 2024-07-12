@@ -20,6 +20,8 @@ input AddRoomInput {
 }
 
 type Subscription {
-  room: Room
+  createRoom: Room!,
+  editRoom: Room!,
+  deleteRoom: Room!
 }
 `

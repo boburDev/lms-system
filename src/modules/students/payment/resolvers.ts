@@ -110,7 +110,6 @@ const resolvers = {
             }
         },
         returnStudentCash: async (_parent: unknown, { input }: { input: AddstudentPayment }, context: any) => {
-            console.log(input);
             if (!context?.branchId) throw new Error("Not exist access token!");
             const studentRepository = AppDataSource.getRepository(StudentEntity)
 

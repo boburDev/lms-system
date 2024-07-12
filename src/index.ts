@@ -13,7 +13,7 @@ dotenv.config()
 import modules from './modules'
 import routes from './express'
 import context from './utils/apolloContextUtils'
-
+import apollo from './utils/subscriptions'
 const PORT = process.env.PORT || 8080
 
     ;(async () => {
@@ -26,11 +26,26 @@ const PORT = process.env.PORT || 8080
         // app.use((req, res, next) => { req.psql = psql; return next(); })
 
         const httpServer = http.createServer(app);
+        const onConnect = apollo.onConnect
+        const onDisconnect = apollo.onDisconnect
+        const subscriptionServer = SubscriptionServer.create(
+            { schema: modules, execute, subscribe, onConnect, onDisconnect },
+            { server: httpServer, path: '/graphql' }
+        )
         const server = new ApolloServer({
             schema: modules,
             context,
             plugins: [
-                ApolloServerPluginLandingPageGraphQLPlayground
+                ApolloServerPluginLandingPageGraphQLPlayground,
+                {
+                    async serverWillStart() {
+                        return {
+                            async drainServer() {
+                                subscriptionServer.close()
+                            }
+                        }
+                    }
+                }
             ]
         })
 
@@ -39,6 +54,7 @@ const PORT = process.env.PORT || 8080
 
         httpServer.listen(PORT, () => {
             console.log(`http://localhost:${PORT}${server.graphqlPath}`)
+            // console.log(`ws://localhost:${PORT}` + server)
         })
 
     })()
