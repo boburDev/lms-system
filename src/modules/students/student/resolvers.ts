@@ -37,37 +37,43 @@ const resolvers = {
     studentById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<StudentEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const studentRepository = AppDataSource.getRepository(StudentEntity)
-      let data = await studentRepository.findOneBy({ student_id: Id })
+      let data = await studentRepository.createQueryBuilder("student")
+        .leftJoinAndSelect("student.student_group", "student_group")
+        .leftJoinAndSelect("student_group.group", "group")
+        .leftJoinAndSelect("group.employer", "employer")
+        .where("student.student_id = :Id", { Id })
+        .getOne()
+
       if (!data) throw new Error("Student not found");
       return data
     },
-    studentGroups: async (_parametr: unknown, { studentId }: { studentId: string }, context: any) => {
-      if (!context?.branchId) throw new Error("Not exist access token!");
-      const studentRepository = AppDataSource.getRepository(StudentEntity)
+    // studentGroups: async (_parametr: unknown, { studentId }: { studentId: string }, context: any) => {
+    //   if (!context?.branchId) throw new Error("Not exist access token!");
+    //   const studentRepository = AppDataSource.getRepository(StudentEntity)
 
-      let res = await studentRepository.createQueryBuilder("students")
-        .leftJoinAndSelect("students.student_group", "student_group")
-        .leftJoinAndSelect("student_group.group", "group")
-        .leftJoinAndSelect("group.employer", "employer")
-        .leftJoinAndSelect("group.room", "room")
-        .where("students.student_branch_id = :branchId", { branchId: context.branchId })
-        .where("students.student_id = :studentId", { studentId: studentId })
-        .andWhere("students.student_deleted IS NULL")
-        .andWhere("group.group_deleted IS NULL")
-        .getOne();
-      let data = res?.student_group.map(i => {
-        return {
-          group_id: i.group.group_id,
-          group_name: i.group.group_name,
-          group_days: i.group.group_days,
-          group_colleague_id: i.group.group_colleague_id,
-          group_room_id: i.group.group_room_id,
-          employer: { employer_name: i.group.employer.employer_name },
-          room: { room_name: i.group.room.room_name }
-        }
-      })
-      return data
-    }
+    //   let res = await studentRepository.createQueryBuilder("students")
+    //     .leftJoinAndSelect("students.student_group", "student_group")
+    //     .leftJoinAndSelect("student_group.group", "group")
+    //     .leftJoinAndSelect("group.employer", "employer")
+    //     .leftJoinAndSelect("group.room", "room")
+    //     .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+    //     .where("students.student_id = :studentId", { studentId: studentId })
+    //     .andWhere("students.student_deleted IS NULL")
+    //     .andWhere("group.group_deleted IS NULL")
+    //     .getOne();
+    //   let data = res?.student_group.map(i => {
+    //     return {
+    //       group_id: i.group.group_id,
+    //       group_name: i.group.group_name,
+    //       group_days: i.group.group_days,
+    //       group_colleague_id: i.group.group_colleague_id,
+    //       group_room_id: i.group.group_room_id,
+    //       employer: { employer_name: i.group.employer.employer_name },
+    //       room: { room_name: i.group.room.room_name }
+    //     }
+    //   })
+    //   return data
+    // }
   },
   Mutation: {
     addStudent: async (_parent: unknown, { input }: { input: AddStudentInput }, context: any): Promise<StudentEntity> => {
@@ -135,29 +141,29 @@ const resolvers = {
         }
         studentData.student_group = [{ group: dataGroup }]
       }
-      if (input.studentCash) {
-        const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
-        let studentCash = new Student_cashes()
-        let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
-        studentCash.cash_amount = input.studentCash
-        studentCash.check_number = count.length + 1
-        studentCash.student_cash_payed_at = new Date()
-        studentCash.branch_id = context.branchId
-        studentCash.student_id = studentData.student_id
+      // if (input.studentCash) {
+      //   const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+      //   let studentCash = new Student_cashes()
+      //   let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
+      //   studentCash.cash_amount = input.studentCash
+      //   studentCash.check_number = count.length + 1
+      //   studentCash.student_cash_payed_at = new Date()
+      //   studentCash.branch_id = context.branchId
+      //   studentCash.student_id = studentData.student_id
 
-        let studentCashData = await studentCashCountRepository.save(studentCash)
+      //   let studentCashData = await studentCashCountRepository.save(studentCash)
 
-        const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
-        let studentPayment = new Student_payments()
-        studentPayment.student_payment_debit = input.studentCash
-        studentPayment.student_payment_type = input.studentCashType
-        studentPayment.student_payment_payed_at = new Date()
-        studentPayment.student_id = studentData.student_id
-        studentPayment.employer_id = input.colleagueId || context.colleagueId
-        studentPayment.student_cash_id = studentCashData.student_cash_id
+      //   const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
+      //   let studentPayment = new Student_payments()
+      //   studentPayment.student_payment_debit = input.studentCash
+      //   studentPayment.student_payment_type = input.studentCashType
+      //   studentPayment.student_payment_payed_at = new Date()
+      //   studentPayment.student_id = studentData.student_id
+      //   studentPayment.employer_id = input.colleagueId || context.colleagueId
+      //   studentPayment.student_cash_id = studentCashData.student_cash_id
 
-        let studentPaymentData = await studentPaymentRepository.save(studentPayment)
-      }
+      //   let studentPaymentData = await studentPaymentRepository.save(studentPayment)
+      // }
       return studentData
     },
     deleteStudent: async (_parent: unknown, { studentId }: { studentId: string }, context: any) => {

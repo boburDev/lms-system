@@ -1,11 +1,6 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company.entity";
 
-
-// create table company_branch_payment_history(
-//     payment_app_type varchar(8) not null check(payment_app_type in ('payme', 'click')),
-// );
-
 @Entity()
 export default class Branch_Payment_History {
     @PrimaryGeneratedColumn('uuid')

@@ -5,7 +5,6 @@ type Query {
   students(page: Int! count: Int!): [Student!]!
   studentCount: Int!
   studentById(Id: String): Student
-  studentGroups(studentId: String): [Group]!
 }
 
 type Mutation {
@@ -59,3 +58,4 @@ type StudentGroups {
   lessonStartTime: String
 }
 `
+// studentGroups(studentId: String): [Group]!

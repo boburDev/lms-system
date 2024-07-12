@@ -5,6 +5,7 @@ import Rooms from "../room.entity";
 import Courses from "../course.entity";
 import Student_groups, { Student_attendences } from "../student/student_groups.entity";
 import Salary_History from "../employer/salary-history.entity";
+import Auto_Payment_Group from "./auto_payment.entity";
 
 @Entity()
 export default class Groups {   
@@ -77,6 +78,9 @@ export default class Groups {
 
     @OneToMany(() => Student_groups, st_group => st_group.group)
     student_group: Student_groups[]
+
+    @OneToMany(() => Auto_Payment_Group, paymentAuto => paymentAuto)
+    auto_payment_group: Auto_Payment_Group[]
 }
 
 @Entity()

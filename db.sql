@@ -1,27 +1,3 @@
-create table sms_prices (
-	sms_price_id uuid not null default uuid_generate_v4() primary key,
-	from_count int not null,
-	to_count int not null,
-	price int not null
-);
-
-create table discounts (
-    discount_id uuid not null default uuid_generate_v4() primary key,
-    discount_term smallint not null,
-    discount_percentage smallint not null
-);
-
-create table company_branch_discounts (
-	company_branch_discount_id uuid not null default uuid_generate_v4() primary key,
-	company_branch_id uuid not null references company_branches(company_branch_id) on delete cascade,
-	discount_id uuid not null references discounts(discount_id),
-	payment_id varchar(64),
-	start_date date not null,
-	end_date date not null,
-	is_active boolean default true,
-	reason smallint default 0
-);
-
 create table company_activities (
 	company_activity_id uuid not null default uuid_generate_v4() primary key,
 	company_activity_colleague_name varchar(64) not null,
@@ -32,35 +8,6 @@ create table company_activities (
 	company_activity_event_after text,
 	created_at timestamptz default current_timestamp,
 	company_branch_id uuid not null references company_branches(company_branch_id) on delete cascade
-);
-
-create table auto_payment_group (
-	auto_payment_group_id uuid not null default uuid_generate_v4() primary key,
-	group_id uuid not null,
-	branch_id uuid not null,
-	payment_status int default 1,
-	payment_month timestamptz
-);
-
-create table connect_time (
-	connect_id uuid not null default uuid_generate_v4() primary key,
-	company_colleague_id uuid not null references company_colleagues(company_colleague_id) on delete cascade,
-	company_branch_id uuid not null references company_branches(company_branch_id) on delete cascade,
-	connect_time bigint not null,
-	disconnect_time bigint not null,
-	created_at timestamp default current_timestamp
-);
-
-create table daily_time_branches(
-	branch_id uuid not null references company_branches (company_branch_id) on delete cascade,
-	online_time bigint not null,
-	online_date timestamp default current_timestamp
-);
-
-create table daily_time_colleagues(
-    colleague_id uuid not null references company_colleagues( company_colleague_id) on delete cascade,
-    online_time smallint not null,
-    created_at date not null
 );
 
 create table payme_payment (

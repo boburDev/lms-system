@@ -7,6 +7,8 @@ import Tasks from "../tasks.entity";
 import Leads from "../funnel/leads.entity";
 import Salary_History from "./salary-history.entity";
 import Forget_Password from "../options/forget_password.entity";
+import Connect_Time from "../application_usage/connect_time.entity";
+import Daily_Time_Colleagues from "../application_usage/daily_time_colleagues.entity";
 
 @Entity()
 export default class Employers {   
@@ -65,6 +67,12 @@ export default class Employers {
 
     @OneToMany(() => Leads, leads => leads)
     leads: Leads[]
+
+    @OneToMany(() => Daily_Time_Colleagues, dailyTime => dailyTime)
+    daily_time_colleagues: Daily_Time_Colleagues[]
+
+    @OneToMany(() => Connect_Time, connectTime => connectTime)
+    connect_time: Connect_Time[]
     
     @BeforeInsert()
     async hashPassword() {
