@@ -5,12 +5,12 @@ const resolvers = {
     Query: {
         findCalendar: async (_parametr: unknown, input: { startDate: string, endDate: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            console.log(input)
+            // console.log(input)
             const groupAttendanceRepository = AppDataSource.getRepository(Group_attendences)
             const startDate = new Date(input.startDate);
             const endDate = new Date(input.endDate);
-            console.log('Query Start Date:', startDate);
-            console.log('Query End Date:', endDate);
+            // console.log('Query Start Date:', startDate);
+            // console.log('Query End Date:', endDate);
             let data = await groupAttendanceRepository.createQueryBuilder('egt')
                 .select([
                     'egt.group_attendence_day as date',
@@ -35,6 +35,8 @@ const resolvers = {
                 for (const j of i.group_attendances) {
                     let group = await groupRepository.createQueryBuilder("group")
                         .leftJoinAndSelect("group.employer", "employer")
+                        .leftJoinAndSelect("group.room", "room")
+                        .leftJoinAndSelect("group.course", "course")
                         .where("group.group_branch_id = :branchId", { branchId: context.branchId })
                         .andWhere("group.group_deleted IS NULL")
                         .getOne();

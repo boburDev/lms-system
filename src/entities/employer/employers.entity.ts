@@ -9,6 +9,7 @@ import Salary_History from "./salary-history.entity";
 import Forget_Password from "../options/forget_password.entity";
 import Connect_Time from "../application_usage/connect_time.entity";
 import Daily_Time_Colleagues from "../application_usage/daily_time_colleagues.entity";
+import Event_Actions from "../event_action.entity";
 
 @Entity()
 export default class Employers {   
@@ -55,6 +56,8 @@ export default class Employers {
     @OneToMany(() => Salary_History, history => history.salary_history_id)
     salary_histories: Salary_History[];
 
+    @OneToMany(() => Event_Actions, event_actions => event_actions)
+    event_actions: Event_Actions[]
 
     @OneToMany(() => Student_payments, payment => payment)
     student_payment: Student_payments[]

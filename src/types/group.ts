@@ -63,9 +63,22 @@ type AddStudentGroupInput = {
     addedDate: string
 }
 
+type DeleteStudentGroupInput = {
+    studentId: string
+    groupId: string
+}
+
 type UpdateStudentAddedGroupDateInput = {
     studentId: string
     groupId: string
+    addedDate: string
+}
+
+type ChangeStudentGroupDateInput = {
+    studentId: string
+    fromGroupId: string
+    toGroupId: string
+    fromToday: boolean
     addedDate: string
 }
 
@@ -73,5 +86,7 @@ export {
     Group,   
     AddGroupInput,
     AddStudentGroupInput,
-    UpdateStudentAddedGroupDateInput
+    UpdateStudentAddedGroupDateInput,
+    DeleteStudentGroupInput,
+    ChangeStudentGroupDateInput
 }

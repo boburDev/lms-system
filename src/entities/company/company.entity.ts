@@ -8,6 +8,7 @@ import Student_payments from "../student/student_payments.entity";
 import Funnels from "../funnel/funnels.entity";
 import Daily_Time_Branches from "../application_usage/daily_time_branches.entity";
 import Auto_Payment_Group from "../group/auto_payment.entity";
+import Event_Actions from "../event_action.entity";
 
 @Entity()
 export class Companies {   
@@ -69,6 +70,9 @@ export class CompanyBranches {
 
     @OneToMany(() => Students, students => students)
     students: Students[]
+
+    @OneToMany(() => Event_Actions, event_actions => event_actions)
+    event_actions: Event_Actions[]
 
     @OneToMany(() => Daily_Time_Branches, dailyTime => dailyTime)
     daily_time_branches: Daily_Time_Branches[]

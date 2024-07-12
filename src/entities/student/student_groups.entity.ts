@@ -10,6 +10,9 @@ export default class Student_groups {
     @Column({ type: 'float', default: 0.0 })
     student_group_discount: number
 
+    @Column({ type: 'int', default: 1 })
+    student_group_discount_type: number
+
     @Column({ type: 'timestamp', nullable: true })
     student_group_discount_start: Date
 

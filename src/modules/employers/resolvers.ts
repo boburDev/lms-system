@@ -1,7 +1,7 @@
 import { AddEmployerInput, Employer } from "../../types/employer";
 import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
-import positionIndicator from "../../utils/employer_positions";
+import positionIndicator from "../../utils/status_and_positions";
 
 const resolvers = {
   Query: {

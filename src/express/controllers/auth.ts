@@ -6,7 +6,7 @@ import AppDataSource from '../../config/ormconfig'
 import { sign } from '../../utils/jwt'
 import { comparePassword } from '../../utils/bcrypt'
 import { IsNull } from 'typeorm'
-import positionIndicator from '../../utils/employer_positions'
+import positionIndicator from '../../utils/status_and_positions'
 import BranchActivityEntity from '../../entities/company/company_activity.entity'
 
 export const login = async (req:Request, res: Response) => {
