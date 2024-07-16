@@ -29,7 +29,7 @@ export default gql`
         studentId: ID!
         fromGroupId: ID!
         toGroupId: ID!
-        fromToday: Boolean!
+        fromToday: Boolean
         addedDate: String!
     }
 `

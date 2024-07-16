@@ -28,3 +28,16 @@ export default class Funnel_Columns {
     @JoinColumn({ name: 'funnel_id' })
     funnels: Funnels
 }
+
+
+// @Entity()
+// class Orders {
+//     @PrimaryGeneratedColumn('uuid')
+//     order_id: string
+
+//     @Column({ length: 64, nullable: false })
+//     order_name: string
+
+//     @Column({ type: 'int', default: 1 })
+//     order_number: number
+// }
