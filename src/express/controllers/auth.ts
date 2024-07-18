@@ -70,6 +70,7 @@ export const signup = async (req:Request, res: Response) => {
 
         
         let branch = new CompanyBranches()
+        branch.company_branch_name = value.companyName
         branch.company_branch_phone = value.companyPhone
         branch.company_branch_subdomen = value.companyName.replace(/([1234567890]|[\s]|[~`!@#$%^&*()_+{}:";'])/g, "").toLowerCase()
         branch.branch_district_id = value.districtId

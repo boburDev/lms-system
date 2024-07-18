@@ -2,6 +2,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import Countries from './countries'
 import Regions from './regions'
+import Companies from './companies'
 import Employers from './employers'
 import Rooms from './rooms'
 import Courses from './courses'
@@ -22,6 +23,7 @@ export default makeExecutableSchema({
     typeDefs: [
         Countries.schema,
         Regions.schema,
+        Companies.schema,
         Employers.schema,
         Rooms.schema,
         Courses.schema,
@@ -41,6 +43,7 @@ export default makeExecutableSchema({
     resolvers: [
         Countries.resolvers,
         Regions.resolvers,
+        Companies.resolvers,
         Employers.resolvers,
         Rooms.resolvers,
         Courses.resolvers,
