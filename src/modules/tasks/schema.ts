@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
   addTask(input: AddTaskInput) : Task!
+  updateTask(input: UpdateTaskInput) : Task!
   deleteTask(taskId: String!) : Task!
 }
 
@@ -18,7 +19,9 @@ type Task {
   taskEndDate: String!
   taskType: Int!
   taskFromColleagueId: String!
+  taskFromColleagueName: String!
   taskColleagueId: String!
+  taskColleagueName: String!
 }
 
 input AddTaskInput {
@@ -27,6 +30,16 @@ input AddTaskInput {
   taskStartDate: String!
   taskEndDate: String!
   taskType: Int!
-  taskFromColleagueId: String!
+  taskToColleagueId: String!
+}
+input UpdateTaskInput {
+  taskId: String
+  taskTitle: String
+  taskBody: String
+  taskStartDate: String
+  taskEndDate: String
+  taskType: Int
+  taskFromColleagueId: String
+  taskToColleagueId: String
 }
 `

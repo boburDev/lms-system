@@ -5,6 +5,14 @@ type AddCourseInput = {
     courseDurationLesson: number
 }
 
+type UpdateCourseInput = {
+    courseId: string
+    courseName: string
+    coursePrice: number
+    courseDuration: number
+    courseDurationLesson: number
+}
+
 type Course = {
     course_id: string
     course_name: string
@@ -15,5 +23,6 @@ type Course = {
 
 export {
     Course,
-    AddCourseInput
+    AddCourseInput,
+    UpdateCourseInput
 }

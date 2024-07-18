@@ -1,6 +1,6 @@
 import CourseEntity from "../../entities/course.entity";
 import AppDataSource from "../../config/ormconfig";
-import { AddCourseInput, Course } from "../../types/course";
+import { AddCourseInput, Course, UpdateCourseInput } from "../../types/course";
 
 const resolvers = {
   Query: {
@@ -51,6 +51,25 @@ const resolvers = {
       course.course_branch_id = context.branchId
 
       return await courseRepository.save(course)
+    },
+    updateCourse: async (_parent: unknown, { input }: { input: UpdateCourseInput }, context: any): Promise<CourseEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const courseRepository = AppDataSource.getRepository(CourseEntity)
+
+      let data = await courseRepository.createQueryBuilder("course")
+        .where("course.course_id = :Id", { Id: input.courseId })
+        .andWhere("course.course_branch_id = :id", { id: context.branchId })
+        .andWhere("course.course_deleted IS NULL")
+        .getOne()
+
+      if (!data) throw new Error(`Course not found`)
+
+      data.course_name = input.courseName || data.course_name
+      data.course_price = input.coursePrice || data.course_price
+      data.course_duration = input.courseDuration || data.course_duration
+      data.course_duration_lesson = input.courseDurationLesson || data.course_duration_lesson
+
+      return await courseRepository.save(data)
     },
     deleteCourse: async (_parent: unknown, { courseId }: { courseId: string }, context: any): Promise<CourseEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");

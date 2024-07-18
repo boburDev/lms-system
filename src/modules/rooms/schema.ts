@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
   addRoom(input: AddRoomInput): Room!
+  updateRoom(input: UpdateRoomInput): Room!
   deleteRoom(roomId: String!): Room!
 }
 
@@ -16,6 +17,11 @@ type Room {
 }
 
 input AddRoomInput {
+  roomName: String!
+}
+
+input UpdateRoomInput {
+  roomId: String!
   roomName: String!
 }
 

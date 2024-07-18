@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
   addCost(input: AddCostInput) : Cost!
+  updateCost(input: UpdateCostInput) : Cost!
 }
 
 type Cost {
@@ -19,6 +20,15 @@ type Cost {
 }
 
 input AddCostInput {
+  costName: String!
+  costType: Int!
+  costPrice: Int!
+  costColleagueId: Int!
+  costSelectedDate: String!
+}
+
+input UpdateCostInput {
+  costId: String!
   costName: String!
   costType: String!
   costPrice: Int!

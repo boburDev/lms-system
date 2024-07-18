@@ -2,7 +2,7 @@ import { verify } from "./jwt";
 import { pubsub } from "./pubSub";
 import AppDataSource from "../config/ormconfig";
 import Connect_Time from "../entities/application_usage/connect_time.entity";
-import { ConnectionContext } from "../interface/subcribtion";
+import { ConnectionContext } from "../interfaces/subcribtion";
 const map = new Map<string, number>();
 
 export default {

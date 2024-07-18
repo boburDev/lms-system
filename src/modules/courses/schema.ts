@@ -8,6 +8,7 @@ type Query {
 
 type Mutation {
   addCourse(input: AddCourseInput) : Course!
+  updateCourse(input: UpdateCourseInput) : Course!
   deleteCourse(courseId: String!) : Course!
 }
 
@@ -20,6 +21,14 @@ type Course {
 }
 
 input AddCourseInput {
+  courseName: String!
+  coursePrice: Float!
+  courseDuration: Int!
+  courseDurationLesson: Int!
+}
+
+input UpdateCourseInput {
+  courseId: String!
   courseName: String!
   coursePrice: Float!
   courseDuration: Int!
