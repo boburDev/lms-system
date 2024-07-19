@@ -7,25 +7,6 @@ type Permission = {
   [key: string]: Permission | boolean;
 };
 
-function getChangedPermissions(template: Permission, input: Permission): Permission {
-  const changed: Permission = {};
-
-  for (const key in template) {
-    if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
-      if (input[key] && typeof input[key] === 'object') {
-        const nestedChanged = getChangedPermissions(template[key] as Permission, input[key] as Permission);
-        if (Object.keys(nestedChanged).length > 0) {
-          changed[key] = nestedChanged;
-        }
-      }
-    } else if (input[key] === true && template[key] === false) {
-      changed[key] = true;
-    }
-  }
-
-  return changed;
-}
-
 // const input: Permission = {
 //   "dashboard": {
 //     "students_stat": { "isRead": true },
@@ -146,5 +127,24 @@ const resolvers = {
     employerBranchId: (global: Employer) => global.employer_branch_id,
   }
 };
+
+function getChangedPermissions(template: Permission, input: Permission): Permission {
+  const changed: Permission = {};
+
+  for (const key in template) {
+    if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
+      if (input[key] && typeof input[key] === 'object') {
+        const nestedChanged = getChangedPermissions(template[key] as Permission, input[key] as Permission);
+        if (Object.keys(nestedChanged).length > 0) {
+          changed[key] = nestedChanged;
+        }
+      }
+    } else if (input[key] === true && template[key] === false) {
+      changed[key] = true;
+    }
+  }
+
+  return changed;
+}
 
 export default resolvers;
