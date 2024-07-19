@@ -5,7 +5,6 @@ import { AddCompanyBranchInput, CompanyBranch, SearchCompanyInput } from '../../
 import BranchActivityEntity from '../../entities/company/company_activity.entity'
 import positionIndicator from '../../utils/status_and_positions';
 import { sign } from '../../utils/jwt';
-
 const resolvers = {
 	Query: {
 		companies: async (_parametr: unknown, { input }: { input: SearchCompanyInput }, context: any) => {
