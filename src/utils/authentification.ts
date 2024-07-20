@@ -62,7 +62,8 @@ export const authentification = async (token:string) => {
         let isActive = true;
         let isAdmin = false;
         let tokenDate: TokenData | null = verify(token)
-
+        if (!tokenDate) return null
+        
         if (tokenDate && tokenDate.adminId) {
             const adminRepository = AppDataSource.getRepository(AdminEntity)
             let data = await adminRepository.createQueryBuilder("admin")
