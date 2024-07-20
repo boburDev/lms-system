@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
   costs: [Cost]!
+  costById(Id: String): Cost!
 }
 
 type Mutation {
