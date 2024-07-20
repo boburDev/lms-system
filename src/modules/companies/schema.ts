@@ -2,22 +2,55 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  companies: [Company]
+  companies(input: SearchCompanyInput): [Company]
 }
 
 type Mutation {
-  addCompany(input: AddCompanyInput!): Company!
+  addCompanyBranch(input: AddCompanyBranchInput!): addedCompany
 }
 
 type Company {
-  name: String
+  companyId: String
+  companyName: String
+  branches: [Branch]
 }
 
-input AddCompanyInput {
+type Branch {
+  branchId: String
+  branchName: String
+  branchPhone: String
+  branchStatus: Boolean
+  branchBalance: String
+  branchSubdomen: String
+  companyId: String
   companyName: String
-  companyPhone: String
+  countryId: String
+  countryName: String
+  regionId: String
+  regionName: String
+  districtId: String
+  districtName: String
+}
+
+type addedCompany {
+  token: String
+  redirect_link: String
+  role: String
+}
+
+input SearchCompanyInput {
+  countryId: String
+  regionId: String
+  districtId: String
+}
+
+input AddCompanyBranchInput {
+  companyId: String
+  branchName: String
+  branchPhone: String
   derectorName: String
   derectorPhone: String
-  regionId: String
   password: String
-}`
+  districtId: String
+}
+`

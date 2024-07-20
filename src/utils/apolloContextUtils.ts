@@ -7,9 +7,7 @@ export default async ({ req, connection }: any) => {
             return connection.context;
         } else {
             const { token } = req.headers
-            if (!token) {
-                throw new Error("Token does not exist")
-            } else {
+            if (token) {
                 let context: any = await authentification(token)
                 
                 if (!context) {
@@ -18,6 +16,8 @@ export default async ({ req, connection }: any) => {
                     throw new Error(`pay failed`);
                 }
                 return context
+            } else {
+                throw new Error("Token does not exist")
             }
         }
     } catch (error: unknown) {
@@ -26,5 +26,8 @@ export default async ({ req, connection }: any) => {
             throw new AuthenticationError("Authentication failed");
         else if (message + "" === "pay failed")
             throw new ApolloError("Sizning hisobingizdagi mablag' tugadi")
+        } else {
+            throw new Error(message);
+        }
     }
 }

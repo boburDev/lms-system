@@ -2,6 +2,53 @@ import { AddEmployerInput, Employer } from "../../types/employer";
 import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
 import positionIndicator from "../../utils/status_and_positions";
+import permission from './employer_permission.json'
+type Permission = {
+  [key: string]: Permission | boolean;
+};
+
+// const input: Permission = {
+//   "dashboard": {
+//     "students_stat": { "isRead": true },
+//     "colleaue_stat": { "isRead": true, "isAll": true },
+//     "client_stat": { "isRead": false }
+//   },
+//   "leads": {
+//     "funnels": {
+//       "isCreate": false,
+//       "isUpdate": true,
+//       "isDelete": false,
+//       "isRead": true
+//     },
+//     "columns": {
+//       "isCreate": true,
+//       "isUpdate": false,
+//       "isDelete": false,
+//       "isRead": false
+//     },
+//     "leads": {
+//       "isCreate": false,
+//       "isUpdate": false,
+//       "isDelete": false,
+//       "isRead": false,
+//       "isExport": true,
+//       "isImport": false
+//     }
+//   },
+//   "settings": {
+//     "add_branch": {
+//       "isCreate": true,
+//       "isUpdate": true,
+//       "isDelete": true,
+//       "isRead": true
+//     }
+//   }
+// };
+
+// const changedPermissions = getChangedPermissions(permission, input);
+// // console.log(JSON.stringify(changedPermissions, null, 2));
+// console.log(changedPermissions)
+
 
 const resolvers = {
   Query: {
@@ -15,6 +62,17 @@ const resolvers = {
       })
       return data
     },
+    employerPermissions: async (_parametr: unknown, { }, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      let permissionByStatus = permission
+
+      if (context.role === 'ceo') {
+        
+      }
+
+
+      return JSON.stringify(permissionByStatus)
+    }
   },
   Mutation: {
     addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity> => {
@@ -69,5 +127,24 @@ const resolvers = {
     employerBranchId: (global: Employer) => global.employer_branch_id,
   }
 };
+
+function getChangedPermissions(template: Permission, input: Permission): Permission {
+  const changed: Permission = {};
+
+  for (const key in template) {
+    if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
+      if (input[key] && typeof input[key] === 'object') {
+        const nestedChanged = getChangedPermissions(template[key] as Permission, input[key] as Permission);
+        if (Object.keys(nestedChanged).length > 0) {
+          changed[key] = nestedChanged;
+        }
+      }
+    } else if (input[key] === true && template[key] === false) {
+      changed[key] = true;
+    }
+  }
+
+  return changed;
+}
 
 export default resolvers;

@@ -11,10 +11,6 @@ const resolvers = {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const leadRepository = AppDataSource.getRepository(LeadsEntity)
             const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
-            let result = {
-                leadList: [],
-                funnelColumnList: []
-            }
 
             let leads = await leadRepository.createQueryBuilder("leads")
                 .leftJoinAndSelect("leads.funnel_columns", "column")
@@ -63,14 +59,22 @@ const resolvers = {
                     .getOne()
             }
             if (course == null && input.courseId) throw new Error(`Bu uquv markazida course mavjud emas`)
-
+            
             const leadRepository = AppDataSource.getRepository(LeadsEntity)
+
+            let dataLeadOrders = await leadRepository.createQueryBuilder("leads")
+                .where("leads.lead_funnel_column_id = :columnId", { columnId: input.columnId })
+                .andWhere("leads.lead_deleted IS NULL")
+                .orderBy("leads.lead_created", "DESC")
+                .getMany()
+
             let lead = new LeadsEntity()
             lead.lead_name = input.leadName
             lead.lead_phone = input.leadPhone
             if (input.courseId) {
                 lead.lead_course_id = input.courseId
             }
+            lead.lead_order = (dataLeadOrders[0]?.lead_order + 1) || 1
             lead.lead_funnel_column_id = input.columnId
             lead.lead_employer_id = context.colleagueId
             lead.lead_branch_id = context.branchId
@@ -83,7 +87,6 @@ const resolvers = {
         },
         updateLeadColumn: async (_parent: unknown, { input }: { input: UpdateLeadColumnInput }, context: any): Promise<LeadsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-
             const leadRepository = AppDataSource.getRepository(LeadsEntity)
 
             let data = await leadRepository.createQueryBuilder("leads")
@@ -93,7 +96,55 @@ const resolvers = {
 
             if (!data) throw new Error(`Bu lead mavjud emas`)
 
-            data.lead_funnel_column_id = input.columnId
+            const currentPosition = data.lead_order;
+            let newPosition = input.orderNumber
+            if (currentPosition === input.orderNumber) {
+                return data;
+            }
+
+            let dataCoulmLeads = await leadRepository.createQueryBuilder("leads")
+                .where("leads.lead_funnel_column_id = :id", { id: input.columnId })
+                .andWhere("leads.lead_deleted IS NULL")
+                .orderBy("leads.lead_order", "ASC")
+                .getMany()
+
+            if (newPosition > currentPosition) {
+                for (let order of dataCoulmLeads) {
+                    if (order.lead_order > currentPosition && order.lead_order <= newPosition) {
+                        order.lead_order--;
+                    } else if (order.lead_id === input.leadId) {
+                        order.lead_order = newPosition;
+                    }
+                }
+            } else {
+                for (let order of dataCoulmLeads) {
+                    if (order.lead_order >= newPosition && order.lead_order < currentPosition) {
+                        order.lead_order++;
+                    } else if (order.lead_id === input.leadId) {
+                        order.lead_order = newPosition;
+                    }
+                }
+            }
+            
+            AppDataSource.transaction(async transactionalEntityManager => {
+                await transactionalEntityManager.save(LeadsEntity, dataCoulmLeads);
+            });
+
+            data.lead_order = input.orderNumber
+            return data
+        },
+        dateteLead: async (_parent: unknown, { leadId }: { leadId: string }, context: any): Promise<LeadsEntity> => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const leadRepository = AppDataSource.getRepository(LeadsEntity)
+
+            let data = await leadRepository.createQueryBuilder("leads")
+                .where("leads.lead_id = :id", { id: leadId })
+                .andWhere("leads.lead_deleted IS NULL")
+                .getOne()
+
+            if (!data) throw new Error("lead mavjud emas");
+            
+            data.lead_deleted = new Date()
             await leadRepository.save(data)
             return data
         }
@@ -103,6 +154,7 @@ const resolvers = {
         leadName: (global: Lead) => global.lead_name,
         leadPhone: (global: Lead) => global.lead_phone,
         leadStatus: (global: Lead) => global.lead_status,
+        leadOrder: (global: Lead) => global.lead_order,
         columnId: (global: Lead) => global.lead_funnel_column_id,
         courseId: (global: Lead) => global.lead_course_id,
         courseName: (global: Lead) => global?.courses?.course_name,

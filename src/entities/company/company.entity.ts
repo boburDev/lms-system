@@ -27,6 +27,9 @@ export class CompanyBranches {
     @PrimaryGeneratedColumn('uuid')
     company_branch_id: string
     
+    @Column({ length: 64, nullable: false, default: 'Test' })
+    company_branch_name: string
+    
     @Column({ length: 32 })
     company_branch_phone: string
     

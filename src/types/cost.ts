@@ -1,9 +1,17 @@
 type AddCostInput = {
     costName: string
     costPrice: number
-    costPayed: string
+    costType: number
+    costSelectedDate: string
     costColleagueId: string
-    costBranchId: string
+}
+type UpdateCostInput = {
+    costId: string
+    costName: string
+    costPrice: number
+    costType: number
+    costSelectedDate: string
+    costColleagueId: string
 }
 
 type Cost = {
@@ -15,5 +23,6 @@ type Cost = {
 
 export {
     Cost,
-    AddCostInput
+    AddCostInput,
+    UpdateCostInput
 }

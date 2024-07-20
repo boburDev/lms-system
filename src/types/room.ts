@@ -1,6 +1,10 @@
 type AddRoomInput = {
     roomName: string
 }
+type UpdateRoomInput = {
+    roomId: string
+    roomName: string
+}
 
 type Room = {
     room_id: string,
@@ -9,5 +13,6 @@ type Room = {
 
 export {
     Room,   
-    AddRoomInput
+    AddRoomInput,
+    UpdateRoomInput
 }

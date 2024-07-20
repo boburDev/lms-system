@@ -4,13 +4,15 @@ import RegionEntity, { Districts } from "../../entities/regions.entity";
 
 const resolvers = {
   Query: {
-    regions: async(_parametr: unknown, input: AddRegionInput): Promise<RegionEntity[]> => {
+    regions: async(_parametr: unknown, input: AddRegionInput, context: any): Promise<RegionEntity[]> => {
+      if (!context || (context && !context.isAdmin)) throw new Error("Not exist access token!");
       const regionsRepository = AppDataSource.getRepository(RegionEntity)
       
       if (input?.countryId) return await regionsRepository.findBy({ country_id: input.countryId })
       return await regionsRepository.find()
     },
-    districts: async(_parametr: unknown, input: AddDistrictInput): Promise<Districts[]> => {
+    districts: async(_parametr: unknown, input: AddDistrictInput, context: any): Promise<Districts[]> => {
+      if (!context || (context && !context.isAdmin)) throw new Error("Not exist access token!");
       const districtRepository = AppDataSource.getRepository(Districts)
       
       if (input?.regionId) return await districtRepository.findBy({ region_id: input.regionId })
@@ -18,7 +20,8 @@ const resolvers = {
     }
   },
   Mutation: {
-    addRegion: async(_parent: unknown, { input }: { input: AddRegionInput }): Promise<RegionEntity> => {
+    addRegion: async(_parent: unknown, { input }: { input: AddRegionInput }, context: any): Promise<RegionEntity> => {
+      if (!context || (context && !context.isAdmin)) throw new Error("Not exist access token!");
       const regionRepository = AppDataSource.getRepository(RegionEntity)
 
       let data = await regionRepository.findOneBy({ region_name: input.regionName, country_id: input.countryId})
@@ -30,7 +33,8 @@ const resolvers = {
       
       return await regionRepository.save(region)
     },
-    addDistrict: async(_parent: unknown, { input }: { input: AddDistrictInput }): Promise<Districts> => {
+    addDistrict: async(_parent: unknown, { input }: { input: AddDistrictInput }, context: any): Promise<Districts> => {
+      if (!context || (context && !context.isAdmin)) throw new Error("Not exist access token!");
       const districtRepository = AppDataSource.getRepository(Districts)
 
       let data = await districtRepository.findOneBy({ district_name: input.districtName, region_id: input.regionId})

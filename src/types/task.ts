@@ -4,7 +4,18 @@ type AddTaskInput = {
     taskStartDate: string
     taskEndDate: string
     taskType: string
+    taskToColleagueId: string
+}
+
+type UpdateTaskInput = {
+    taskId: string
+    taskTitle: string
+    taskBody: string
+    taskStartDate: string
+    taskEndDate: string
+    taskType: string
     taskFromColleagueId: string
+    taskToColleagueId: string
 }
 
 type Task = {
@@ -20,5 +31,6 @@ type Task = {
 
 export {
     Task,
-    AddTaskInput
+    AddTaskInput,
+    UpdateTaskInput
 }

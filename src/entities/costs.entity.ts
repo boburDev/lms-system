@@ -13,6 +13,9 @@ export default class Costs {
     @Column({ type: 'int' })
     cost_amount: number
 
+    @Column({ type: 'int' })
+    cost_type: number
+
     @Column({ type: 'timestamp', nullable: true })
     cost_payed_at: Date
 
@@ -36,7 +39,3 @@ export default class Costs {
     @JoinColumn({ name: 'colleague_id' })
     colleagues: Employers
 }
-
-// create table costs(
-//     buyer varchar(64),
-// );
