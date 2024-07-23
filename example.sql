@@ -1,7 +1,7 @@
 \c postgres
-drop database crm1;
-CREATE DATABASE crm1;
-\c crm1
+drop database crm;
+CREATE DATABASE crm;
+\c crm
 
 ALTER USER postgres WITH PASSWORD 'bobur1907';
 

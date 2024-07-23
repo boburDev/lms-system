@@ -12,6 +12,14 @@ const resolvers = {
         order: { cost_created: "DESC" }
       })
     },
+    costById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<CostEntity | null> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const costRepository = AppDataSource.getRepository(CostEntity)
+      return await costRepository.findOneBy({
+        cost_branch_id: context.branchId,
+        cost_id: Id
+      })
+    },
   },
   Mutation: {
     addCost: async (_parent: unknown, { input }: { input: AddCostInput }, context: any): Promise<CostEntity> => {

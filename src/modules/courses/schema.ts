@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
   courses: [Course]!
+  coursById(Id: String!): Course!
   courseGroups(courseId: String!): [Group]!
 }
 

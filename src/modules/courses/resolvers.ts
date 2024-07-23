@@ -14,6 +14,16 @@ const resolvers = {
         .orderBy("course.course_created_at", "DESC")
         .getMany();
     },
+    coursById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<CourseEntity | null> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const courseRepository = AppDataSource.getRepository(CourseEntity)
+
+      return await courseRepository.createQueryBuilder("course")
+        .where("course.course_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("course.course_id = :Id", { Id })
+        .andWhere("course.course_deleted IS NULL")
+        .getOne();
+    },
     courseGroups: async (_parametr: unknown, { courseId }: { courseId: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const courseRepository = AppDataSource.getRepository(CourseEntity)

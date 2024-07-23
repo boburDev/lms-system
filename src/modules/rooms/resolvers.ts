@@ -15,6 +15,16 @@ const resolvers = {
         .orderBy("room.room_created", "DESC")
         .getMany();
     },
+    roomById: async (_parametr: unknown, { Id }: { Id: string }, context:any): Promise<RoomEntity | null> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const roomRepository = AppDataSource.getRepository(RoomEntity)
+
+      return await roomRepository.createQueryBuilder("room")
+        .where("room.room_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("room.room_id = :Id", { Id })
+        .andWhere("room.room_deleted IS NULL")
+        .getOne();
+    },
   },
   Mutation: {
     addRoom: async (_parent: unknown, { input }: { input: AddRoomInput }, context:any): Promise<RoomEntity> => {
