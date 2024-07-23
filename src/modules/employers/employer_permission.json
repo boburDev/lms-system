@@ -27,9 +27,6 @@
     }
   },
   "calendar": {
-    "isCreate": false,
-    "isUpdate": false,
-    "isDelete": false,
     "isRead": false
   },
   "students": {
