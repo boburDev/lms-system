@@ -3,6 +3,9 @@ import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
 import positionIndicator, { getPermissions } from "../../utils/status_and_positions";
 import permission from './employer_permission.json'
+import { RolePermissions } from "../../interfaces/role_permissions";
+console.log(permission)
+
 type Permission = {
   [key: string]: Permission | boolean;
 };
@@ -46,7 +49,7 @@ type Permission = {
 // };
 
 // const changedPermissions = getChangedPermissions(permission, input);
-// // console.log(JSON.stringify(changedPermissions, null, 2));
+// console.log(JSON.stringify(changedPermissions, null, 2));
 // console.log(changedPermissions)
 
 
@@ -68,7 +71,7 @@ const resolvers = {
       console.log(permissionByStatus)
       
       if (employerRole === 'teacher') {
-        // console.log(getPermissions(employerRole, permissionByStatus));
+        // console.log(getPermissions(employerRole, permissionByStatus as RolePermissions));
         
       }
 
