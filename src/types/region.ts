@@ -8,6 +8,18 @@ type AddDistrictInput = {
     regionId: string
 }
 
+type UpdateRegionInput = {
+    regionId: string,
+    regionName: string,
+    countryId: string
+}
+
+type UpdateDistrictInput = {
+    districtId: string,
+    districtName: string,
+    regionId: string
+}
+
 type Region = {
     region_id: string,
     region_name: string,
@@ -24,5 +36,7 @@ export {
     Region,
     District,
     AddRegionInput,
-    AddDistrictInput
+    AddDistrictInput,
+    UpdateRegionInput,
+    UpdateDistrictInput
 }

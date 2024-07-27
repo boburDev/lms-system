@@ -3,16 +3,27 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
     funnelColumns(funnelId: ID!): [FunnelColumn!]!
+    funnelColumnById(funnelColumnId: String!): FunnelColumn!
 }
 
 type Mutation {
     addFunnelColumn (input: AddFunnelColumnInput!): FunnelColumn!
+    updateFunnelColumn (input: UpdateFunnelColumnInput!): FunnelColumn!
+    deleteFunnelColumn (Id: String!): FunnelColumn!
 }
 
 input AddFunnelColumnInput {
-    funnelId: ID!
     funnelColumnName: String!
     funnelColumnColor: String!
+    funnelId: ID!
+}
+
+input UpdateFunnelColumnInput {
+    funnelColumnId: String!
+    funnelColumnName: String!
+    funnelColumnOrder: String!
+    funnelColumnColor: String!
+    funnelId: ID!
 }
 
 type FunnelColumn {

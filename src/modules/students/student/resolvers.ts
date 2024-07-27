@@ -1,11 +1,11 @@
 import StudentEntity from "../../../entities/student/students.entity";
 import AppDataSource from "../../../config/ormconfig";
-import { AddStudentInput, Student } from "../../../types/student";
+import { AddStudentInput, Student, UpdateStudentInput } from "../../../types/student";
 import Groups from "../../../entities/group/groups.entity";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import { getDays } from "../../../utils/date";
-import Student_payments from "../../../entities/student/student_payments.entity";
-import Student_cashes from "../../../entities/student/student_cashes.entity";
+// import Student_payments from "../../../entities/student/student_payments.entity";
+// import Student_cashes from "../../../entities/student/student_cashes.entity";
 
 const resolvers = {
   Query: {
@@ -46,34 +46,7 @@ const resolvers = {
 
       if (!data) throw new Error("Student not found");
       return data
-    },
-    // studentGroups: async (_parametr: unknown, { studentId }: { studentId: string }, context: any) => {
-    //   if (!context?.branchId) throw new Error("Not exist access token!");
-    //   const studentRepository = AppDataSource.getRepository(StudentEntity)
-
-    //   let res = await studentRepository.createQueryBuilder("students")
-    //     .leftJoinAndSelect("students.student_group", "student_group")
-    //     .leftJoinAndSelect("student_group.group", "group")
-    //     .leftJoinAndSelect("group.employer", "employer")
-    //     .leftJoinAndSelect("group.room", "room")
-    //     .where("students.student_branch_id = :branchId", { branchId: context.branchId })
-    //     .where("students.student_id = :studentId", { studentId: studentId })
-    //     .andWhere("students.student_deleted IS NULL")
-    //     .andWhere("group.group_deleted IS NULL")
-    //     .getOne();
-    //   let data = res?.student_group.map(i => {
-    //     return {
-    //       group_id: i.group.group_id,
-    //       group_name: i.group.group_name,
-    //       group_days: i.group.group_days,
-    //       group_colleague_id: i.group.group_colleague_id,
-    //       group_room_id: i.group.group_room_id,
-    //       employer: { employer_name: i.group.employer.employer_name },
-    //       room: { room_name: i.group.room.room_name }
-    //     }
-    //   })
-    //   return data
-    // }
+    }
   },
   Mutation: {
     addStudent: async (_parent: unknown, { input }: { input: AddStudentInput }, context: any): Promise<StudentEntity> => {
@@ -86,19 +59,17 @@ const resolvers = {
         .andWhere("students.student_deleted IS NULL")
         .getOne()
 
-      if (data !== null) throw new Error(`Bu uquv markazida "${input.studentPhone}" raqamli uquvchi mavjud`)
+      if (data) throw new Error(`Bu uquv markazida "${input.studentPhone}" raqamli uquvchi mavjud`)
 
       let student = new StudentEntity()
       student.student_name = input.studentName
       student.student_phone = input.studentPhone
-      student.student_password = input.studentPassword
       student.student_status = 1
-      student.student_balance = input.studentCash || 0
       if (input.studentBithday) {
         student.student_birthday = new Date(input.studentBithday)
       }
       student.student_gender = input.studentGender
-      student.colleague_id = input.colleagueId || context.colleagueId
+      student.colleague_id = context.colleagueId
       student.student_branch_id = context.branchId
       student.parentsInfo = input.parentsInfo
 
@@ -141,30 +112,26 @@ const resolvers = {
         }
         studentData.student_group = [{ group: dataGroup }]
       }
-      // if (input.studentCash) {
-      //   const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
-      //   let studentCash = new Student_cashes()
-      //   let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
-      //   studentCash.cash_amount = input.studentCash
-      //   studentCash.check_number = count.length + 1
-      //   studentCash.student_cash_payed_at = new Date()
-      //   studentCash.branch_id = context.branchId
-      //   studentCash.student_id = studentData.student_id
-
-      //   let studentCashData = await studentCashCountRepository.save(studentCash)
-
-      //   const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
-      //   let studentPayment = new Student_payments()
-      //   studentPayment.student_payment_debit = input.studentCash
-      //   studentPayment.student_payment_type = input.studentCashType
-      //   studentPayment.student_payment_payed_at = new Date()
-      //   studentPayment.student_id = studentData.student_id
-      //   studentPayment.employer_id = input.colleagueId || context.colleagueId
-      //   studentPayment.student_cash_id = studentCashData.student_cash_id
-
-      //   let studentPaymentData = await studentPaymentRepository.save(studentPayment)
-      // }
+      
       return studentData
+    },
+    updateStudent: async (_parent: unknown, { input }: { input: UpdateStudentInput }, context: any): Promise<StudentEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const studentRepository = AppDataSource.getRepository(StudentEntity)
+
+      let student = await studentRepository.createQueryBuilder("students")
+        .where("students.student_branch_id = :branchId", { branchId: context.branchId })
+        .andWhere("students.student_id = :Id", { Id: input.studentId })
+        .andWhere("students.student_deleted IS NULL")
+        .getOne()
+
+      if (!student) throw new Error(`Bu uquv markazida bu uquvchi mavjud`)
+      student.student_name = input.studentName || student.student_name
+      student.student_phone = input.studentPhone || student.student_phone
+      student.student_birthday = new Date(input.studentBithday) || student.student_birthday
+      student.student_gender = input.studentGender || student.student_gender
+      student.parentsInfo = input.parentsInfo || student.parentsInfo
+      return await studentRepository.save(student)
     },
     deleteStudent: async (_parent: unknown, { studentId }: { studentId: string }, context: any) => {
       try {

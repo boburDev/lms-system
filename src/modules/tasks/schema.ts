@@ -20,9 +20,9 @@ type Task {
   taskEndDate: String!
   taskType: Int!
   taskFromColleagueId: String!
-  taskFromColleagueName: String!
+  taskFromColleagueName: String
   taskColleagueId: String!
-  taskColleagueName: String!
+  taskColleagueName: String
 }
 
 input AddTaskInput {

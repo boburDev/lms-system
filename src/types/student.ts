@@ -1,15 +1,20 @@
 type AddStudentInput = {
     studentName: string
     studentPhone: string
-    studentPassword: string
     studentStatus: number
-    studentCash: number
-    studentCashType: number
     studentBithday: string
     studentGender: number
     groupId: string
     addedDate: string
-    colleagueId: string
+    parentsInfo: [Parent]
+}
+
+type UpdateStudentInput = {
+    studentId: string
+    studentName: string
+    studentPhone: string
+    studentBithday: string
+    studentGender: number
     parentsInfo: [Parent]
 }
 
@@ -62,5 +67,6 @@ export {
     Student,
     ParentInfo,
     AddStudentInput,
+    UpdateStudentInput,
     StudentAttendenceData
 }

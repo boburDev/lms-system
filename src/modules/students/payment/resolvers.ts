@@ -60,7 +60,7 @@ const resolvers = {
                 .andWhere("students.student_deleted IS NULL")
                 .getOne()
 
-            if (data === null) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
+            if (!data) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
             data.student_balance = data.student_balance + input.cashAmount
             await studentRepository.save(data)
 
@@ -84,8 +84,7 @@ const resolvers = {
             studentPayment.student_id = input.studentId
             studentPayment.employer_id = context.colleagueId
             studentPayment.student_cash_id = studentCashData.student_cash_id
-
-            let studentPaymentData = await studentPaymentRepository.save(studentPayment)
+            await studentPaymentRepository.save(studentPayment)
 
             const employerRepository = AppDataSource.getRepository(EmployerEntity)
             let dataEmployer = await employerRepository.createQueryBuilder("employer")
@@ -94,7 +93,7 @@ const resolvers = {
                 .andWhere("employer.employer_deleted IS NULL")
                 .getOne()
 
-            if (dataEmployer === null) throw new Error("Xodim malumoti tuliq emas");
+            if (!dataEmployer) throw new Error("Xodim malumoti tuliq emas");
 
             return {
                 student_cash_id: studentCashData.student_cash_id,
@@ -119,7 +118,7 @@ const resolvers = {
                 .andWhere("students.student_deleted IS NULL")
                 .getOne()
 
-            if (data === null) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
+            if (!data) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
 
             if (data.student_balance >= input.cashAmount) {
                 data.student_balance = data.student_balance - input.cashAmount
@@ -145,8 +144,7 @@ const resolvers = {
                 studentPayment.student_id = input.studentId
                 studentPayment.employer_id = context.colleagueId
                 studentPayment.student_cash_id = studentCashData.student_cash_id
-
-                let studentPaymentData = await studentPaymentRepository.save(studentPayment)
+                await studentPaymentRepository.save(studentPayment)
 
                 return "success"
             } else {

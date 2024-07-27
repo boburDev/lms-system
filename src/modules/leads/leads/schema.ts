@@ -3,10 +3,12 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
     leads(funnelId: ID!): Leads
+    leadById(Id: String!): Lead
 }
 
  type Mutation {
     addLead(input: AddLeadInput): Lead!
+    updateLead(input: UpdateLeadInput): Lead!
     updateLeadColumn(input: UpdateLeadColumnInput): Lead!
     dateteLead(leadId: String): Lead!
 }
@@ -15,6 +17,13 @@ input AddLeadInput {
     leadName: String!
     leadPhone: String!
     columnId: ID!
+    courseId: ID
+}
+
+input UpdateLeadInput {
+    leadId: String!
+    leadName: String
+    leadPhone: String
     courseId: ID
 }
 

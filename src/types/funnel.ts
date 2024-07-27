@@ -1,4 +1,5 @@
 type AddFunnelInput = {
+    funnelId: string
     funnelName: string
 }
 
@@ -13,6 +14,14 @@ type AddFunnelColumnInput = {
     funnelColumnColor: string
 }
 
+type UpdateFunnelColumnInput = {
+    funnelId: string
+    funnelColumnId: string
+    funnelColumnName: string
+    funnelColumnColor: string
+    funnelColumnOrder: number
+}
+
 type FunnelColumn = {
     funnel_column_id: string
     funnel_column_name: string
@@ -25,5 +34,6 @@ export {
     Funnel,
     AddFunnelInput,
     AddFunnelColumnInput,
+    UpdateFunnelColumnInput,
     FunnelColumn
 }

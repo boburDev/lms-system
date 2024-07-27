@@ -9,6 +9,7 @@ type Query {
 
 type Mutation {
   addStudent(input: AddStudentInput): Student!
+  updateStudent(input: UpdateStudentInput): Student!
   deleteStudent(studentId: String): Student!
 }
 
@@ -20,15 +21,20 @@ input ParentInput {
 input AddStudentInput {
   studentName: String!
   studentPhone: String!
-  studentPassword: String
   studentStatus: Int
   studentBithday: String
   studentGender: Int
-  studentCash: Float
-  studentCashType: Int
-  colleagueId: String
   groupId: String
   addedDate: String
+  parentsInfo: [ParentInput]
+}
+
+input UpdateStudentInput {
+  studentId: String
+  studentName: String
+  studentPhone: String
+  studentBithday: String
+  studentGender: Int
   parentsInfo: [ParentInput]
 }
 
