@@ -1,8 +1,11 @@
 import { AddEmployerInput, Employer } from "../../types/employer";
 import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
-import positionIndicator from "../../utils/status_and_positions";
+import positionIndicator, { getPermissions } from "../../utils/status_and_positions";
 import permission from './employer_permission.json'
+import { RolePermissions } from "../../interfaces/role_permissions";
+console.log(permission)
+
 type Permission = {
   [key: string]: Permission | boolean;
 };
@@ -46,7 +49,7 @@ type Permission = {
 // };
 
 // const changedPermissions = getChangedPermissions(permission, input);
-// // console.log(JSON.stringify(changedPermissions, null, 2));
+// console.log(JSON.stringify(changedPermissions, null, 2));
 // console.log(changedPermissions)
 
 
@@ -62,11 +65,13 @@ const resolvers = {
       })
       return data
     },
-    employerPermissions: async (_parametr: unknown, { }, context: any) => {
+    employerPermissions: async (_parametr: unknown, { employerRole }: { employerRole: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       let permissionByStatus = permission
-
-      if (context.role === 'ceo') {
+      console.log(permissionByStatus)
+      
+      if (employerRole === 'teacher') {
+        // console.log(getPermissions(employerRole, permissionByStatus as RolePermissions));
         
       }
 

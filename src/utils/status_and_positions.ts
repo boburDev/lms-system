@@ -1,3 +1,5 @@
+import { RolePermissions } from "../interfaces/role_permissions";
+
 export default function positionIndicator(position: string | number): string | number | null {
     const positionMap: { [key: string]: number } = {
         ceo: 1,
@@ -31,4 +33,28 @@ export const positionStudent = (status:number) => {
     if (status == 6) return 'Darsga kelishni to\'xtatgan o\'quvchi'
     if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
     if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
+}
+
+export const getPermissions = (role: string, permissions: RolePermissions) => {
+    switch (role) {
+        case 'teacher':
+            return {
+                "calendar": permissions.calendar,
+                "students": {
+                    "students": permissions.students.students,
+                    "groups": permissions.students.groups
+                },
+                "groups": {
+                    "groups": permissions.groups.groups,
+                    "attendance": permissions.groups.attendance
+                },
+                "tasks": permissions.tasks,
+                "settings": {
+                    "user": permissions.settings.user
+                }
+            };
+        // Add other roles here with their respective permissions
+        default:
+            return {};
+    }
 }
