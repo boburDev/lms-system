@@ -6,7 +6,10 @@ const router = express.Router();
 
 router
     .post('/login', authController.login)
+    .post('/verify-phone', authController.verifyPhoneBeforeCreateAccaunt)
     .post('/signup', authController.signup)
+    .post('/forget-password', authController.forgetPassword)
+    .post('/update-password', authController.updateNewPassword)
     .post('/create-admin', authAdminController.create)
     .post('/login-admin', authAdminController.login)
 

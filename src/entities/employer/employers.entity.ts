@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "../company/company.entity";
 import bcrypt from 'bcrypt';
 import Groups from "../group/groups.entity";
@@ -25,14 +25,17 @@ export default class Employers {
     @Column({ nullable: true })
     employer_birthday: Date
 
-    @Column({ length: 32, nullable: true })
-    employer_gender: string
+    @Column({ type: 'int', nullable: true })
+    employer_gender: number
 
     @Column({ length: 64, nullable: true })
     employer_password: string
 
     @Column({ nullable: false })
     employer_position: number
+
+    @Column({ type: 'boolean', nullable: true, default: true })
+    employer_notification_mode: boolean
     
     @Column({ length: 4, default: 'ru' })
     employer_usage_lang: string
@@ -81,5 +84,14 @@ export default class Employers {
     async hashPassword() {
         const saltRounds = 10; // You can adjust the salt rounds as per your requirement
         this.employer_password = this.employer_password.length ? await bcrypt.hash(this.employer_password, saltRounds) : ''
+    }
+
+    @BeforeUpdate()
+    async hashPasswordBeforeUpdate() {
+        if (this.employer_password) {
+            // If a password is provided, hash it
+            const saltRounds = 10;
+            this.employer_password = await bcrypt.hash(this.employer_password, saltRounds);
+        }
     }
 }

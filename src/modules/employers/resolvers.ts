@@ -1,63 +1,17 @@
-import { AddEmployerInput, Employer } from "../../types/employer";
+import { AddEmployerInput, Employer, UpdateEmployerProfileInput } from "../../types/employer";
 import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
 import positionIndicator, { getPermissions } from "../../utils/status_and_positions";
 import permission from './employer_permission.json'
-import { RolePermissions } from "../../interfaces/role_permissions";
-console.log(permission)
 
 type Permission = {
   [key: string]: Permission | boolean;
 };
 
-// const input: Permission = {
-//   "dashboard": {
-//     "students_stat": { "isRead": true },
-//     "colleaue_stat": { "isRead": true, "isAll": true },
-//     "client_stat": { "isRead": false }
-//   },
-//   "leads": {
-//     "funnels": {
-//       "isCreate": false,
-//       "isUpdate": true,
-//       "isDelete": false,
-//       "isRead": true
-//     },
-//     "columns": {
-//       "isCreate": true,
-//       "isUpdate": false,
-//       "isDelete": false,
-//       "isRead": false
-//     },
-//     "leads": {
-//       "isCreate": false,
-//       "isUpdate": false,
-//       "isDelete": false,
-//       "isRead": false,
-//       "isExport": true,
-//       "isImport": false
-//     }
-//   },
-//   "settings": {
-//     "add_branch": {
-//       "isCreate": true,
-//       "isUpdate": true,
-//       "isDelete": true,
-//       "isRead": true
-//     }
-//   }
-// };
-
-// const changedPermissions = getChangedPermissions(permission, input);
-// console.log(JSON.stringify(changedPermissions, null, 2));
-// console.log(changedPermissions)
-
-
 const resolvers = {
   Query: {
     employers: async (_parametr: unknown, { }, context: any): Promise<EmployerEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       let data = await employerRepository.find({
         where: { employer_branch_id: context.branchId },
@@ -65,33 +19,30 @@ const resolvers = {
       })
       return data
     },
+    employerRoles: async (_parametr: unknown, {}, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      if (['ceo', 'director', 'administrator'].includes(context.role)) return employerPermissionByRole(context.role)
+      throw new Error("Unexpected role");
+    },
     employerPermissions: async (_parametr: unknown, { employerRole }: { employerRole: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      let permissionByStatus = permission
-      console.log(permissionByStatus)
-      
-      if (employerRole === 'teacher') {
-        // console.log(getPermissions(employerRole, permissionByStatus as RolePermissions));
-        
-      }
-
-
-      return JSON.stringify(permissionByStatus)
+      let permissions = getPermissions(employerRole, permission)
+      if (permissions && permissions.error) throw new Error(permissions.message);
+      return JSON.stringify(permissions)
     }
   },
   Mutation: {
     addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 
       let data = await employerRepository.createQueryBuilder("employer")
-        .where("employer.employer_name = :name", { name: input.employerName })
+        .where("employer.employer_phone = :phone", { phone: input.employerPhone })
         .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
 
-      if (data !== null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      if (!data) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
 
       let employer = new EmployerEntity()
       employer.employer_name = input.employerName
@@ -100,6 +51,25 @@ const resolvers = {
       employer.employer_password = input.employerPassword
       employer.employer_branch_id = context.branchId
 
+      return await employerRepository.save(employer)
+    },
+    updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const employerRepository = AppDataSource.getRepository(EmployerEntity)
+
+      let employer = await employerRepository.createQueryBuilder("employer")
+        .where("employer.employer_id = :Id", { Id: input.employerId })
+        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+        .andWhere("employer.employer_deleted IS NULL")
+        .getOne()
+
+      if (!employer) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+
+      employer.employer_name = input.employerName || employer.employer_name
+      employer.employer_phone = input.employerPhone || employer.employer_phone
+      employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday
+      employer.employer_gender = input.employerGender || employer.employer_gender
+      employer.employer_usage_lang = input.employerLang || employer.employer_usage_lang
       return await employerRepository.save(employer)
     },
     deleteEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
@@ -132,6 +102,17 @@ const resolvers = {
     employerBranchId: (global: Employer) => global.employer_branch_id,
   }
 };
+
+function employerPermissionByRole(str:string) {
+  if (str == 'ceo') {
+    return ['director', 'administrator', 'teacher', 'marketolog', 'casher']
+  } else if (str == 'director') {
+    return ['administrator', 'teacher', 'marketolog', 'casher']
+  } else if (str == 'administrator') {
+    return ['administrator', 'teacher']
+  }
+  return [] 
+}
 
 function getChangedPermissions(template: Permission, input: Permission): Permission {
   const changed: Permission = {};

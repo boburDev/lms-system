@@ -1,3 +1,22 @@
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity()
+export default class Forms {
+    @PrimaryGeneratedColumn('uuid')
+    form_id: string
+
+    @Column({ type: 'varchar', length: 30 })
+    form_name: string
+
+    @Column({ type: 'varchar', length: 30 })
+    form_title: string
+
+    @Column()
+    form_description: string
+
+    @Column({ type: 'int' })
+    to_count: number
+}
 // create table company_forms(
 //     company_form_id uuid not null default uuid_generate_v4() primary key,
 //     company_form_name varchar(32) not null,

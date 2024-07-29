@@ -35,7 +35,7 @@ export const positionStudent = (status:number) => {
     if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
 }
 
-export const getPermissions = (role: string, permissions: RolePermissions) => {
+export const getPermissions = (role: string, permissions: any) => {
     switch (role) {
         case 'teacher':
             return {
@@ -53,8 +53,70 @@ export const getPermissions = (role: string, permissions: RolePermissions) => {
                     "user": permissions.settings.user
                 }
             };
-        // Add other roles here with their respective permissions
+        case 'marketolog':
+            return {
+                "dashboard": {
+                    "colleaue_stat": permissions.dashboard.colleaue_stat,
+                    "client_stat": permissions.dashboard.client_stat
+                },
+                "calendar": permissions.calendar,
+                "tasks": permissions.tasks,
+                "settings": {
+                    "user": permissions.settings.user
+                }
+            };
+        case 'casher':
+            return {
+                "dashboard": {
+                    "students_stat": permissions.dashboard.students_stat,
+                    "colleaue_stat": permissions.dashboard.colleaue_stat,
+                    "client_stat": permissions.dashboard.client_stat
+                },
+                "calendar": permissions.calendar,
+                "tasks": permissions.tasks,
+                "finance": permissions.finance,
+                "settings": {
+                    "user": permissions.settings.user
+                }
+            };  
+        case 'administrator':
+            return {
+                "dashboard": permissions.dashboard,
+                "leads": permissions.leads,
+                "calendar": permissions.calendar,
+                "students": permissions.students,
+                "groups": permissions.groups,
+                "tasks": permissions.tasks,
+                "courses": permissions.courses,
+                "rooms": permissions.rooms,
+                "employers": permissions.employers,
+                "finance": {
+                    "costs": permissions.costs,
+                },
+                "settings": {
+                    "user": permissions.settings.user
+                }
+            };
+        case 'director':
+            return {
+                "dashboard": permissions.dashboard,
+                "leads": permissions.leads,
+                "calendar": permissions.calendar,
+                "employers": permissions.employers,
+                "students": permissions.students,
+                "groups": permissions.groups,
+                "courses": permissions.courses,
+                "rooms": permissions.rooms,
+                "tasks": permissions.tasks,
+                "finance": permissions.finance,
+                "settings": {
+                    "forms": permissions.settings.forms,
+                    "company": permissions.settings.company,
+                    "payments": permissions.settings.payments,
+                    "user": permissions.settings.user
+                }
+            };
         default:
-            return {};
+            return { error: true, message: 'Role not found'};
     }
 }

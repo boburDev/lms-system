@@ -8,9 +8,9 @@ export default class Phone {
     @Column({ length: 12 })
     phone_number: string
 
-    @Column({ length: 6 })
-    temp_code: string
+    @Column({ type: 'int' })
+    temp_code: number
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP + interval '2 minutes'" })
     phone_code_created: Date
 }

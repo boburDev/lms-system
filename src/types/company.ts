@@ -14,6 +14,22 @@ type AddCompanyBranchInput = {
     districtId: string
 }
 
+type UpdateCompanyBranchInput = {
+    branchId: string
+    branchName: string
+    branchPhone: string
+    districtId: string
+}
+
+type BranchInfo = {
+    company_branch_id: string
+    company_branch_name: string
+    company_branch_phone: string
+    company_branch_status: boolean
+    company_branch_balance: string
+    company_branch_subdomen: string
+}
+
 type CompanyBranch = {
     company_id: string
     company_name: string
@@ -46,5 +62,7 @@ type CompanyBranch = {
 export {
     SearchCompanyInput,
     AddCompanyBranchInput,
-    CompanyBranch
+    CompanyBranch,
+    UpdateCompanyBranchInput,
+    BranchInfo
 }

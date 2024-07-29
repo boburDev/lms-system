@@ -1,7 +1,7 @@
 import AppDataSource from '../../config/ormconfig'
 import { Companies, CompanyBranches } from "../../entities/company/company.entity";
 import EmployersEntity from '../../entities/employer/employers.entity';
-import { AddCompanyBranchInput, CompanyBranch, SearchCompanyInput } from '../../types/company';
+import { AddCompanyBranchInput, BranchInfo, CompanyBranch, SearchCompanyInput, UpdateCompanyBranchInput } from '../../types/company';
 import BranchActivityEntity from '../../entities/company/company_activity.entity'
 import positionIndicator from '../../utils/status_and_positions';
 import { sign } from '../../utils/jwt';
@@ -61,8 +61,8 @@ const resolvers = {
 		},
 	},
 	Mutation: {
-		addCompanyBranch: async (_parent: unknown, { input }: { input: AddCompanyBranchInput }) => {
-			console.log(input)
+		addCompanyBranch: async (_parent: unknown, { input }: { input: AddCompanyBranchInput }, context: any) => {
+			if (!context?.branchId) throw new Error("Not exist access token!");
 			const activityRepository = AppDataSource.getRepository(BranchActivityEntity)
 			const branchRepository = AppDataSource.getRepository(CompanyBranches)
 			const employerRepository = AppDataSource.getRepository(EmployersEntity)
@@ -113,10 +113,32 @@ const resolvers = {
 				role: positionIndicator(newEmployer.employer_position)
 			}
 		},
+		updateCompanyBranch: async (_parent: unknown, { input }: { input: UpdateCompanyBranchInput }, context: any) => {
+			if (!context?.branchId) throw new Error("Not exist access token!");
+			const branchRepository = AppDataSource.getRepository(CompanyBranches)	
+			let branch = await branchRepository.findOneBy({ company_branch_id: input.branchId })
+
+			if (!branch) throw new Error("Branch not found");
+			
+			branch.company_branch_name = input.branchName || branch.company_branch_name
+			branch.company_branch_phone = input.branchPhone || branch.company_branch_phone
+			branch.branch_district_id = input.districtId || branch.branch_district_id
+
+			await branchRepository.save(branch)
+			return branch
+		}
+	},
+	BranchInfo: {
+		branchId: (global:BranchInfo) => global?.company_branch_id,
+		branchName: (global:BranchInfo) => global?.company_branch_name,
+		branchPhone: (global:BranchInfo) => global?.company_branch_phone,
+		branchStatus: (global:BranchInfo) => global?.company_branch_status,
+		branchBalance: (global:BranchInfo) => global?.company_branch_balance,
+		branchSubdomen: (global:BranchInfo) => global?.company_branch_subdomen,
 	},
 	Company: {
-		companyName: (global: CompanyBranch) => global.company_id,
-		companyId: (global: CompanyBranch) => global.company_name,
+		companyId: (global: CompanyBranch) => global.company_id,
+		companyName: (global: CompanyBranch) => global.company_name,
 		branches: (global: CompanyBranch) => {
 			if (global && !Array.isArray(global.companyBranches)) return []
 			return global && global.companyBranches && global.companyBranches.map(i => {

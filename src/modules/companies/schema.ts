@@ -7,12 +7,22 @@ type Query {
 
 type Mutation {
   addCompanyBranch(input: AddCompanyBranchInput!): addedCompany
+  updateCompanyBranch(input: UpdateCompanyBranchInput!): BranchInfo
 }
 
 type Company {
   companyId: String
   companyName: String
   branches: [Branch]
+}
+
+type BranchInfo {
+  branchId: String
+  branchName: String
+  branchPhone: String
+  branchStatus: Boolean
+  branchBalance: String
+  branchSubdomen: String
 }
 
 type Branch {
@@ -51,6 +61,13 @@ input AddCompanyBranchInput {
   derectorName: String
   derectorPhone: String
   password: String
+  districtId: String
+}
+
+input UpdateCompanyBranchInput {
+  branchId: String!
+  branchName: String
+  branchPhone: String
   districtId: String
 }
 `

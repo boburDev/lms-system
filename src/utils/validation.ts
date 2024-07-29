@@ -7,6 +7,7 @@ export const validateObjectSignup = (input: object) => {
         companyName: Joi.string().min(2).required(),
         companyPhone: Joi.string().min(12).max(12).required(),
         password: Joi.string().min(5).required(),
+        code: Joi.string().min(6).max(6).required(),
         districtId: Joi.string().min(5).required()
     })
     return schema.validate(input)
@@ -20,6 +21,16 @@ export const validateObjectCreateAdmin = (input: object) => {
         phone: Joi.string().min(12).max(12).required(),
         role: Joi.number().required().valid(1, 2, 3),
         password: Joi.string().min(5).required()
+    })
+    return schema.validate(input)
+}
+
+export const validateObjectNewPassword = (input: object) => {
+    const schema = Joi.object().keys({
+        code: Joi.string().min(6).max(6).required(),
+        subdomain: Joi.string().min(2).required(),
+        userphone: Joi.string().min(12).max(12).required(),
+        new_password: Joi.string().min(5).required()
     })
     return schema.validate(input)
 }

@@ -6,6 +6,15 @@ type AddEmployerInput = {
     employerBranchId: string
 }
 
+type UpdateEmployerProfileInput = {
+    employerId: string
+    employerName: string
+    employerPhone: string
+    employerBirthday: string
+    employerGender: number
+    employerLang: string
+}
+
 type Employer = {
     employer_id: string
     employer_name: string
@@ -21,5 +30,6 @@ type Employer = {
 
 export {
     Employer,
-    AddEmployerInput
+    AddEmployerInput,
+    UpdateEmployerProfileInput
 }

@@ -1,0 +1,4 @@
+export const PAYME_KEY = ["Paycom:xvGTqB1JfQQ0qOst0rDM5cDU9&8xe7&chfYR", "Paycom:I9fKJIhkksAA66qAJfI&1%R4QM#ma@MFbrfx"];
+export const CLICK_KEY = 'ZJWelmAR11kG9ln';
+export const APELSIN_KEY = 'Apelsin_soffit1';
+export const ESKIZ_TOKEN = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9ub3RpZnkuZXNraXoudXpcL2FwaVwvYXV0aFwvbG9naW4iLCJpYXQiOjE2NDMzNjE1OTgsImV4cCI6MTY0NTk1MzU5OCwibmJmIjoxNjQzMzYxNTk4LCJqdGkiOiJWV2RVUElQbktwdXlTWVpsIiwic3ViIjo1LCJwcnYiOiI4N2UwYWYxZWY5ZmQxNTgxMmZkZWM5NzE1M2ExNGUwYjA0NzU0NmFhIn0.TUQyHTKSDzenpuX16QUpVrqqrxOMnMEgSgy6oEGy97E'
