@@ -43,7 +43,7 @@ export default class Leads {
     @JoinColumn({ name: 'lead_course_id' })
     courses: Courses
 
-    @ManyToOne(() => Funnel_Columns, funnel_column => funnel_column)
+    @ManyToOne(() => Funnel_Columns, funnel_column => funnel_column.leads)
     @JoinColumn({ name: 'lead_funnel_column_id' })
     funnel_columns: Funnel_Columns
 

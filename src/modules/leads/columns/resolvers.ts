@@ -52,7 +52,7 @@ const resolvers = {
         updateFunnelColumn: async (_parent: unknown, { input }: { input: UpdateFunnelColumnInput }, context: any): Promise<FunnelColumnsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
-
+            
             let dataFunnelColumn = await funnelColumnRepository.createQueryBuilder("funnelColumn")
                 .where("funnelColumn.funnel_column_id = :Id", { Id: input.funnelColumnId })
                 .andWhere("funnelColumn.funnel_column_deleted IS NULL")
@@ -102,6 +102,20 @@ const resolvers = {
             dataFunnelColumn.funnel_column_color = input.funnelColumnColor || dataFunnelColumn.funnel_column_color
             dataFunnelColumn.funnel_id = input.funnelId || dataFunnelColumn.funnel_id
             return await funnelColumnRepository.save(dataFunnelColumn)
+        },
+        deleteFunnelColumn: async (_parent: unknown, { Id }: { Id: string }, context: any): Promise<FunnelColumnsEntity> => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
+            let dataFunnelColumn = await funnelColumnRepository.createQueryBuilder("funnelColumn")
+                .leftJoinAndSelect("funnelColumn.funnels", "funnels")
+                .leftJoinAndSelect("funnels.leads", "leads")
+                .where("funnelColumn.funnel_column_id = :Id", { Id })
+                .andWhere("funnelColumn.funnel_column_deleted IS NULL")
+                .getOne();
+            if (!dataFunnelColumn) throw new Error("Bu nomdagi column mavjud emas");
+
+            console.log(dataFunnelColumn);
+            return dataFunnelColumn
         }
     },
     FunnelColumn: {

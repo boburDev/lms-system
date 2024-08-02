@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Funnels from "./funnels.entity";
+import Leads from "./leads.entity";
 
 @Entity()
 export default class Funnel_Columns {
@@ -24,9 +25,12 @@ export default class Funnel_Columns {
     @Column()
     funnel_id: string
 
-    @ManyToOne(() => Funnels, funnel => funnel)
+    @ManyToOne(() => Funnels, funnel => funnel.funnel_columns)
     @JoinColumn({ name: 'funnel_id' })
     funnels: Funnels
+
+    @OneToMany(() => Leads, lead => lead.lead_id)
+    leads: Leads[]
 }
 
 

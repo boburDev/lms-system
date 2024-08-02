@@ -19,6 +19,7 @@ const resolvers = {
                 .where("column.funnel_id = :funnelId", { funnelId: funnelId })
                 .andWhere("column.funnel_column_deleted IS NULL")
                 .andWhere("leads.lead_deleted IS NULL")
+                .orderBy("leads.lead_order", "DESC")
                 .getMany();
                 
             let funnelColumns = await funnelColumnRepository.createQueryBuilder("funnelColumn")
@@ -100,7 +101,6 @@ const resolvers = {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const employerRepository = AppDataSource.getRepository(EmployersEntity)
             const courseRepository = AppDataSource.getRepository(CoursesEntity)
-
             let employer = await employerRepository.createQueryBuilder("employer")
                 .where("employer.employer_id = :Id", { Id: context.colleagueId })
                 .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
@@ -152,39 +152,45 @@ const resolvers = {
 
             const currentPosition = data.lead_order;
             let newPosition = input.orderNumber
-            if (currentPosition === input.orderNumber) {
+            if (currentPosition === newPosition && data.lead_funnel_column_id === input.columnId) {
                 return data;
             }
+            console.log(input);
 
             let dataColumnLeads = await leadRepository.createQueryBuilder("leads")
                 .where("leads.lead_funnel_column_id = :id", { id: input.columnId })
                 .andWhere("leads.lead_deleted IS NULL")
                 .orderBy("leads.lead_order", "ASC")
                 .getMany()
-
+            console.log(dataColumnLeads);
+            
             if (newPosition > currentPosition) {
-                for (let order of dataColumnLeads) {
+                dataColumnLeads = dataColumnLeads.map(order => {
                     if (order.lead_order > currentPosition && order.lead_order <= newPosition) {
                         order.lead_order--;
                     } else if (order.lead_id === input.leadId) {
                         order.lead_order = newPosition;
                     }
-                }
+                    return order;
+                });
             } else {
-                for (let order of dataColumnLeads) {
+                dataColumnLeads = dataColumnLeads.map(order => {
                     if (order.lead_order >= newPosition && order.lead_order < currentPosition) {
                         order.lead_order++;
                     } else if (order.lead_id === input.leadId) {
                         order.lead_order = newPosition;
                     }
-                }
+                    return order;
+                });
             }
-            
-            AppDataSource.transaction(async transactionalEntityManager => {
+
+            await AppDataSource.transaction(async transactionalEntityManager => {
                 await transactionalEntityManager.save(LeadsEntity, dataColumnLeads);
             });
 
-            data.lead_order = input.orderNumber
+            data.lead_funnel_column_id = input.columnId;
+            data.lead_order = input.orderNumber;
+            await leadRepository.save(data);
             return data
         },
         dateteLead: async (_parent: unknown, { leadId }: { leadId: string }, context: any): Promise<LeadsEntity> => {
