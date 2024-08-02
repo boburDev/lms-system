@@ -5,6 +5,7 @@ type AddCostInput = {
     costSelectedDate: string
     costColleagueId: string
 }
+
 type UpdateCostInput = {
     costId: string
     costName: string
