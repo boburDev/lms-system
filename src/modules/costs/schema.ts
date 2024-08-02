@@ -24,15 +24,16 @@ input AddCostInput {
   costName: String!
   costType: Int!
   costPrice: Int!
-  costColleagueId: Int!
+  costColleagueId: String!
   costSelectedDate: String!
 }
 
 input UpdateCostInput {
   costId: String!
-  costName: String!
-  costType: String!
-  costPrice: Int!
-  costSelectedDate: String!
+  costName: String
+  costType: String
+  costPrice: Int
+  costSelectedDate: String
+  costColleagueId: String
 }
 `
