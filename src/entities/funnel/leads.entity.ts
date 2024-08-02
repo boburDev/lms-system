@@ -3,6 +3,7 @@ import { CompanyBranches } from "../company/company.entity";
 import Funnel_Columns from "./columns.entity";
 import Courses from "../course.entity";
 import Employers from "../employer/employers.entity";
+import Funnels from "./funnels.entity";
 
 @Entity()
 export default class Leads {
@@ -37,6 +38,9 @@ export default class Leads {
     lead_funnel_column_id: string
     
     @Column()
+    lead_funnel_id: string
+    
+    @Column()
     lead_branch_id: string
 
     @ManyToOne(() => Courses, course => course)
@@ -46,6 +50,10 @@ export default class Leads {
     @ManyToOne(() => Funnel_Columns, funnel_column => funnel_column.leads)
     @JoinColumn({ name: 'lead_funnel_column_id' })
     funnel_columns: Funnel_Columns
+    
+    @ManyToOne(() => Funnels, funnels => funnels.leads)
+    @JoinColumn({ name: 'lead_funnel_id' })
+    funnels: Funnels
 
     @ManyToOne(() => Employers, employers => employers)
     @JoinColumn({ name: 'lead_employer_id' })

@@ -20,6 +20,8 @@ type Cost = {
     cost_name: string
     cost_amount: number
     cost_payed_at: string
+    cost_type: string
+    cost_created: string
 }
 
 export {

@@ -64,10 +64,15 @@ const resolvers = {
                 let newPosition = input.funnelColumnOrder
 
                 if (currentPosition === input.funnelColumnOrder) {
+                    dataFunnelColumn.funnel_column_name = input.funnelColumnName || dataFunnelColumn.funnel_column_name
+                    dataFunnelColumn.funnel_column_color = input.funnelColumnColor || dataFunnelColumn.funnel_column_color
+                    dataFunnelColumn.funnel_id = input.funnelId || dataFunnelColumn.funnel_id
+                    dataFunnelColumn = await funnelColumnRepository.save(dataFunnelColumn)
                     return dataFunnelColumn;
                 }
 
-                let dataFunnelColumnOrders = await funnelColumnRepository.createQueryBuilder("funnelColumn")
+                const funnelColumnRepository1 = AppDataSource.getRepository(FunnelColumnsEntity)
+                let dataFunnelColumnOrders = await funnelColumnRepository1.createQueryBuilder("funnelColumn")
                     .where("funnelColumn.funnel_id = :funnelId", { funnelId: input.funnelId })
                     .andWhere("funnelColumn.funnel_column_deleted IS NULL")
                     .orderBy("funnelColumn.funnel_column_created", "ASC")
@@ -94,27 +99,30 @@ const resolvers = {
                 AppDataSource.transaction(async transactionalEntityManager => {
                     await transactionalEntityManager.save(FunnelColumnsEntity, dataFunnelColumnOrders);
                 });
-
                 dataFunnelColumn.funnel_column_order = input.funnelColumnOrder
             }
             
             dataFunnelColumn.funnel_column_name = input.funnelColumnName || dataFunnelColumn.funnel_column_name
             dataFunnelColumn.funnel_column_color = input.funnelColumnColor || dataFunnelColumn.funnel_column_color
             dataFunnelColumn.funnel_id = input.funnelId || dataFunnelColumn.funnel_id
-            return await funnelColumnRepository.save(dataFunnelColumn)
+            dataFunnelColumn = await funnelColumnRepository.save(dataFunnelColumn)
+            return dataFunnelColumn
         },
         deleteFunnelColumn: async (_parent: unknown, { Id }: { Id: string }, context: any): Promise<FunnelColumnsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
             let dataFunnelColumn = await funnelColumnRepository.createQueryBuilder("funnelColumn")
-                .leftJoinAndSelect("funnelColumn.funnels", "funnels")
-                .leftJoinAndSelect("funnels.leads", "leads")
+                .leftJoinAndSelect("funnelColumn.leads", "leads")
                 .where("funnelColumn.funnel_column_id = :Id", { Id })
                 .andWhere("funnelColumn.funnel_column_deleted IS NULL")
                 .getOne();
             if (!dataFunnelColumn) throw new Error("Bu nomdagi column mavjud emas");
 
-            console.log(dataFunnelColumn);
+            let funnelColumnLeadsCount = dataFunnelColumn.leads.length
+            
+            if (funnelColumnLeadsCount > 0) throw new Error("you can't delete column until you don't delete your leads");
+            dataFunnelColumn.funnel_column_deleted = new Date()
+            await funnelColumnRepository.save(dataFunnelColumn)
             return dataFunnelColumn
         }
     },

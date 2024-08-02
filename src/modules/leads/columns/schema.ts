@@ -20,10 +20,10 @@ input AddFunnelColumnInput {
 
 input UpdateFunnelColumnInput {
     funnelColumnId: String!
-    funnelColumnName: String!
-    funnelColumnOrder: String!
-    funnelColumnColor: String!
-    funnelId: ID!
+    funnelColumnName: String
+    funnelColumnOrder: Int
+    funnelColumnColor: String
+    funnelId: ID
 }
 
 type FunnelColumn {

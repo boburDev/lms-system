@@ -27,9 +27,9 @@ export default class Funnels {
     @JoinColumn({ name: 'funnel_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Funnel_Columns, funnel_column => funnel_column.funnel_column_id)
-    funnel_columns: Funnel_Columns[]
+    @OneToMany(() => Funnel_Columns, funnel_column => funnel_column.funnels)
+    funnel_column: Funnel_Columns[]
 
-    @OneToMany(() => Leads, lead => lead.funnel_columns)
+    @OneToMany(() => Leads, lead => lead.funnels)
     leads: Leads[]
 }

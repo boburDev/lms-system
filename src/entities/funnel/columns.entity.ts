@@ -25,11 +25,11 @@ export default class Funnel_Columns {
     @Column()
     funnel_id: string
 
-    @ManyToOne(() => Funnels, funnel => funnel.funnel_columns)
+    @ManyToOne(() => Funnels, funnel => funnel.funnel_column)
     @JoinColumn({ name: 'funnel_id' })
     funnels: Funnels
 
-    @OneToMany(() => Leads, lead => lead.lead_id)
+    @OneToMany(() => Leads, lead => lead.funnel_columns)
     leads: Leads[]
 }
 

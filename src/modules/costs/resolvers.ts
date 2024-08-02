@@ -57,6 +57,10 @@ const resolvers = {
   Cost:{
     costId: (global: Cost) => global.cost_id,
     costName: (global: Cost) => global.cost_name,
+    costType: (global: Cost) => global.cost_type,
+    costPrice: (global: Cost) => global.cost_amount,
+    costSelectedDate: (global: Cost) => global.cost_payed_at,
+    costCreated: (global: Cost) => global.cost_created,
   }
 };
 

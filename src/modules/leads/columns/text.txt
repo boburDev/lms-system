@@ -1,0 +1,28 @@
+[
+    {
+        "funnelColumnId": "2a735df1-d544-4c77-88ce-f0ec6b77c1b8",
+        "funnelColumnName": "test 3",
+        "funnelColumnOrder": 1
+    },
+    {
+        "funnelColumnId": "0e485afa-f679-4be1-aec5-b81f6b373b4f",
+        "funnelColumnName": "test 1",
+        "funnelColumnOrder": 2
+    },
+    {
+        "funnelColumnId": "7d4a6adf-88ac-49e5-88d3-bc9d50e22790",
+        "funnelColumnName": "test 2",
+        "funnelColumnOrder": 3
+    },
+
+    {
+        "funnelColumnId": "86103881-8da9-4f6b-bdce-07ed223dc6fe",
+        "funnelColumnName": "test 4",
+        "funnelColumnOrder": 4
+    },
+    {
+        "funnelColumnId": "86b81e05-7722-4f30-b8b1-beb791506c7f",
+        "funnelColumnName": "test 5",
+        "funnelColumnOrder": 5
+    }
+]

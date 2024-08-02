@@ -26,7 +26,7 @@ const resolvers = {
                 .leftJoinAndSelect("funnelColumn.funnels", "funnels")
                 .where("funnelColumn.funnel_id = :funnelId", { funnelId: funnelId })
                 .andWhere("funnelColumn.funnel_column_deleted IS NULL")
-                .orderBy("funnelColumn.funnel_column_created", "DESC")
+                .orderBy("funnelColumn.funnel_column_order", "ASC")
                 .getMany();
             return {
                 leadList: leads,
@@ -80,6 +80,15 @@ const resolvers = {
                 .orderBy("leads.lead_created", "DESC")
                 .getMany()
 
+            const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
+            let columnFunnelId = await funnelColumnRepository.createQueryBuilder("funnelColumn")
+                .where("funnelColumn.funnel_column_id = :funnelColumnId", { funnelColumnId: input.columnId })
+                .andWhere("funnelColumn.funnel_column_deleted IS NULL")
+                .getOne();
+
+            if (!columnFunnelId) throw new Error(`Bu varonkada bu column mavjud emas`)
+
+
             let lead = new LeadsEntity()
             lead.lead_name = input.leadName
             lead.lead_phone = input.leadPhone
@@ -87,6 +96,7 @@ const resolvers = {
                 lead.lead_course_id = input.courseId
             }
             lead.lead_order = (dataLeadOrders[0]?.lead_order + 1) || 1
+            lead.lead_funnel_id = columnFunnelId.funnel_id
             lead.lead_funnel_column_id = input.columnId
             lead.lead_employer_id = context.colleagueId
             lead.lead_branch_id = context.branchId
@@ -162,7 +172,6 @@ const resolvers = {
                 .andWhere("leads.lead_deleted IS NULL")
                 .orderBy("leads.lead_order", "ASC")
                 .getMany()
-            console.log(dataColumnLeads);
             
             if (newPosition > currentPosition) {
                 dataColumnLeads = dataColumnLeads.map(order => {
