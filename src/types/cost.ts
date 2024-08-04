@@ -20,7 +20,7 @@ type Cost = {
     cost_name: string
     cost_amount: number
     cost_payed_at: string
-    cost_type: string
+    cost_type: number
     cost_created: string
 }
 

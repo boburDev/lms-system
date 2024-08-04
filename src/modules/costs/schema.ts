@@ -14,7 +14,7 @@ type Mutation {
 type Cost {
 	costId: String!
   costName: String!
-  costType: String!
+  costType: Int!
   costPrice: Int!
   costSelectedDate: String!
   costCreated: String!
@@ -31,7 +31,7 @@ input AddCostInput {
 input UpdateCostInput {
   costId: String!
   costName: String
-  costType: String
+  costType: Int
   costPrice: Int
   costSelectedDate: String
   costColleagueId: String
