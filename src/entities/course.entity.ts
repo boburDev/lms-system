@@ -7,7 +7,7 @@ export default class Courses {
     @PrimaryGeneratedColumn('uuid')
     course_id: string
 
-    @Column({ length: 64, nullable: false, unique: true })
+    @Column({ length: 64, nullable: false })
     course_name: string
 
     @Column({ nullable: false, type: 'numeric' })

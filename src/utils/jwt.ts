@@ -15,7 +15,7 @@ function verify(token: string): TokenData | null {
         return decoded;
     } catch (error) {
         // Если произошла ошибка при верификации токена
-        console.error('Token verification error:', error);
+        console.error('Token verification error:', (error as Error).message);
         return null;
     }
 }

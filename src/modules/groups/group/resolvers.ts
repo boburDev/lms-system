@@ -1,4 +1,4 @@
-import { AddGroupInput, Group } from '../../../types/group';
+import { AddGroupInput, Group, UpdateGroupInput } from '../../../types/group';
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 import { getDays } from '../../../utils/date';
@@ -67,11 +67,11 @@ const resolvers = {
     }
   },
   Mutation: {
-    addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise< GroupEntity> => {
+    addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise<GroupEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
       if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
-      
+        
       let group = new GroupEntity()
       group.group_name = input.groupName
       group.group_course_id = input.courseId
@@ -99,6 +99,34 @@ const resolvers = {
 
       return groupRepository
     },
+    updateGroup: async (_parent: unknown, { input }: { input: UpdateGroupInput }, context: any): Promise<GroupEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      if (input.employerId && input.roomId && context.branchId && input.groupDays.join(' ') && input.startTime && input.endTime) {
+        let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
+        if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
+      }
+      let groupRepository = AppDataSource.getRepository(GroupEntity)
+
+      let group = await groupRepository.createQueryBuilder("group")
+        .where("group.group_id = :groupId", { groupId: input.groupId })
+        .andWhere("group.group_deleted IS NULL")
+        .getOne();
+      if (!group) throw new Error("group not found");
+      
+      group.group_name = input.groupName || group.group_name
+      group.group_course_id = input.courseId || group.group_course_id
+      group.group_branch_id = context.branchId || group.group_branch_id
+      group.group_colleague_id = input.employerId || group.group_colleague_id
+      group.group_room_id = input.roomId || group.group_room_id
+      group.group_start_date = new Date(input.startDate) || group.group_start_date
+      group.group_end_date = new Date(input.endDate) || group.group_end_date
+      group.group_start_time = input.startTime || group.group_start_time
+      group.group_end_time = input.endTime || group.group_end_time
+      group.group_days = input.groupDays.join(' ') || group.group_days
+      group.group_lesson_count = input.lessonCount || group.group_lesson_count
+      
+      return group
+    },
     deleteGroup: async (_parent: unknown, { Id }: { Id: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const groupRepository = AppDataSource.getRepository(GroupEntity)
@@ -115,39 +143,39 @@ const resolvers = {
     }
   },
   Group: {
-    groupId: (global: Group) => global.group_id,
-    groupName: (global: Group) => global.group_name,
-    courseId: (global: Group) => global.group_course_id,
-    courseName: (global: Group) => global.course.course_name,
-    employerId: (global: Group) => global.group_colleague_id,
-    employerName: (global: Group) => global.employer.employer_name,
-    roomId: (global: Group) => global.group_room_id,
-    roomName: (global: Group) => global.room.room_name,
-    startDate: (global: Group) => global.group_start_date,
-    endDate: (global: Group) => global.group_end_date,
-    startTime: (global: Group) => global.group_start_time,
-    endTime: (global: Group) => global.group_end_time,
-    groupDays: (global: Group) => global.group_days.split(' '),
-    studentCount: (global: Group) => Array.isArray(global.student_group) ? global.student_group.length : 0,
+    groupId: (global: Group) => global?.group_id,
+    groupName: (global: Group) => global?.group_name,
+    courseId: (global: Group) => global?.group_course_id,
+    courseName: (global: Group) => global?.course?.course_name,
+    employerId: (global: Group) => global?.group_colleague_id,
+    employerName: (global: Group) => global?.employer?.employer_name,
+    roomId: (global: Group) => global?.group_room_id,
+    roomName: (global: Group) => global?.room?.room_name,
+    startDate: (global: Group) => global?.group_start_date,
+    endDate: (global: Group) => global?.group_end_date,
+    startTime: (global: Group) => global?.group_start_time,
+    endTime: (global: Group) => global?.group_end_time,
+    groupDays: (global: Group) => global?.group_days.split(' '),
+    studentCount: (global: Group) => Array.isArray(global?.student_group) ? global?.student_group.length : 0,
 	},
   GroupById: {
-    groupId: (global: Group) => global.group_id,
-    groupName: (global: Group) => global.group_name,
-    courseId: (global: Group) => global.group_course_id,
-    courseName: (global: Group) => global.course.course_name,
-    employerId: (global: Group) => global.group_colleague_id,
-    employerName: (global: Group) => global.employer.employer_name,
-    roomId: (global: Group) => global.group_room_id,
-    roomName: (global: Group) => global.room.room_name,
-    startDate: (global: Group) => global.group_start_date,
-    endDate: (global: Group) => global.group_end_date,
-    startTime: (global: Group) => global.group_start_time,
-    endTime: (global: Group) => global.group_end_time,
-    groupDays: (global: Group) => global.group_days.split(' '),
+    groupId: (global: Group) => global?.group_id,
+    groupName: (global: Group) => global?.group_name,
+    courseId: (global: Group) => global?.group_course_id,
+    courseName: (global: Group) => global?.course?.course_name,
+    employerId: (global: Group) => global?.group_colleague_id,
+    employerName: (global: Group) => global?.employer?.employer_name,
+    roomId: (global: Group) => global?.group_room_id,
+    roomName: (global: Group) => global?.room?.room_name,
+    startDate: (global: Group) => global?.group_start_date,
+    endDate: (global: Group) => global?.group_end_date,
+    startTime: (global: Group) => global?.group_start_time,
+    endTime: (global: Group) => global?.group_end_time,
+    groupDays: (global: Group) => global?.group_days.split(' '),
     students: (global: Group) => {
-      return global.student_group && global.student_group.map(i => {
+      return global?.student_group && global?.student_group.map(i => {
         return {
-          studentId: i.student_group_id,
+          studentId: i.student_id,
           studentName: i.student.student_name,
           studentStatus: i.student_group_status,
           studentBalance: i.student_group_credit,
@@ -158,21 +186,38 @@ const resolvers = {
 	}
 };
 
-async function checkGroup(employerId: string, roomId: string, branchId: string, groupDays: string, startTime: string, endTime: string) {
-  const query = `select eg.* from groups as eg
-  where(eg.group_colleague_id = $1 or eg.group_room_id = $2)
-  and(select check_group(eg.group_days,
-  $4, eg.group_start_time, group_end_time, $5, $6)) = true and eg.group_branch_id = $3 and eg.group_deleted IS NOT NULL
+async function checkGroup(
+  employerId: string,
+  roomId: string,
+  branchId: string,
+  groupDays: string,
+  startTime: string,
+  endTime: string
+) {
+  const query = `
+    SELECT eg.* 
+    FROM groups AS eg
+    WHERE (eg.group_colleague_id = $1 OR eg.group_room_id = $2)
+      AND eg.group_branch_id = $3
+      AND eg.group_deleted IS NULL
+      AND check_group(eg.group_days, $4, eg.group_start_time, eg.group_end_time, $5, $6) = true
   `;
+
   const result = await AppDataSource.query(query, [
     employerId,
     roomId,
     branchId,
     groupDays,
     startTime,
-    endTime,
+    endTime
   ]);
 
+  console.log(employerId,
+    roomId,
+    branchId,
+    groupDays,
+    startTime,
+    endTime);
   return result[0];
 }
 

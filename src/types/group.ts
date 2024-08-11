@@ -14,6 +14,20 @@ type AddGroupInput = {
     lessonCount: number
 }
 
+type UpdateGroupInput = {
+    groupId: string
+    groupName: string
+    groupDays: [number]
+    courseId: string
+    employerId: string
+    roomId: string
+    startDate: string
+    endDate: string
+    startTime: string
+    endTime: string
+    lessonCount: number
+}
+
 type Group = {
     group_id: string,
     group_name: string,
@@ -41,7 +55,7 @@ type Group = {
 }
 
 type StudentGroupInfo = {
-    student_group_id: string
+    student_id: string
     student: {
         student_name: string
     }
@@ -85,6 +99,7 @@ type ChangeStudentGroupDateInput = {
 export {
     Group,   
     AddGroupInput,
+    UpdateGroupInput,
     AddStudentGroupInput,
     UpdateStudentAddedGroupDateInput,
     DeleteStudentGroupInput,

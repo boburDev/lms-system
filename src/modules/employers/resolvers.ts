@@ -42,7 +42,7 @@ const resolvers = {
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
 
-      if (!data) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
 
       let employer = new EmployerEntity()
       employer.employer_name = input.employerName

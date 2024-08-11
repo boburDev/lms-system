@@ -9,6 +9,7 @@ type Query {
 
 type Mutation {
   addGroup(input: AddGroupInput!): Group!
+  updateGroup(input: UpdateGroupInput!): Group!
   deleteGroup(Id: String): Group!
 }
 
@@ -16,11 +17,11 @@ type Group {
   groupId: ID!
   groupName: String!
   courseId: ID!
-  courseName: ID!
+  courseName: ID
   employerId: ID!
-  employerName: ID!
+  employerName: ID
   roomId: ID!
-  roomName: ID!
+  roomName: ID
   startDate: String!
   endDate: String!
   startTime: String!
@@ -33,11 +34,11 @@ type GroupById {
   groupId: ID!
   groupName: String!
   courseId: ID!
-  courseName: ID!
+  courseName: ID
   employerId: ID!
-  employerName: ID!
+  employerName: ID
   roomId: ID!
-  roomName: ID!
+  roomName: ID
   startDate: String!
   endDate: String!
   startTime: String!
@@ -64,6 +65,20 @@ input AddGroupInput {
   startTime: String!
   endTime: String!
   lessonCount: Int!
+  groupDays: [Int]
+}
+
+input UpdateGroupInput {
+  groupId: ID!
+  groupName: String
+  courseId: ID
+  employerId: ID
+  roomId: ID
+  startDate: String
+  endDate: String
+  startTime: String
+  endTime: String
+  lessonCount: Int
   groupDays: [Int]
 }
 `
