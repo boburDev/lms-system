@@ -4,7 +4,8 @@ import * as authAdminController from '../controllers/admin'
 const router = express.Router();
 
 router
-    .post('/login', authController.login)
+    .post('/site-login', authController.login)
+    .post('/login', authController.loginBySubdomain)
     .post('/verify-phone', authController.verifyPhoneBeforeCreateAccaunt)
     .post('/signup', authController.signup)
     .post('/forget-password', authController.forgetPassword)

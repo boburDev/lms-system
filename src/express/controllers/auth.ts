@@ -49,6 +49,44 @@ export const login = async (req:Request, res: Response) => {
     }
 }
 
+export const loginBySubdomain = async (req: Request, res: Response) => {
+    try {
+        const { userphone, password, subdomain } = req.body
+        if (!(userphone && password && subdomain)) throw new Error("Invalid input data ");
+        
+        const employerRepository = AppDataSource.getRepository(EmployersEntity)
+        let user = await employerRepository.findOneBy({ employer_phone: userphone, employer_deleted: IsNull() })
+        if (!user) throw new Error("User not found");
+
+        const branchRepository = AppDataSource.getRepository(CompanyBranches)
+
+        if (!(await comparePassword(password, user.employer_password))) throw new Error("Invalid input");
+        
+        let payload = {
+            branchId: user.employer_branch_id,
+            colleagueId: user.employer_id,
+            role: positionIndicator(user.employer_position)
+        }
+        let branchData = await branchRepository.findOne({
+            where: { company_branch_id: user.employer_branch_id, company_branch_deleted: IsNull(), company_branch_subdomen: subdomain },
+            relations: ['companies', 'districts']
+        })
+
+        let data = {
+            token: sign(payload),
+            redirect_link: `http://${branchData?.company_branch_subdomen}.localhost:3000/`,
+            companyName: branchData?.companies.company_name,
+            userName: user.employer_name,
+            role: positionIndicator(user.employer_position)
+        }
+        
+        res.json({ data, error: null })
+
+    } catch (error: unknown) {
+        res.status(400).json({ data: null, error: (error as Error).message })
+    }
+}
+
 export const verifyPhoneBeforeCreateAccaunt = async (req: Request, res: Response) => {
     try {
         const { userphone } = req.body
