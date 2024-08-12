@@ -2,6 +2,7 @@ import { AddGroupInput, Group, UpdateGroupInput } from '../../../types/group';
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 import { getDays } from '../../../utils/date';
+import Student_groups, { Student_attendences } from '../../../entities/student/student_groups.entity';
 
 const resolvers = {
   Query: {
@@ -62,7 +63,7 @@ const resolvers = {
           .andWhere("group.group_deleted IS NULL")
           .getOne();
       }
-      
+
       return data
     }
   },
@@ -71,7 +72,7 @@ const resolvers = {
       if (!context?.branchId) throw new Error("Not exist access token!");
       let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
       if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
-        
+
       let group = new GroupEntity()
       group.group_name = input.groupName
       group.group_course_id = input.courseId
@@ -84,12 +85,12 @@ const resolvers = {
       group.group_end_time = input.endTime
       group.group_days = input.groupDays.join(' ')
       group.group_lesson_count = input.lessonCount
-      
+
       const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
-      
+
       const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
       const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
-      
+
       for (const i of days) {
         let groupAttendence = new Group_attendences()
         groupAttendence.group_attendence_group_id = groupRepository.group_id
@@ -101,10 +102,7 @@ const resolvers = {
     },
     updateGroup: async (_parent: unknown, { input }: { input: UpdateGroupInput }, context: any): Promise<GroupEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      if (input.employerId && input.roomId && context.branchId && input.groupDays.join(' ') && input.startTime && input.endTime) {
-        let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
-        if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
-      }
+
       let groupRepository = AppDataSource.getRepository(GroupEntity)
 
       let group = await groupRepository.createQueryBuilder("group")
@@ -112,19 +110,98 @@ const resolvers = {
         .andWhere("group.group_deleted IS NULL")
         .getOne();
       if (!group) throw new Error("group not found");
-      
+
       group.group_name = input.groupName || group.group_name
       group.group_course_id = input.courseId || group.group_course_id
       group.group_branch_id = context.branchId || group.group_branch_id
       group.group_colleague_id = input.employerId || group.group_colleague_id
       group.group_room_id = input.roomId || group.group_room_id
-      group.group_start_date = new Date(input.startDate) || group.group_start_date
-      group.group_end_date = new Date(input.endDate) || group.group_end_date
       group.group_start_time = input.startTime || group.group_start_time
       group.group_end_time = input.endTime || group.group_end_time
-      group.group_days = input.groupDays.join(' ') || group.group_days
+      group.group_days = input.groupDays ? input.groupDays.join(' ') : group.group_days
       group.group_lesson_count = input.lessonCount || group.group_lesson_count
+
+      let option = {
+        employerId: group.group_colleague_id,
+        roomId: group.group_room_id,
+        branchId: context.branchId,
+        groupDays: group.group_days,
+        startTime: group.group_start_time,
+        endTime: group.group_end_time
+      }
+
+      let verifyGroup = await checkGroup(option.employerId, option.roomId, context.branchId, option.groupDays, option.startTime, option.endTime)
       
+      if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${option.employerId == verifyGroup.group_colleague_id}, room: ${option.roomId == verifyGroup.group_room_id}`)
+      let startDate = new Date(input.startDate).getTime() - group.group_start_date.getTime()
+      let endDate = new Date(input.endDate).getTime() - group.group_end_date.getTime()
+
+      let students
+
+      if (startDate < 0 || endDate > 0) {
+        const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+
+        students = await studentGroupRepository.createQueryBuilder("student_groups")
+          .where("student_groups.group_id = :groupId", { groupId: input.groupId })
+          // .andWhere("group.student_group_status != 3") 3 or 4 or 5 siniv darsdan kiyen ketgan
+          // muzlatilgan, guruhini uzgartirgan 
+          // statuslar bilan ishlash kerak
+          .getMany();
+      }
+
+      if (startDate < 0) {
+        const days = getDays(new Date(input.startDate), group.group_start_date)
+        const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
+
+        for (const i of days) {
+          let groupAttendence = new Group_attendences()
+          groupAttendence.group_attendence_group_id = group.group_id
+          groupAttendence.group_attendence_day = i
+          await groupAttendenceRepository.save(groupAttendence);
+        }
+
+        if (students && students.length > 1) {
+          const groupStudentAttendenceRepository = AppDataSource.getRepository(Student_attendences)
+          for (const student of students) {
+            for (const i of days) {
+              let studentAttendence = new Student_attendences()
+              studentAttendence.student_attendence_group_id = group.group_id
+              studentAttendence.student_attendence_student_id = student.student_id
+              studentAttendence.student_attendence_day = i
+              await groupStudentAttendenceRepository.save(studentAttendence);
+            } 
+          } 
+        }
+      }
+
+      if (endDate > 0) {
+        const days = getDays(group.group_end_date, new Date(input.endDate))
+        const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
+
+        for (const i of days) {
+          let groupAttendence = new Group_attendences()
+          groupAttendence.group_attendence_group_id = group.group_id
+          groupAttendence.group_attendence_day = i
+          await groupAttendenceRepository.save(groupAttendence);
+        }
+
+        if (students && students.length > 1) {
+          const groupStudentAttendenceRepository = AppDataSource.getRepository(Student_attendences)
+          for (const student of students) {
+            for (const i of days) {
+              let studentAttendence = new Student_attendences()
+              studentAttendence.student_attendence_group_id = group.group_id
+              studentAttendence.student_attendence_student_id = student.student_id
+              studentAttendence.student_attendence_day = i
+              await groupStudentAttendenceRepository.save(studentAttendence);
+            }
+          }
+        }
+      }
+
+      group.group_start_date = new Date(input.startDate) || group.group_start_date
+      group.group_end_date = new Date(input.endDate) || group.group_end_date
+      await groupRepository.save(group)
       return group
     },
     deleteGroup: async (_parent: unknown, { Id }: { Id: string }, context: any) => {
@@ -157,7 +234,7 @@ const resolvers = {
     endTime: (global: Group) => global?.group_end_time,
     groupDays: (global: Group) => global?.group_days.split(' '),
     studentCount: (global: Group) => Array.isArray(global?.student_group) ? global?.student_group.length : 0,
-	},
+  },
   GroupById: {
     groupId: (global: Group) => global?.group_id,
     groupName: (global: Group) => global?.group_name,
@@ -183,7 +260,7 @@ const resolvers = {
         }
       })
     }
-	}
+  }
 };
 
 async function checkGroup(
@@ -211,13 +288,6 @@ async function checkGroup(
     startTime,
     endTime
   ]);
-
-  console.log(employerId,
-    roomId,
-    branchId,
-    groupDays,
-    startTime,
-    endTime);
   return result[0];
 }
 

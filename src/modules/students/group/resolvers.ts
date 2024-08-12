@@ -1,4 +1,4 @@
-import { AddStudentGroupInput, ChangeStudentGroupDateInput, DeleteStudentGroupInput, UpdateStudentAddedGroupDateInput } from "../../../types/group";
+import { AddStudentGroupInput, ChangeStudentGroupDateInput, DeleteStudentGroupInput, FreezeStudentGroupInput, UpdateStudentAddedGroupDateInput } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
 import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
 import Groups from "../../../entities/group/groups.entity";
@@ -37,6 +37,18 @@ const resolvers = {
                 await groupAttendenceRepository.save(studentAttendence);
             }
             return 'succeed'
+        },
+        freezeStudentGroup: async (_parent: unknown, { input }: { input: FreezeStudentGroupInput }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const GroupRepository = AppDataSource.getRepository(Groups)
+            let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
+            if (!dataGroup) throw new Error("Gruppa mavjud emas");
+            const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+            let studentGroup = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.groupId })
+            if (!studentGroup) throw new Error(`Bu uquvchi not found`)
+            studentGroup.student_group_status = 4
+            await studentGroupRepository.save(studentGroup)
+            return 'success'
         },
         updateStudentAddedGroupDate: async (_parent: unknown, { input }: { input: UpdateStudentAddedGroupDateInput }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");

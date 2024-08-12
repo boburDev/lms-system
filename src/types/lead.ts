@@ -15,7 +15,6 @@ type UpdateLeadInput = {
 type UpdateLeadColumnInput = {
     leadId: string
     columnId: string
-    orderNumber: number
 }
 
 type Lead = {

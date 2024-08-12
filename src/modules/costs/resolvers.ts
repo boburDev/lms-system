@@ -7,18 +7,27 @@ const resolvers = {
     costs: async (_parametr: unknown, { }, context: any): Promise<CostEntity[]> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const costRepository = AppDataSource.getRepository(CostEntity)
-      return await costRepository.find({
-        where: { cost_branch_id: context.branchId },
-        order: { cost_created: "DESC" }
-      })
+
+      let data = await costRepository.createQueryBuilder("cost")
+        .where("cost.cost_branch_id = :id", { id: context.branchId })
+        .andWhere("cost.cost_deleted IS NULL")
+        .orderBy("cost.cost_created", "DESC")
+        .getMany()
+
+
+      return data
     },
     costById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<CostEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const costRepository = AppDataSource.getRepository(CostEntity)
-      return await costRepository.findOneBy({
-        cost_branch_id: context.branchId,
-        cost_id: Id
-      })
+
+      let data = await costRepository.createQueryBuilder("cost")
+        .where("cost.cost_id = :Id", { Id })
+        .andWhere("cost.cost_branch_id = :id", { id: context.branchId })
+        .andWhere("cost.cost_deleted IS NULL")
+        .getOne()
+
+      return data
     },
   },
   Mutation: {
@@ -51,6 +60,21 @@ const resolvers = {
       data.cost_type = input.costType || data.cost_type
       data.cost_payed_at = new Date(input.costSelectedDate) || data.cost_payed_at
       data.colleague_id = input.costColleagueId || data.colleague_id
+      return await costRepository.save(data)
+    },
+    deleteCost: async (_parent: unknown, { Id }: { Id: string }, context: any): Promise<CostEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const costRepository = AppDataSource.getRepository(CostEntity)
+
+      let data = await costRepository.createQueryBuilder("cost")
+        .where("cost.cost_id = :Id", { Id })
+        .andWhere("cost.cost_branch_id = :id", { id: context.branchId })
+        .andWhere("cost.cost_deleted IS NULL")
+        .getOne()
+
+      if (!data) throw new Error(`Cost not found`)
+
+      data.cost_deleted = new Date()
       return await costRepository.save(data)
     }
   },

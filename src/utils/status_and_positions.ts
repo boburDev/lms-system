@@ -32,7 +32,6 @@ export const positionStudent = (status:number) => {
     if (status == 5) return 'Muzlatilgan o\'quvchi'
     if (status == 6) return 'Darsga kelishni to\'xtatgan o\'quvchi'
     if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
-    if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
 }
 
 export const getPermissions = (role: string, permissions: any) => {

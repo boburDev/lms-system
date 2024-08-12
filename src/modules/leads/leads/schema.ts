@@ -30,7 +30,6 @@ input UpdateLeadInput {
 input UpdateLeadColumnInput {
     leadId: String!
     columnId: ID!
-    orderNumber: Int
 }
 
 type Lead {
