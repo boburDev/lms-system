@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 export default gql`
 type Query {
     studentPayments(studentId: ID! type: Int! startDate: String endDate: String): studentPaymentsByType
+    paymentById(Id: ID!): studentCash
 }
 
 type Mutation {
@@ -40,7 +41,7 @@ type PaymentHistory {
 input AddStudentCashInput {
     studentId: ID!,
     cashAmount: Float!,
-    paymentType: Int!,
+    paymentType: String!,
     payedAt: String
 }
 `

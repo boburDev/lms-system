@@ -19,7 +19,6 @@ const resolvers = {
                 .where("column.funnel_id = :funnelId", { funnelId: funnelId })
                 .andWhere("column.funnel_column_deleted IS NULL")
                 .andWhere("leads.lead_deleted IS NULL")
-                .orderBy("leads.lead_order", "DESC")
                 .getMany();
                 
             let funnelColumns = await funnelColumnRepository.createQueryBuilder("funnelColumn")
@@ -177,7 +176,6 @@ const resolvers = {
         leadName: (global: Lead) => global.lead_name,
         leadPhone: (global: Lead) => global.lead_phone,
         leadStatus: (global: Lead) => global.lead_status,
-        leadOrder: (global: Lead) => global.lead_order,
         columnId: (global: Lead) => global.lead_funnel_column_id,
         courseId: (global: Lead) => global.lead_course_id,
         courseName: (global: Lead) => global?.courses?.course_name,

@@ -110,20 +110,20 @@ const resolvers = {
 
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
             let studentOldAttendance = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.fromGroupId })
-            if (studentOldAttendance) {
-                let today = new Date()
-                today.setHours(0, 0, 0, 0)
-                let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
-                let fromToday = input.fromToday ? '>=' : '>'
-                await AppDataSource.createQueryBuilder()
-                    .delete()
-                    .from(Student_attendences)
-                    .where(`student_attendence_day ${fromToday} :startDate`, date)
-                    .andWhere(`student_attendence_day <= :endDate`, date)
-                    .execute();
-
-                studentOldAttendance.student_group_status
-            }
+            if (!studentOldAttendance) throw new Error("student group not found");
+            
+            let today = new Date()
+            today.setHours(0, 0, 0, 0)
+            let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
+            let fromToday = input.fromToday ? '>=' : '>'
+            await AppDataSource.createQueryBuilder()
+                .delete()
+                .from(Student_attendences)
+                .where(`student_attendence_day ${fromToday} :startDate`, date)
+                .andWhere(`student_attendence_day <= :endDate`, date)
+                .execute();
+            studentOldAttendance.student_group_status = 3
+            await studentGroupRepository.save(studentOldAttendance)
 
             let studentGroup = new Student_groups()
             studentGroup.student_group_add_time = new Date(input.addedDate)
@@ -150,18 +150,35 @@ const resolvers = {
             let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
             if (!dataGroup) throw new Error("Gruppa mavjud emas");
 
+            const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+            let studentOldAttendance = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: dataGroup.group_id })
+            if (!studentOldAttendance) throw new Error("student group not found");
+
+            let today = new Date()
+            today.setHours(0, 0, 0, 0)
+            let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
             await AppDataSource.createQueryBuilder()
                 .delete()
                 .from(Student_attendences)
-                .where(`student_attendence_student_id = :studentId`, { studentId: input.studentId })
+                .where(`student_attendence_day >= :startDate`, date)
+                .andWhere(`student_attendence_day <= :endDate`, date)
                 .execute();
 
-            await AppDataSource.createQueryBuilder()
-                .delete()
-                .from(Student_groups)
-                .where(`student_id = :studentId`, { studentId: input.studentId })
-                .execute();
-                return 'success'
+            studentOldAttendance.student_group_status = 3
+            await studentGroupRepository.save(studentOldAttendance)
+
+            // await AppDataSource.createQueryBuilder()
+            //     .delete()
+            //     .from(Student_attendences)
+            //     .where(`student_attendence_student_id = :studentId`, { studentId: input.studentId })
+            //     .execute();
+
+            // await AppDataSource.createQueryBuilder()
+            //     .delete()
+            //     .from(Student_groups)
+            //     .where(`student_id = :studentId`, { studentId: input.studentId })
+            //     .execute();
+            return 'success'
         }
     },
 }

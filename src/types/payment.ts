@@ -1,7 +1,7 @@
 type AddstudentPayment = {
     studentId: string
     cashAmount: number
-    paymentType: number
+    paymentType: string
     payedAt: string
 }
 

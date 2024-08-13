@@ -14,10 +14,10 @@ export default class Student_groups {
     student_group_discount_type: number
 
     @Column({ type: 'timestamp', nullable: true })
-    student_group_discount_start: Date
+    student_group_discount_start: Date | null
 
     @Column({ type: 'timestamp', nullable: true })
-    student_group_discount_end: Date
+    student_group_discount_end: Date | null
     
     @Column({ type: 'timestamp', nullable: false })
     student_group_add_time: Date

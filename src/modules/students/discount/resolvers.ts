@@ -1,4 +1,4 @@
-import { AddDiscountInput, Discount } from "../../../types/discount";
+import { AddDiscountInput, Discount, RemoveGroupDiscountInput } from "../../../types/discount";
 import AppDataSource from "../../../config/ormconfig";
 import Student_groups from "../../../entities/student/student_groups.entity";
 
@@ -29,6 +29,22 @@ const resolvers = {
             studentData.student_group_discount_type = input.discountType
             studentData.student_group_discount_start = new Date(input.discountStartDate)
             studentData.student_group_discount_end = new Date(input.discountEndDate)
+            let savedData = await studentDiscountRepository.save(studentData)
+            return savedData
+        },
+        removeGroupDiscount: async (_parent: unknown, { input }: { input: RemoveGroupDiscountInput }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const studentDiscountRepository = AppDataSource.getRepository(Student_groups)
+            let studentData = await studentDiscountRepository.findOne({
+                relations: ['student'],
+                where: { group_id: input.groupId, student_id: input.studentId }
+            })
+            if (!studentData) throw new Error("Guruhda bunaqa uquvchi uqimaydi");
+
+            studentData.student_group_discount = 0
+            studentData.student_group_discount_type = 1
+            studentData.student_group_discount_start = null
+            studentData.student_group_discount_end = null
             let savedData = await studentDiscountRepository.save(studentData)
             return savedData
         }

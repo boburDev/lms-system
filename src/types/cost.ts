@@ -1,8 +1,8 @@
 type AddCostInput = {
     costName: string
     costPrice: number
-    costType: number
-    costSelectedDate: string
+    costType: string
+    costPayedAt: string
     costColleagueId: string
 }
 
@@ -10,8 +10,8 @@ type UpdateCostInput = {
     costId: string
     costName: string
     costPrice: number
-    costType: number
-    costSelectedDate: string
+    costType: string
+    costPayedAt: string
     costColleagueId: string
 }
 
@@ -20,7 +20,7 @@ type Cost = {
     cost_name: string
     cost_amount: number
     cost_payed_at: string
-    cost_type: number
+    cost_type: string
     cost_created: string
 }
 

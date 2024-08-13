@@ -15,6 +15,9 @@ export default class Costs {
 
     @Column({ type: 'int' })
     cost_type: number
+    
+    @Column({ length: 32, nullable: true })
+    cost_type_value: string
 
     @Column({ type: 'timestamp', nullable: true })
     cost_payed_at: Date

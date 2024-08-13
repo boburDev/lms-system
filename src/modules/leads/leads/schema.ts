@@ -37,7 +37,6 @@ type Lead {
     leadName: String!
     leadPhone: String!
     leadStatus: Int!
-    leadOrder: Int!
     columnId: ID!
     courseId: ID
     courseName: String

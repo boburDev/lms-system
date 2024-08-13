@@ -7,6 +7,11 @@ type AddDiscountInput = {
     discountEndDate: string
 }
 
+type RemoveGroupDiscountInput = {
+    studentId: string
+    groupId: string
+}
+
 type Discount = {
     student_id: string
     student: {
@@ -22,5 +27,6 @@ type Discount = {
 
 export {
     Discount,
-    AddDiscountInput
+    AddDiscountInput,
+    RemoveGroupDiscountInput
 }

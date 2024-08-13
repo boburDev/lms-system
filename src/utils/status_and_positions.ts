@@ -1,5 +1,3 @@
-import { RolePermissions } from "../interfaces/role_permissions";
-
 export default function positionIndicator(position: string | number): string | number | null {
     const positionMap: { [key: string]: number } = {
         ceo: 1,
@@ -20,6 +18,46 @@ export default function positionIndicator(position: string | number): string | n
         return valueMap[position] || null;
     }
 
+    return null;
+}
+
+export function costTypes(position: string | number): string | number | null {
+    const positionMap: { [key: string]: number } = {
+        marketing: 1,
+        arenda: 2,
+        oyliklar: 3,
+        jihozlar: 4,
+        others: 5
+    };
+
+    const valueMap: { [key: number]: string } = Object.fromEntries(
+        Object.entries(positionMap).map(([key, value]) => [value, key])
+    );
+
+    if (typeof position === 'string') {
+        return positionMap[position] || 5;
+    } else if (typeof position === 'number') {
+        return valueMap[position] || 'others';
+    }
+    return null;
+}
+
+export function paymentTypes(position: string | number): string | number | null {
+    const positionMap: { [key: string]: number } = {
+        cash: 1,
+        card: 2,
+        bankaccount: 3
+    };
+
+    const valueMap: { [key: number]: string } = Object.fromEntries(
+        Object.entries(positionMap).map(([key, value]) => [value, key])
+    );
+
+    if (typeof position === 'string') {
+        return positionMap[position] || null;
+    } else if (typeof position === 'number') {
+        return valueMap[position] || null;
+    }
     return null;
 }
 

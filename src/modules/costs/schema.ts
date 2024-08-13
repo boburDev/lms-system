@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  costs: [Cost]!
+  costs(startDate: String endDate: String): CostSum!
   costById(Id: String): Cost!
 }
 
@@ -12,29 +12,34 @@ type Mutation {
   deleteCost(Id: String) : Cost!
 }
 
+type CostSum {
+  Costs: [Cost]
+  Sum: Int
+}
+
 type Cost {
 	costId: String!
   costName: String!
-  costType: Int!
+  costType: String!
   costPrice: Int!
-  costSelectedDate: String!
+  costPayedAt: String!
   costCreated: String!
 }
 
 input AddCostInput {
   costName: String!
-  costType: Int!
+  costType: String!
   costPrice: Int!
   costColleagueId: String!
-  costSelectedDate: String!
+  costPayedAt: String!
 }
 
 input UpdateCostInput {
   costId: String!
   costName: String
-  costType: Int
+  costType: String
   costPrice: Int
-  costSelectedDate: String
+  costPayedAt: String
   costColleagueId: String
 }
 `

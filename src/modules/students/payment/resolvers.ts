@@ -4,6 +4,7 @@ import Student_payments from "../../../entities/student/student_payments.entity"
 import Student_cashes from "../../../entities/student/student_cashes.entity";
 import StudentEntity from "../../../entities/student/students.entity";
 import EmployerEntity from "../../../entities/employer/employers.entity";
+import { paymentTypes } from "../../../utils/status_and_positions";
 
 const resolvers = {
     Query: {
@@ -14,14 +15,24 @@ const resolvers = {
                 PaymentHistory: []
             }
             if (input.type == 1) {
+                let startDate = input.startDate ? new Date(input.startDate) : null
+                let endDate = input.endDate ? new Date(input.endDate) : null
                 const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
-                let data = await studentCashCountRepository.createQueryBuilder("cash")
+                let query = await studentCashCountRepository.createQueryBuilder("cash")
                     .leftJoinAndSelect("cash.payment", "payment")
                     .leftJoinAndSelect("payment.employer", "employer")
                     .leftJoinAndSelect("cash.student", "student")
                     .where("cash.branch_id = :branchId", { branchId: context.branchId })
+                if (startDate instanceof Date && endDate instanceof Date) {
+                    query = query.andWhere("cash.student_cash_created BETWEEN :startDate AND :endDate", {
+                        startDate,
+                        endDate
+                    })
+                }
+                let data = await query
                     .orderBy("cash.student_cash_created", "DESC")
                     .getMany();
+
                 let result = []
                 for (const i of data) {
                     result.push({
@@ -47,6 +58,30 @@ const resolvers = {
                 results.PaymentHistory = data
             }
             return results
+        },
+        paymentById: async (_parametr: unknown, Id: { Id: string }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+            let data = await studentCashCountRepository.createQueryBuilder("cash")
+                .leftJoinAndSelect("cash.payment", "payment")
+                .leftJoinAndSelect("payment.employer", "employer")
+                .leftJoinAndSelect("cash.student", "student")
+                .where("cash.branch_id = :branchId", { branchId: context.branchId })
+                .orderBy("cash.student_cash_created", "DESC")
+                .getOne();
+            if (!data) throw new Error("Payment not found");
+
+            return {
+                student_cash_id: data.student_cash_id,
+                student_id: data.student_id,
+                student_name: data.student.student_name,
+                employer_name: data.payment?.employer?.employer_name,
+                check_number: data.check_number,
+                cash_amount: data.cash_amount,
+                cash_type: data.check_type,
+                student_cash_payed_at: data.student_cash_payed_at,
+                student_cash_created: data.student_cash_created,
+            }
         }
     },
     Mutation: {
@@ -64,11 +99,13 @@ const resolvers = {
             data.student_balance = data.student_balance + input.cashAmount
             await studentRepository.save(data)
 
+            let paymentType = paymentTypes(input.paymentType)
+
             const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
             let studentCash = new Student_cashes()
             let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
             studentCash.cash_amount = input.cashAmount
-            studentCash.check_type = input.paymentType
+            studentCash.check_type = Number(paymentType)
             studentCash.check_number = count.length + 1
             studentCash.student_cash_payed_at = new Date()
             studentCash.branch_id = context.branchId
@@ -79,7 +116,7 @@ const resolvers = {
             const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
             let studentPayment = new Student_payments()
             studentPayment.student_payment_debit = input.cashAmount
-            studentPayment.student_payment_type = input.paymentType
+            studentPayment.student_payment_type = Number(paymentType)
             studentPayment.student_payment_payed_at = new Date()
             studentPayment.student_id = input.studentId
             studentPayment.employer_id = context.colleagueId
@@ -124,11 +161,13 @@ const resolvers = {
                 data.student_balance = data.student_balance - input.cashAmount
                 await studentRepository.save(data)
 
+                let paymentType = paymentTypes(input.paymentType)
+
                 const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
                 let studentCash = new Student_cashes()
                 let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
                 studentCash.cash_amount = -input.cashAmount
-                studentCash.check_type = input.paymentType
+                studentCash.check_type = Number(paymentType)
                 studentCash.check_number = count.length + 1
                 studentCash.student_cash_payed_at = new Date()
                 studentCash.branch_id = context.branchId
@@ -139,7 +178,7 @@ const resolvers = {
                 const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
                 let studentPayment = new Student_payments()
                 studentPayment.student_payment_credit = input.cashAmount
-                studentPayment.student_payment_type = input.paymentType
+                studentPayment.student_payment_type = Number(paymentType)
                 studentPayment.student_payment_payed_at = new Date()
                 studentPayment.student_id = input.studentId
                 studentPayment.employer_id = context.colleagueId
@@ -159,7 +198,7 @@ const resolvers = {
         employerName: (global: studentPayment) => global.employer_name,
         checkNumber: (global: studentPayment) => global.check_number,
         cashAmount: (global: studentPayment) => global.cash_amount,
-        paymentType: (global: studentPayment) => global.cash_type,
+        paymentType: (global: studentPayment) => paymentTypes(global.cash_type),
         payedAt: (global: studentPayment) => global.student_cash_payed_at,
         createdAt: (global: studentPayment) => global.student_cash_created,
     },
@@ -167,7 +206,7 @@ const resolvers = {
         paymentHistoryId: (global: any) => global.student_payment_id,
         paymentHistoryDebit: (global: any) => global.student_payment_debit,
         paymentHistoryCredit: (global: any) => global.student_payment_credit,
-        paymentHistoryType: (global: any) => global.student_payment_type,
+        paymentHistoryType: (global: any) => paymentTypes(global.student_payment_type),
         paymentHistoryColleagueName: (global: any) => global.employer.employer_name,
         paymentHistoryPayed: (global: any) => global.student_payment_payed_at,
         paymentHistoryCreated: (global: any) => global.student_payment_created,

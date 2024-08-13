@@ -7,6 +7,7 @@ type Query {
 
 type Mutation {
   addGroupDiscount(input: AddGroupDiscountInput!): GroupDiscount!
+  removeGroupDiscount(input: RemoveGroupDiscountInput): GroupDiscount!
 }
   
 type GroupDiscount {
@@ -27,5 +28,10 @@ input AddGroupDiscountInput {
   discountType: Int!
   discountStartDate: String
   discountEndDate: String
+}
+
+input RemoveGroupDiscountInput {
+  studentId: String!
+  groupId: String!
 }
 `
