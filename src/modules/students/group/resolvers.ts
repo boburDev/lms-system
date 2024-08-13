@@ -12,8 +12,8 @@ const resolvers = {
             let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
             if (!dataGroup) throw new Error("Gruppa mavjud emas");
             if (
-                new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
-                new Date(dataGroup.group_end_date) < new Date(input.addedDate)
+                new Date(dataGroup.group_start_date).getTime() >= new Date(input.addedDate).getTime() ||
+                new Date(dataGroup.group_end_date).getTime() <= new Date(input.addedDate).getTime()
             ) throw new Error("Gruppani boshlanish yoki tugash vaqtiga siz tablagan kun bilan tugri kelmadi!")
             
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
@@ -56,8 +56,8 @@ const resolvers = {
             let dataGroup = await GroupRepository.findOneBy({ group_id: input.groupId })
             if (!dataGroup) throw new Error("Gruppa mavjud emas");
             if (
-                new Date(dataGroup.group_start_date) > new Date(input.addedDate) ||
-                new Date(dataGroup.group_end_date) < new Date(input.addedDate)
+                new Date(dataGroup.group_start_date) >= new Date(input.addedDate) ||
+                new Date(dataGroup.group_end_date) <= new Date(input.addedDate)
             ) throw new Error("Gruppani boshlanish yoki tugash vaqtiga siz tablagan kun bilan tugri kelmadi!")
 
             await AppDataSource.createQueryBuilder()
@@ -104,8 +104,8 @@ const resolvers = {
             if (!dataToGroup) throw new Error("O'quvchini qushmoqchi bo'lgan gruppa mavjud emas");
 
             if (
-                new Date(dataToGroup.group_start_date) > new Date(input.addedDate) ||
-                new Date(dataToGroup.group_end_date) < new Date(input.addedDate)
+                new Date(dataToGroup.group_start_date).getTime() > new Date(input.addedDate).getTime() ||
+                new Date(dataToGroup.group_end_date).getTime() < new Date(input.addedDate).getTime()
             ) throw new Error("Gruppani boshlanish yoki tugash vaqtiga siz tablagan kun bilan tugri kelmadi!")
 
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
@@ -121,6 +121,7 @@ const resolvers = {
                 .from(Student_attendences)
                 .where(`student_attendence_day ${fromToday} :startDate`, date)
                 .andWhere(`student_attendence_day <= :endDate`, date)
+                .andWhere(`student_attendence_student_id = :studentId`, {studentId: input.studentId})
                 .execute();
             studentOldAttendance.student_group_status = 3
             await studentGroupRepository.save(studentOldAttendance)
@@ -162,6 +163,7 @@ const resolvers = {
                 .from(Student_attendences)
                 .where(`student_attendence_day >= :startDate`, date)
                 .andWhere(`student_attendence_day <= :endDate`, date)
+                .andWhere(`student_attendence_student_id = :studentId`, { studentId: input.studentId })
                 .execute();
 
             studentOldAttendance.student_group_status = 3

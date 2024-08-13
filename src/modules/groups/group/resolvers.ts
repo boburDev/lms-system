@@ -51,6 +51,7 @@ const resolvers = {
       let data
 
       if (input.startDate && input.endDate) {
+        return null
       } else if (input.Id) {
         data = await groupRepository.createQueryBuilder("group")
           .leftJoinAndSelect("group.employer", "employer")

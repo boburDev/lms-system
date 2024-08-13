@@ -1,4 +1,4 @@
-import { AddGroupInput, AddStudentGroupInput, Group } from "../../../types/group";
+import { Group } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
 import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
@@ -6,13 +6,19 @@ import { Student_attendences } from "../../../entities/student/student_groups.en
 
 const resolvers = {
     Query: {
-        groupAttendenceByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
+		groupAttendenceByIdOrDate: async (_parametr: unknown, input: { Id: string, month: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             let groupRepository = AppDataSource.getRepository(GroupEntity)
             let data
 
-            if (input.Id && input.startDate && input.endDate) {
-                let date = { startDay: new Date(input.startDate), endDay: new Date(input.endDate) }
+            if (input.Id && input.month) {
+				const filterDate = input.month ? new Date(input.month) : new Date();
+				const year = filterDate.getFullYear();
+				const month = filterDate.getMonth() + 1;
+				const startOfMonthDate = new Date(year, month - 1, 1);
+				const endOfMonthDate = new Date(year, month, 0); 
+
+				let date = { startDay: startOfMonthDate, endDay: endOfMonthDate }
 				data = await groupRepository.createQueryBuilder("group")
 					.leftJoinAndSelect("group.attendence", "attendence")
 					.leftJoinAndSelect("group.student_attendences", "student_attendence")

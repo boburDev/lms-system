@@ -88,7 +88,7 @@ const resolvers = {
         const groupStartDate: Date = new Date(dataGroup.group_start_date);
         const groupEndDate: Date = new Date(dataGroup.group_end_date);
         
-        if (!((groupStartDate < addedDate) && (addedDate < groupEndDate))) throw new Error("Guruhning tugash voqti utib ketgandan ken qushomisiz!")
+        if (!((groupStartDate <= addedDate) && (addedDate <= groupEndDate))) throw new Error("Guruhning tugash voqti utib ketgandan ken qushomisiz!")
 
         const studentGroupRepository = AppDataSource.getRepository(Student_groups)
         let data = await studentGroupRepository.findOneBy({ student_id: studentData.student_id, group_id: input.groupId })

@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
     type Query {
-        groupAttendenceByIdOrDate(Id: String startDate: String endDate: String): GroupAttendence
+        groupAttendenceByIdOrDate(Id: String! month: String!): GroupAttendence
     }
 
     type Mutation {
