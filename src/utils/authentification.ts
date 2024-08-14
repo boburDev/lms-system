@@ -24,7 +24,7 @@ const activeBranch = async (branchId:string) => {
         .andWhere("students.student_branch_id = :branchId", { branchId })
         .getCount();
 
-    if (count <= 50)
+    if (count <= 20)
         return true;
 
     const priceRepository = AppDataSource.getRepository(PricesEntity)
@@ -86,7 +86,6 @@ export const authentification = async (token:string) => {
                 .where("activity.branch_activity_status = true")
                 .andWhere("activity.branch_id = :id", { id: tokenDate.branchId })
                 .getOne()
-
             if (!activity) {
                 isActive = false
             } else if (new Date(activity.group_end_date).getTime() < new Date().getTime()) {

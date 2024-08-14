@@ -7,7 +7,7 @@ export const validateObjectSignup = (input: object) => {
         companyName: Joi.string().min(2).required(),
         companyPhone: Joi.string().min(12).max(12).required(),
         password: Joi.string().min(5).required(),
-        code: Joi.string().min(6).max(6).required(),
+        code: Joi.string().min(6).max(6),
         districtId: Joi.string().min(5).required()
     })
     return schema.validate(input)

@@ -91,7 +91,7 @@ export const verifyPhoneBeforeCreateAccaunt = async (req: Request, res: Response
     try {
         const { userphone } = req.body
 
-        if (!(userphone)) throw new Error("Invalid input value");
+        if (!userphone) throw new Error("Invalid input value");
         
         const employerRepository = AppDataSource.getRepository(EmployersEntity)
         let employerData = await employerRepository.findOneBy({ employer_phone: userphone, employer_position: 1 })
@@ -145,14 +145,14 @@ export const signup = async (req:Request, res: Response) => {
         const { error, value } = validateObjectSignup(req.body)
         if (error?.message) throw new Error(error.message)
 
-        const phoneRepository = AppDataSource.getRepository(PhoneEntity)
-        let phone = await phoneRepository.createQueryBuilder("phone")
-            .where("phone.phone_number = :phone", { phone: value.derectorPhone })
-            .getOne()
-        if (!phone) throw new Error("Time expired");
+        // const phoneRepository = AppDataSource.getRepository(PhoneEntity)
+        // let phone = await phoneRepository.createQueryBuilder("phone")
+        //     .where("phone.phone_number = :phone", { phone: value.derectorPhone })
+        //     .getOne()
+        // if (!phone) throw new Error("Time expired");
 
-        const timeExpire = phone.phone_code_created.getTime() - new Date().getTime() > 0;
-        if (!(phone.temp_code === (+value.code) && timeExpire)) throw new Error("Time expired"); 
+        // const timeExpire = phone.phone_code_created.getTime() - new Date().getTime() > 0;
+        // if (!(phone.temp_code === (+value.code) && timeExpire)) throw new Error("Time expired"); 
 
         const companyRepository = AppDataSource.getRepository(Companies)
         const branchRepository = AppDataSource.getRepository(CompanyBranches)
@@ -160,13 +160,15 @@ export const signup = async (req:Request, res: Response) => {
         const activityRepository = AppDataSource.getRepository(BranchActivityEntity)
         
         let employerData = await employerRepository.findOneBy({ employer_phone: value.derectorPhone, employer_position: 1 })
-        if (!employerData) throw new Error(`Bu "${value.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`)
+        console.log(employerData)
+        
+        if (employerData !== null) throw new Error(`Bu "${value.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`)
         
         let companyData = await companyRepository.findOneBy({ company_name: value.companyName })
-        if (!companyData) throw new Error(`"${value.companyName}" nomidan foydalana olmaysiz band qilingan`)
+        if (companyData !== null) throw new Error(`"${value.companyName}" nomidan foydalana olmaysiz band qilingan`)
         
         let branchData = await branchRepository.findOneBy({ company_branch_phone: value.companyPhone })
-        if (!branchData) throw new Error(`"${value.companyPhone}" nomidan foydalana olmaysiz band qilingan`)
+        if (branchData !== null) throw new Error(`"${value.companyPhone}" nomidan foydalana olmaysiz band qilingan`)
         
         let company = new Companies()
         company.company_name = value.companyName
@@ -184,6 +186,7 @@ export const signup = async (req:Request, res: Response) => {
 
         let daysToAdd = 7
         const startDate = new Date();
+        // startDate.setDate(startDate.getDate() - 2);
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + daysToAdd);
 
@@ -214,6 +217,8 @@ export const signup = async (req:Request, res: Response) => {
             role: positionIndicator(newEmployer.employer_position)
         }, error: null })
     } catch (error: unknown) {
+        console.log(error);
+        
         res.status(400).json({ data: null, error: (error as Error).message})
     }
 }

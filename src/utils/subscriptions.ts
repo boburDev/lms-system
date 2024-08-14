@@ -3,6 +3,7 @@ import { pubsub } from "./pubSub";
 import AppDataSource from "../config/ormconfig";
 import Connect_Time from "../entities/application_usage/connect_time.entity";
 import { ConnectionContext } from "../interfaces/subcribtion";
+
 const map = new Map<string, number>();
 
 export default {
@@ -44,40 +45,57 @@ export default {
                 throw new Error("Not exist access token!");
             }
         } catch (error) {
-            console.log((error as Error).message)
-            throw new Error("Authorization failed");
+            console.log((error as Error).message);
+            throw new Error("Authorization failed 1");
         }
     },
     onDisconnect: async (webSocket: WebSocket, context: any) => {
-        const data = await context.initPromise;
-        console.log(data)
-        
-        if (data) {
-            // Assuming moment is properly used when uncommented
-            const startDate = new Date(data.date)
-            const endDate = new Date()
+        try {
+            const data = (await context.initPromise);
 
-            if (data.isUser) {
-                // Example logic, assuming onlineModel.updateConnect() and onlineModel.newConnect() are functions
-                if (startDate.getTime() != endDate.getTime()) {
-                    endDate.setHours(0, 0, 0, 0)
-                    // ({ hour: 0, minute: 0, second: 0, millisecond: 0 }).subtract(1, 'millisecond');
-                    // await onlineModel.updateConnect(data.connectId, end.valueOf());
-                    // await onlineModel.newConnect(data.ID, data.branchID, date);
-                } else {
-                    // await onlineModel.updateConnect(data.connectId, date);
+            if (data) {
+                // Assuming moment is properly used when uncommented
+                const startDate = new Date(data.date)
+                const endDate = new Date()
+
+                if (data.isUser) {
+                    const connectRepository = AppDataSource.getRepository(Connect_Time)
+                    let connection = await connectRepository.createQueryBuilder("connect_time")
+                        .where("connect_time.connect_id = :Id", { Id: data.connectId })
+                        .getOne();
+                    if (!connection) throw new Error("connection time not found");
+                    if (startDate.getTime() != endDate.getTime()) {
+                        endDate.setHours(0, 0, 0, 0)
+                        let newDate = new Date(endDate.getTime() - 1) // 1 milliseconds
+
+                        connection.disconnect_time = newDate.getTime()
+                        await connectRepository.save(connection)
+
+                        let newConnect = new Connect_Time()
+                        newConnect.branch_id = data.branchId
+                        newConnect.colleague_id = data.colleagueId
+                        newConnect.connect_time = Date.now()
+                        await connectRepository.save(newConnect);
+                    } else {
+                        connection.disconnect_time = endDate.getTime()
+                        await connectRepository.save(connection)
+                    }
+
+                    const branchId = data.branchId;
+                    const val = (map.get(branchId) ?? 0) - 1;
+
+                    if (val === 0) {
+                        map.delete(branchId);
+                    } else {
+                        map.set(branchId, val);
+                    }
+
+                    pubsub.publish('branchOnline', { size: map.size });
                 }
-
-                // const val = (map.get(data.branchID) ?? 0) - 1;
-
-                // if (val === 0) {
-                //     map.delete(data.branchID);
-                // } else {
-                //     map.set(data.branchID, val);
-                // }
-
-                // pubsub.publish('branchOnline', { size: map.size });
             }
+        } catch (error) {
+            console.log((error as Error).message);
+            throw new Error("Authorization failed 2");
         }
-    },
+    }
 };

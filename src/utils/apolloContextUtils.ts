@@ -12,7 +12,7 @@ export default async ({ req, connection }: any) => {
                 
                 if (!context) {
                     throw new Error("auth failed");
-                } else if (context && context.isAdmin && !context.isActive && req.body.query.slice(0, 8) === "mutation") {
+                } else if (context && !context.isAdmin && !context.isActive && req.body.query.slice(0, 8) === "mutation") {
                     throw new Error(`pay failed`);
                 }
                 return context

@@ -11,7 +11,7 @@ export default class Connect_Time {
     @Column({ type: 'bigint' })
     connect_time: number
 
-    @Column({ type: 'int', default: 0 })
+    @Column({ type: 'bigint', default: 0 })
     disconnect_time: number
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
