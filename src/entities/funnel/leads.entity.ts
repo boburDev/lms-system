@@ -19,6 +19,9 @@ export default class Leads {
     @Column({ type: 'int', default: 1 })
     lead_status: number
 
+    @Column({ type: 'int', default: 1 })
+    lead_order: number
+
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     lead_created: Date
 

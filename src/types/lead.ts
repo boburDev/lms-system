@@ -15,6 +15,7 @@ type UpdateLeadInput = {
 type UpdateLeadColumnInput = {
     leadId: string
     columnId: string
+    orderNumber: number
 }
 
 type Lead = {
@@ -22,6 +23,7 @@ type Lead = {
     lead_name: string
     lead_phone: string
     lead_status: number
+    lead_order: number
     lead_funnel_column_id: string
     lead_course_id: string
     courses: {

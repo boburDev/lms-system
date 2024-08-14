@@ -7,7 +7,7 @@ export default class Salary {
     @PrimaryGeneratedColumn('uuid')
     salary_id: string
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: 0 })
     salary_amount: number
 
     @Column({ type: 'int', default: 1 })

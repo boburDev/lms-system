@@ -30,6 +30,7 @@ input UpdateLeadInput {
 input UpdateLeadColumnInput {
     leadId: String!
     columnId: ID!
+    orderNumber: Int
 }
 
 type Lead {
@@ -37,6 +38,7 @@ type Lead {
     leadName: String!
     leadPhone: String!
     leadStatus: Int!
+    leadOrder: Int!
     columnId: ID!
     courseId: ID
     courseName: String

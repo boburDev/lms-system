@@ -27,3 +27,4 @@ create table colleague_permissions (
 	finance_p varchar(16) not null,
 	company_colleague_id uuid references company_colleagues(company_colleague_id) on delete cascade
 );
+

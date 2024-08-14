@@ -3,6 +3,7 @@ import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
 import positionIndicator, { getPermissions } from "../../utils/status_and_positions";
 import permission from './employer_permission.json'
+import SalaryEntity from "../../entities/employer/salary.entity";
 
 type Permission = {
   [key: string]: Permission | boolean;
@@ -50,8 +51,15 @@ const resolvers = {
       employer.employer_position = Number(positionIndicator(input.employerPosition))
       employer.employer_password = input.employerPassword
       employer.employer_branch_id = context.branchId
+      let newEmployer = await employerRepository.save(employer)
 
-      return await employerRepository.save(employer)
+      const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
+      let employerSalary = new SalaryEntity()
+      employerSalary.salary_history_branch_id = context.branchId
+      employerSalary.salary_history_employer_id = newEmployer.employer_id
+      await employerSalaryRepository.save(employerSalary)
+      
+      return newEmployer
     },
     updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
@@ -76,13 +84,21 @@ const resolvers = {
       if (!context?.branchId) throw new Error("Not exist access token!");
 
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
+      const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
 
       let data = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_id = :id", { id: employerId })
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
+      let dataSalary = await employerSalaryRepository.createQueryBuilder("salary")
+        .where("salary.salary_history_employer_id = :id", { id: employerId })
+        .andWhere("salary.salary_deleted IS NULL")
+        .getOne()
+      if (!data || !dataSalary) throw new Error(`Bu hodim mavjud emas`)
 
-      if (data === null) throw new Error(`Bu hodim mavjud emas`)
+      
+      dataSalary.salary_deleted = new Date()
+      await employerSalaryRepository.save(dataSalary)
 
       data.employer_deleted = new Date()
       await employerRepository.save(data)
