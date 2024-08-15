@@ -25,6 +25,7 @@ const resolvers = {
             studentGroup.student_group_lesson_end = dataGroup.group_end_date
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.groupId
+            studentGroup.student_group_status = 2
             await studentGroupRepository.save(studentGroup)
             
             const days = getDays(new Date(input.addedDate), dataGroup.group_end_date)
