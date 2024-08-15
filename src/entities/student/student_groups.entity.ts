@@ -21,12 +21,15 @@ export default class Student_groups {
     
     @Column({ type: 'timestamp', nullable: false })
     student_group_add_time: Date
+    
+    @Column({ type: 'timestamp', nullable: true })
+    student_left_group_time: Date
 
     @Column({ type: 'int', default: 1 })
     student_group_status: number
     
-    @Column({ type: 'boolean', default: false })
-    student_group_lesson_end: boolean
+    @Column({ type: 'timestamp', nullable: false })
+    student_group_lesson_end: Date
 
     @Column({ type: 'float', default: 0.0 })
     student_group_credit: number

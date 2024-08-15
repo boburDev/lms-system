@@ -22,6 +22,7 @@ const resolvers = {
             
             let studentGroup = new Student_groups()
             studentGroup.student_group_add_time = new Date(input.addedDate)
+            studentGroup.student_group_lesson_end = dataGroup.group_end_date
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.groupId
             await studentGroupRepository.save(studentGroup)
@@ -75,7 +76,7 @@ const resolvers = {
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
             let data = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.groupId })
             if (data !== null) throw new Error(`Bu gruppada uquvchi uqimoqda`)
-
+            
             let studentGroup = new Student_groups()
             studentGroup.student_group_add_time = new Date(input.addedDate)
             studentGroup.student_id = input.studentId
@@ -124,6 +125,7 @@ const resolvers = {
                 .andWhere(`student_attendence_student_id = :studentId`, {studentId: input.studentId})
                 .execute();
             studentOldAttendance.student_group_status = 3
+            studentOldAttendance.student_left_group_time = new Date()
             await studentGroupRepository.save(studentOldAttendance)
 
             let studentGroup = new Student_groups()
@@ -167,6 +169,7 @@ const resolvers = {
                 .execute();
 
             studentOldAttendance.student_group_status = 3
+            studentOldAttendance.student_left_group_time = new Date()
             await studentGroupRepository.save(studentOldAttendance)
 
             // await AppDataSource.createQueryBuilder()

@@ -63,13 +63,13 @@ export function paymentTypes(position: string | number): string | number | null 
 
 export const positionStudent = (status:number) => {
     if (status == 1) return 'Markaz ro\'yxatida mavjud'
-    if (status == 1) return 'Markaz ro\'yxatida mavjud'
-    if (status == 2) return 'Guruhga sinov darsi uchun qo\'shildi'
-    if (status == 3) return 'Guruhda o\'qish uchun pul to\'lagan'
-    if (status == 4) return 'Qarzdor o\'quvchi'
-    if (status == 5) return 'Muzlatilgan o\'quvchi'
+    if (status == 2) return 'Active student'
+    if (status == 3) return 'Qarzdor o\'quvchi'
+    if (status == 4) return 'Guruhga sinov darsi uchun qo\'shildi'
+    if (status == 5) return 'Dars qoldirgan student'
     if (status == 6) return 'Darsga kelishni to\'xtatgan o\'quvchi'
     if (status == 7) return 'Sinov darsidan so\'ng ketganlar'
+    // if (status == 5) return 'Muzlatilgan o\'quvchi'
 }
 
 export const getPermissions = (role: string, permissions: any) => {

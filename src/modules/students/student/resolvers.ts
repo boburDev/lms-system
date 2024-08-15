@@ -96,6 +96,7 @@ const resolvers = {
 
         let studentGroup = new Student_groups()
         studentGroup.student_group_add_time = new Date(input.addedDate)
+        studentGroup.student_group_lesson_end = dataGroup.group_end_date
         studentGroup.student_id = studentData.student_id
         studentGroup.group_id = input.groupId
         await studentGroupRepository.save(studentGroup)

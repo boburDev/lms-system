@@ -2,7 +2,11 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToOne
 import Students from "./students.entity";
 import Employers from "../employer/employers.entity";
 import Student_cashes from "./student_cashes.entity";
-
+// select
+// student_payment_debit,
+// student_payment_credit,
+// student_payment_type
+// from student_payments where student_id = 'fed33499-77d3-42f7-b1b6-70084a8b2022';
 @Entity()
 export default class Student_payments {
     @PrimaryGeneratedColumn('uuid')
