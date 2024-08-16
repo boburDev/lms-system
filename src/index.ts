@@ -16,9 +16,6 @@ import context from './utils/apolloContextUtils'
 import apollo from './utils/subscriptions'
 const PORT = process.env.PORT || 8080
 
-import { WebSocketServer } from 'ws';
-import { Server } from 'graphql-ws';
-
 ;(async () => {
     AppDataSource.initialize().then(() => { }).catch((error) => console.log(error))
     const app = express()
@@ -29,12 +26,6 @@ import { Server } from 'graphql-ws';
     // app.use((req, res, next) => { req.psql = psql; return next(); })
     
     const httpServer = http.createServer(app);
-    const wsServer = new WebSocketServer({
-        server: httpServer,
-        path: '/graphql',
-    });
-
-    
     const onConnect = apollo.onConnect
     const onDisconnect = apollo.onDisconnect
     const subscriptionServer = SubscriptionServer.create(

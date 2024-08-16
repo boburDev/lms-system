@@ -18,7 +18,6 @@ export default {
                 const date: number = Date.now();
                 
                 if (isUser) {
-                    // Assuming onlineModel.newConnect() returns a promise resolving to an object with connect_id
                     const connectRepository = AppDataSource.getRepository(Connect_Time)
                     let newConnect = new Connect_Time()
                     newConnect.branch_id = tokenData.branchId
@@ -52,9 +51,7 @@ export default {
     onDisconnect: async (webSocket: WebSocket, context: any) => {
         try {
             const data = (await context.initPromise);
-
             if (data) {
-                // Assuming moment is properly used when uncommented
                 const startDate = new Date(data.date)
                 const endDate = new Date()
 
@@ -64,13 +61,11 @@ export default {
                         .where("connect_time.connect_id = :Id", { Id: data.connectId })
                         .getOne();
                     if (!connection) throw new Error("connection time not found");
-                    if (startDate.getTime() != endDate.getTime()) {
+                    if (startDate.getDate() != endDate.getDate()) {
                         endDate.setHours(0, 0, 0, 0)
                         let newDate = new Date(endDate.getTime() - 1) // 1 milliseconds
-
                         connection.disconnect_time = newDate.getTime()
                         await connectRepository.save(connection)
-
                         let newConnect = new Connect_Time()
                         newConnect.branch_id = data.branchId
                         newConnect.colleague_id = data.colleagueId

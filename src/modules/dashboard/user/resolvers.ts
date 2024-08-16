@@ -31,9 +31,14 @@ const resolvers = {
         employersStatistics: async (_parametr: unknown, input: { startDate: string, endDate: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!"); 
 
-            
-
-            console.log(context, positionIndicator(context.role));
+            const data = {
+                branchId: context.branchId,
+                startDate: new Date(startDate),
+                endDate: new Date(endDate),
+                // colleagueId: context.colleagueId
+            }
+            console.log(await getColleagueActivities(data))
+            // console.log(context, positionIndicator(context.role));
             
             
         }
@@ -50,4 +55,30 @@ const resolvers = {
     }
 }
 
+async function getColleagueActivities(input: any) {
+    const { branchId, startDate, endDate, colleagueId } = input
+    let query = `
+        SELECT
+            c.*,
+            (SELECT activity_colleagues($2, $3, c.employer_id)) as activity
+        FROM employers c
+        WHERE c.employer_branch_id = $1
+    `;
+
+    // Add condition for colleague_id if provided
+    const params = [branchId, startDate, endDate];
+    if (colleagueId) {
+        query += ` AND c.employer_id = $4`;
+        params.push(colleagueId);
+    }
+    const results = await AppDataSource.query(query, params);
+    return results;
+}
+
 export default resolvers;
+
+// SELECT
+// c.*,
+//     (SELECT activity_colleagues('2024-01-01T00:00:00.000Z', '2024-12-31T00:00:00.000Z', c.employer_id)) as activity
+//         FROM employers c
+//         WHERE c.employer_branch_id = '7a738c27-7267-44bb-b768-8cdd202b5e18';
