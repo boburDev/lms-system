@@ -62,6 +62,7 @@ const resolvers = {
           .where("group.group_branch_id = :branchId", { branchId: context.branchId })
           .andWhere("group.group_id = :groupId", { groupId: input.Id })
           .andWhere("group.group_deleted IS NULL")
+          .andWhere("student.student_deleted IS NULL")
           .getOne();
       }
 

@@ -25,7 +25,7 @@ const resolvers = {
             studentGroup.student_group_lesson_end = dataGroup.group_end_date
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.groupId
-            studentGroup.student_group_status = 2
+            studentGroup.student_group_status = 4
             await studentGroupRepository.save(studentGroup)
             
             const days = getDays(new Date(input.addedDate), dataGroup.group_end_date)
@@ -48,7 +48,7 @@ const resolvers = {
             const studentGroupRepository = AppDataSource.getRepository(Student_groups)
             let studentGroup = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.groupId })
             if (!studentGroup) throw new Error(`Bu uquvchi not found`)
-            studentGroup.student_group_status = 4
+            studentGroup.student_group_status = 10
             await studentGroupRepository.save(studentGroup)
             return 'success'
         },
@@ -114,6 +114,7 @@ const resolvers = {
             let studentOldAttendance = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.fromGroupId })
             if (!studentOldAttendance) throw new Error("student group not found");
             
+            const checkStatus = studentOldAttendance.student_group_status == 4 ? true : false
             let today = new Date()
             today.setHours(0, 0, 0, 0)
             let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
@@ -125,7 +126,7 @@ const resolvers = {
                 .andWhere(`student_attendence_day <= :endDate`, date)
                 .andWhere(`student_attendence_student_id = :studentId`, {studentId: input.studentId})
                 .execute();
-            studentOldAttendance.student_group_status = 3
+            studentOldAttendance.student_group_status = checkStatus ? 7 : 6
             studentOldAttendance.student_left_group_time = new Date()
             await studentGroupRepository.save(studentOldAttendance)
 
@@ -133,6 +134,7 @@ const resolvers = {
             studentGroup.student_group_add_time = new Date(input.addedDate)
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.toGroupId
+            studentGroup.student_group_status = 4
             let newStudentGroup = await studentGroupRepository.save(studentGroup)
 
             const days = getDays(new Date(input.addedDate), dataToGroup.group_end_date)
@@ -158,6 +160,8 @@ const resolvers = {
             let studentOldAttendance = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: dataGroup.group_id })
             if (!studentOldAttendance) throw new Error("student group not found");
 
+            const checkStatus = studentOldAttendance.student_group_status == 4 ? true : false
+
             let today = new Date()
             today.setHours(0, 0, 0, 0)
             let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
@@ -169,7 +173,7 @@ const resolvers = {
                 .andWhere(`student_attendence_student_id = :studentId`, { studentId: input.studentId })
                 .execute();
 
-            studentOldAttendance.student_group_status = 3
+            studentOldAttendance.student_group_status = checkStatus ? 7 : 6
             studentOldAttendance.student_left_group_time = new Date()
             await studentGroupRepository.save(studentOldAttendance)
 
@@ -178,7 +182,6 @@ const resolvers = {
             //     .from(Student_attendences)
             //     .where(`student_attendence_student_id = :studentId`, { studentId: input.studentId })
             //     .execute();
-
             // await AppDataSource.createQueryBuilder()
             //     .delete()
             //     .from(Student_groups)

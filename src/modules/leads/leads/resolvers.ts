@@ -88,10 +88,11 @@ const resolvers = {
 
             if (!columnFunnelId) throw new Error(`Bu varonkada bu column mavjud emas`)
 
+            const newOrder = dataLeadOrders[0] && dataLeadOrders[0]?.lead_order || 1
 
             let lead = new LeadsEntity()
-            lead.lead_order = (dataLeadOrders[0]?.lead_order + 1) || 1
-            lead.lead_name = input.leadName
+            lead.lead_order = newOrder + 1
+            lead.lead_name = input.leadName + `${(newOrder + 1)}`
             lead.lead_phone = input.leadPhone
             if (input.courseId) {
                 lead.lead_course_id = input.courseId
@@ -152,53 +153,93 @@ const resolvers = {
         updateLeadColumn: async (_parent: unknown, { input }: { input: UpdateLeadColumnInput }, context: any): Promise<LeadsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const leadRepository = AppDataSource.getRepository(LeadsEntity)
-            let data = await leadRepository.createQueryBuilder("leads")
+
+            let lead = await leadRepository.createQueryBuilder("leads")
                 .where("leads.lead_id = :id", { id: input.leadId })
                 .andWhere("leads.lead_deleted IS NULL")
                 .getOne()
 
-            if (!data) throw new Error(`Bu lead mavjud emas`)
+            if (!lead) throw new Error(`Bu lead mavjud emas`)
 
-            const currentPosition = data.lead_order;
-            let newPosition = input.orderNumber
-            if (currentPosition === newPosition && data.lead_funnel_column_id === input.columnId) {
-                return data;
+            const currentColumnId = lead.lead_funnel_column_id;
+            const currentOrder = lead.lead_order || 1;
+            const newOrder = input.orderNumber
+            // Validate new order
+            if (input.orderNumber < 1) {
+                throw new Error('Order must be greater than 0');
             }
 
-            let dataColumnLeads = await leadRepository.createQueryBuilder("leads")
-                .where("leads.lead_funnel_column_id = :id", { id: input.columnId })
-                .andWhere("leads.lead_deleted IS NULL")
-                .orderBy("leads.lead_order", "ASC")
-                .getMany()
+            if (currentColumnId !== input.columnId) {
+                const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
+                const newColumn = await funnelColumnRepository.createQueryBuilder("funnelColumn")
+                    .where("funnelColumn.funnel_column_id = :columnId", { columnId: input.columnId })
+                    .andWhere("funnelColumn.funnel_column_deleted IS NULL")
+                    .getOne();
 
-            if (newPosition > currentPosition) {
-                dataColumnLeads = dataColumnLeads.map(order => {
-                    if (order.lead_order > currentPosition && order.lead_order <= newPosition) {
-                        order.lead_order--;
-                    } else if (order.lead_id === input.leadId) {
-                        order.lead_order = newPosition;
-                    }
-                    return order;
-                });
+                if (!newColumn) {
+                    throw new Error('New column not found');
+                }
+
+                await leadRepository
+                    .createQueryBuilder()
+                    .update(LeadsEntity)
+                    .set({ lead_order: () => 'lead_order - 1' })
+                    .where('lead_funnel_column_id = :columnId AND lead_order > :order', {
+                        columnId: currentColumnId,
+                        order: currentOrder,
+                    })
+                    .execute();
+
+                // Reorder leads in the new column
+                await leadRepository
+                    .createQueryBuilder()
+                    .update(LeadsEntity)
+                    .set({ lead_order: () => 'lead_order + 1' })
+                    .where('lead_funnel_column_id = :columnId AND lead_order >= :order', {
+                        columnId: input.columnId,
+                        order: newOrder,
+                    })
+                    .execute();
+
+                // Update the lead's column and order
+                lead.lead_funnel_column_id = input.columnId;
+                lead.lead_order = newOrder;
+
             } else {
-                dataColumnLeads = dataColumnLeads.map(order => {
-                    if (order.lead_order >= newPosition && order.lead_order < currentPosition) {
-                        order.lead_order++;
-                    } else if (order.lead_id === input.leadId) {
-                        order.lead_order = newPosition;
-                    }
-                    return order;
-                });
+                if (currentOrder === newOrder) {
+                    return lead; // No change needed
+                }
+
+                if (newOrder > currentOrder) {
+                    // Move lead down in the order
+                    await leadRepository
+                        .createQueryBuilder()
+                        .update(LeadsEntity)
+                        .set({ lead_order: () => 'lead_order - 1' })
+                        .where('lead_funnel_column_id = :columnId AND lead_order > :currentOrder AND lead_order <= :newOrder', {
+                            columnId: currentColumnId,
+                            currentOrder: currentOrder,
+                            newOrder: newOrder,
+                        })
+                        .execute();
+                } else {
+                    // Move lead up in the order
+                    await leadRepository
+                        .createQueryBuilder()
+                        .update(LeadsEntity)
+                        .set({ lead_order: () => 'lead_order + 1' })
+                        .where('lead_funnel_column_id = :columnId AND lead_order >= :newOrder AND lead_order < :currentOrder', {
+                            columnId: currentColumnId,
+                            newOrder: newOrder,
+                            currentOrder: currentOrder,
+                        })
+                        .execute();
+                }                
+                // Update the lead's order
+                lead.lead_order = newOrder;
             }
-
-            await AppDataSource.transaction(async transactionalEntityManager => {
-                await transactionalEntityManager.save(LeadsEntity, dataColumnLeads);
-            });
-
-            data.lead_funnel_column_id = input.columnId;
-            data.lead_order = input.orderNumber;
-            await leadRepository.save(data);
-            return data
+            await leadRepository.save(lead);
+            return lead
         },
         dateteLead: async (_parent: unknown, { leadId }: { leadId: string }, context: any): Promise<LeadsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
@@ -210,9 +251,22 @@ const resolvers = {
                 .getOne()
 
             if (!data) throw new Error("lead mavjud emas");
+            let leadOrder = data.lead_order
             
             data.lead_deleted = new Date()
+            data.lead_order = null
             await leadRepository.save(data)
+
+            await leadRepository
+                .createQueryBuilder()
+                .update(LeadsEntity)
+                .set({ lead_order: () => 'lead_order - 1' })
+                .where('lead_funnel_column_id = :columnId AND lead_order > :leadOrder', {
+                    columnId: data.lead_funnel_column_id,
+                    leadOrder: leadOrder,
+                })
+                .execute();
+
             return data
         }
     },

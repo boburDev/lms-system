@@ -19,8 +19,8 @@ export default class Leads {
     @Column({ type: 'int', default: 1 })
     lead_status: number
 
-    @Column({ type: 'int', default: 1 })
-    lead_order: number
+    @Column({ type: 'int', nullable: true, default: 1 })
+    lead_order: number | null
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     lead_created: Date
@@ -63,3 +63,5 @@ export default class Leads {
     @JoinColumn({ name: 'lead_branch_id' })
     branches: CompanyBranches
 }
+
+
