@@ -77,6 +77,11 @@ type AddStudentGroupInput = {
     addedDate: string
 }
 
+type ActivateStudentGroupInput = {
+    studentId: string
+    groupId: string
+}
+
 type FreezeStudentGroupInput = {
     studentId: string
     groupId: string
@@ -104,6 +109,7 @@ type ChangeStudentGroupDateInput = {
 export {
     Group,   
     AddGroupInput,
+    ActivateStudentGroupInput,
     FreezeStudentGroupInput,
     UpdateGroupInput,
     AddStudentGroupInput,

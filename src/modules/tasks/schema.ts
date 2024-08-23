@@ -16,31 +16,27 @@ type Task {
 	taskId: String!
   taskTitle: String!
   taskBody: String!
-  taskStartDate: String!
-  taskEndDate: String!
-  taskType: Int!
+  taskEndDate: String
+  taskType: Int
   taskFromColleagueId: String!
-  taskFromColleagueName: String
-  taskColleagueId: String!
+  taskFromColleagueName: String!
+  taskColleagueId: String
   taskColleagueName: String
 }
 
 input AddTaskInput {
   taskTitle: String!
   taskBody: String!
-  taskStartDate: String!
-  taskEndDate: String!
-  taskType: Int!
-  taskToColleagueId: String!
-}
-input UpdateTaskInput {
-  taskId: String
-  taskTitle: String
-  taskBody: String
-  taskStartDate: String
   taskEndDate: String
   taskType: Int
-  taskFromColleagueId: String
+  taskToColleagueId: String
+}
+input UpdateTaskInput {
+  taskId: String!
+  taskTitle: String
+  taskBody: String
+  taskEndDate: String
+  taskType: Int
   taskToColleagueId: String
 }
 `

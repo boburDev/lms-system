@@ -24,6 +24,7 @@ type Lead = {
     lead_phone: string
     lead_status: number
     lead_order: number
+    lead_created: string
     lead_funnel_column_id: string
     lead_course_id: string
     courses: {

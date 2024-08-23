@@ -10,7 +10,6 @@ const resolvers = {
         studentsStatistics: async (_parametr: unknown, input: { startDate: string, endDate: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const studentRepository = AppDataSource.getRepository(StudentEntity)
-
             const studentCounts = await studentRepository
                 .createQueryBuilder('students')
                 .select([
@@ -25,33 +24,35 @@ const resolvers = {
                 .leftJoin('students.student_group', 'sg')
                 .setParameters({ startDate, endDate })
                 .getRawOne();
-            console.log(studentCounts)
-            
+            return studentCounts
         },
-        employersStatistics: async (_parametr: unknown, input: { startDate: string, endDate: string }, context: any) => {
-            if (!context?.branchId) throw new Error("Not exist access token!"); 
-
+        employersStatistics: async (_parametr: unknown, input: { startDate: string, endDate: string, employerId: string }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
             const data = {
                 branchId: context.branchId,
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
-                // colleagueId: context.colleagueId
+                colleagueId: input.employerId
             }
-            console.log(await getColleagueActivities(data))
-            // console.log(context, positionIndicator(context.role));
-            
-            
-        }
+            let employerData = await getColleagueActivities(data)
+            return employerData
+        },
+        
     },
     StudentInfo: {
-        allStudents: (global: any) => 0,
-        activeStudents: (global: any) => 0,
-        notPayedStudents: (global: any) => 0,
-        trialStudents: (global: any) => 0,
-        missedStudents: (global: any) => 0,
-        leftStudents: (global: any) => 0,
-        leftTrialStudents: (global: any) => 0,
-        leads: (global: any) => 0
+        allStudents: (global: any) => global.allStudents,
+        activeStudents: (global: any) => global.activeStudents,
+        notPayedStudents: (global: any) => global.notPayedStudents,
+        trialStudents: (global: any) => global.trialStudents,
+        missedStudents: (global: any) => global.missedStudents,
+        leftStudents: (global: any) => global.leftStudents,
+        leftTrialStudents: (global: any) => global.leftTrialStudents,
+        leads: (global: any) => global.leads || 0
+    },
+    EmployerAppUsage: {
+        employerId: (global: any) => global.employer_id,
+        employerName: (global: any) => global.employer_name,
+        appUsageTime: (global: any) => global.activity,
     }
 }
 
@@ -71,6 +72,8 @@ async function getColleagueActivities(input: any) {
         query += ` AND c.employer_id = $4`;
         params.push(colleagueId);
     }
+
+    console.log(1, branchId, startDate, endDate, colleagueId);
     const results = await AppDataSource.query(query, params);
     return results;
 }

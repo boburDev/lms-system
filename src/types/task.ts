@@ -27,6 +27,13 @@ type Task = {
     task_type: string
     colleague_id: string
     colleague_id_task_from: string
+    taskToColleagueName: string
+    colleague_task_from: {
+        employer_name: string
+    }
+    colleague_task: {
+        employer_name: string
+    }
 }
 
 export {

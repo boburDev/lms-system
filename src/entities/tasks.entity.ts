@@ -13,10 +13,7 @@ export default class Tasks {
     @Column({ nullable: false })
     task_body: string
 
-    @Column({ type: 'timestamp', nullable: false })
-    task_start_date: Date
-
-    @Column({ type: 'timestamp', nullable: false })
+    @Column({ type: 'timestamp', nullable: true })
     task_end_date: Date
 
     @Column({ type: 'int' })
@@ -31,7 +28,7 @@ export default class Tasks {
     @Column()
     task_branch_id: string
 
-    @Column()
+    @Column({ nullable: true })
     colleague_id: string
 
     @Column()

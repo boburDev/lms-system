@@ -276,6 +276,7 @@ const resolvers = {
         leadPhone: (global: Lead) => global.lead_phone,
         leadStatus: (global: Lead) => global.lead_status,
         leadOrder: (global: Lead) => global.lead_order,
+        leadCreated: (global: Lead) => global.lead_created,
         columnId: (global: Lead) => global.lead_funnel_column_id,
         courseId: (global: Lead) => global.lead_course_id,
         courseName: (global: Lead) => global?.courses?.course_name,

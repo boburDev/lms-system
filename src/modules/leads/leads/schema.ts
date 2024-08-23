@@ -39,6 +39,7 @@ type Lead {
     leadPhone: String!
     leadStatus: Int!
     leadOrder: Int!
+    leadCreated: String!
     columnId: ID!
     courseId: ID
     courseName: String

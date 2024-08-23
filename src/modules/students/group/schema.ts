@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
     type Mutation {
+        activateStudentGroup(input: ActivateStudentGroupInput): String
         addStudentGroup(input: AddStudentGroupInput): String
         freezeStudentGroup(input: FreezeStudentGroupInput): String
         updateStudentAddedGroupDate(input: UpdateStudentAddedGroupDateInput): String
@@ -10,9 +11,14 @@ export default gql`
     }
 
     input AddStudentGroupInput {
-        studentId: ID!
+        studentId: ID
         groupId: ID!
         addedDate: String!
+    }
+    
+    input ActivateStudentGroupInput {
+        studentId: ID!
+        groupId: ID!
     }
 
     input FreezeStudentGroupInput {
