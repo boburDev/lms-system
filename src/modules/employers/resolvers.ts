@@ -33,33 +33,34 @@ const resolvers = {
     }
   },
   Mutation: {
-    addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity> => {
+    addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 
-      let data = await employerRepository.createQueryBuilder("employer")
-        .where("employer.employer_phone = :phone", { phone: input.employerPhone })
-        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
-        .andWhere("employer.employer_deleted IS NULL")
-        .getOne()
+      // let data = await employerRepository.createQueryBuilder("employer")
+      //   .where("employer.employer_phone = :phone", { phone: input.employerPhone })
+      //   .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+      //   .andWhere("employer.employer_deleted IS NULL")
+      //   .getOne()
 
-      if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      // if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
 
-      let employer = new EmployerEntity()
-      employer.employer_name = input.employerName
-      employer.employer_phone = input.employerPhone
-      employer.employer_position = Number(positionIndicator(input.employerPosition))
-      employer.employer_password = input.employerPassword
-      employer.employer_branch_id = context.branchId
-      let newEmployer = await employerRepository.save(employer)
+      // let employer = new EmployerEntity()
+      // employer.employer_name = input.employerName
+      // employer.employer_phone = input.employerPhone
+      // employer.employer_position = Number(positionIndicator(input.employerPosition))
+      // employer.employer_password = input.employerPassword
+      // employer.employer_branch_id = context.branchId
+      // let newEmployer = await employerRepository.save(employer)
 
-      const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
-      let employerSalary = new SalaryEntity()
-      employerSalary.salary_history_branch_id = context.branchId
-      employerSalary.salary_history_employer_id = newEmployer.employer_id
-      await employerSalaryRepository.save(employerSalary)
+      // const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
+      // let employerSalary = new SalaryEntity()
+      // employerSalary.salary_history_branch_id = context.branchId
+      // employerSalary.salary_history_employer_id = newEmployer.employer_id
+      // await employerSalaryRepository.save(employerSalary)
       
-      return newEmployer
+      // return newEmployer
+      return null
     },
     updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");

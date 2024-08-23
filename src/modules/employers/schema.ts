@@ -30,16 +30,22 @@ type Employer {
 input AddEmployerInput {
   employerName: String!
   employerPhone: String!
+  employerGender: String!
+  employerBirthday: String!
   employerPosition: String!
   employerPassword: String!
+  employerPermission: String!
 }
 
 input UpdateEmployerInput {
   employerId: String!
-  employerName: String!
-  employerPhone: String!
-  employerPosition: String!
-  employerPassword: String!
+  employerName: String
+  employerPhone: String
+  employerPosition: String
+  employerPassword: String
+  employerGender: String
+  employerBirthday: String
+  employerPermission: String
 }
 
 input UpdateEmployerProfileInput {

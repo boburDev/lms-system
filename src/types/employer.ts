@@ -4,6 +4,9 @@ type AddEmployerInput = {
     employerPosition: string
     employerPassword: string
     employerBranchId: string
+    employerGender: string
+    employerBirthday: string
+    employerPermission: string
 }
 
 type UpdateEmployerProfileInput = {
