@@ -11,7 +11,7 @@ function sign(payload: any, expireTime: number = 600000) {
 
 function verify(token: string): TokenData | null {
     try {
-        const decoded = jwt.verify(token, secretKey) as TokenData;
+        const decoded: TokenData = jwt.verify(token, secretKey) as TokenData;
         return decoded;
     } catch (error) {
         // Если произошла ошибка при верификации токена
