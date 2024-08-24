@@ -81,6 +81,7 @@ const resolvers = {
           .leftJoinAndSelect("group.employer", "employer")
           .where("group.group_branch_id = :branchId", { branchId: context.branchId })
           .andWhere("group.group_id = :groupId", { groupId: input.groupId })
+          .andWhere("group.group_deleted IS NULL")
           .getOne();
         if (!dataGroup) throw new Error("Gruppa mavjud emas");
            

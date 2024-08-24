@@ -88,11 +88,11 @@ const resolvers = {
 
             if (!columnFunnelId) throw new Error(`Bu varonkada bu column mavjud emas`)
 
-            const newOrder = dataLeadOrders[0] && dataLeadOrders[0]?.lead_order || 1
+            const newOrder = dataLeadOrders[0] && dataLeadOrders[0]?.lead_order ? dataLeadOrders[0]?.lead_order + 1 : 1
 
             let lead = new LeadsEntity()
-            lead.lead_order = newOrder + 1
-            lead.lead_name = input.leadName + `${(newOrder + 1)}`
+            lead.lead_order = newOrder
+            lead.lead_name = input.leadName
             lead.lead_phone = input.leadPhone
             if (input.courseId) {
                 lead.lead_course_id = input.courseId

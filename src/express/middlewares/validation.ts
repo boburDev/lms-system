@@ -15,9 +15,9 @@ export const validateJWT = (req: Request, res: Response, next: NextFunction) => 
         if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
         let tokenDate: TokenData | null = verify(String(token));
         if (!tokenDate) throw new Error("Invalid token.");
-        req.user = tokenDate        
+        req.user = tokenDate
         next(); // Allow the request to proceed
     } catch (err) {
-        return res.status(400).json({ message: 'Invalid token.' });
+        return res.status(400).json({ message: 'Invalid token.', error: true });
     }
 };
