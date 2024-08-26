@@ -3,7 +3,6 @@ import AppDataSource from "../../config/ormconfig";
 import FormsEntiry, { Form_Configs, Form_Funnels, Form_Items } from "../../entities/form.entity";
 import { AddFormInput, Form } from "../../types/forms";
 import initialData from './form_initial.json'
-console.log(initialData);
 
 const picPath = `https://fastly.picsum.photos/id/1023/642/162.jpg?hmac=eCjsP_2wNbgk-TCxwLIPw0GiyZ_JWb8cVPrAJedczLw`
 

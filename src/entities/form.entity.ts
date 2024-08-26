@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company/company.entity";
-import Leads from "./funnel/leads.entity";
 import Funnels from "./funnel/funnels.entity";
 
 @Entity()

@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import AppDataSource from "../../config/ormconfig";
 import xlsx from 'xlsx';
 import fs from 'fs';
+import path from 'path';
 import EmployersEntity from '../../entities/employer/employers.entity';
 import FunnelColumnsEntity from "../../entities/funnel/columns.entity";
 import LeadsEntity from "../../entities/funnel/leads.entity";
@@ -16,7 +17,8 @@ export const uploadExcel = async (req: Request, res: Response) => {
         }
         if (!req.user || typeof req.user == 'string') throw new Error("User not found!");
         const type = String(req.headers.type)
-        if (!['student', 'colleague', 'lead'].includes(type)) throw new Error("Invalid type specified");
+        
+        if (!['student', 'colleague', 'lead'].includes(type)) throw new Error("Invalid type specified!");
 
         const funnelId = req.headers.funnelid
         const colleagueId = req.user.colleagueId
@@ -30,7 +32,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
         const worksheet = workbook.Sheets[sheetName];
 
         const errors = [];
-        const data = [];
+        const data:any = [];
         let infoData: any[] = []
         let employerRepository
         let leadRepository
@@ -209,4 +211,37 @@ export const downloadExcel = async (req: Request, res: Response) => {
         res.status(500).json({ data: null, error: (error as Error).message })
     }
 }
+
+export const uploadPhotos = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            throw new Error('File is failed')
+        }
+
+        const filePath = req.file.path;
+        let file = req.file
+        const newPath = file.destination.split('./public')[1] + '/' + file.filename
+        res.json({ data: newPath, error: false, message: null })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+export const downloadPhotos = async (req: Request, res: Response) => {
+    try {
+        const pathFile = String(req.headers.path)
+        const imagePath = path.join(__dirname, '../../../public', pathFile);
+        fs.readFile(imagePath, (err, data) => {
+            if (err) {
+                return res.status(500).send('Error reading the image path.');
+            }
+            res.setHeader('Content-Type', 'image/jpeg');
+            res.send(data);
+        });
+    } catch (error) {
+        res.status(500).json({ data: null, error: (error as Error).message })
+    }
+}
+
 
