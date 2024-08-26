@@ -2,7 +2,8 @@ import { gql } from 'apollo-server-express'
 
 export default gql`
 type Query {
-  employers(employerId: ID): [Employer!]!
+  employers: [Employer!]!
+  employerById(employerId: ID!): Employer!
   employerRoles: [String]
   employerPermissions(employerRole: String): String
 }

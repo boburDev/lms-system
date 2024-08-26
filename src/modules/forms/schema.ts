@@ -17,7 +17,10 @@ type Form {
 
 input AddFormInput {
   formTitle: String!
+  formType: String!
+  Funnels: [String!]
 }
+
 input UpdateFormInput {
   formId: String!
   formTitle: String

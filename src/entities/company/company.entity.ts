@@ -10,6 +10,7 @@ import Daily_Time_Branches from "../application_usage/daily_time_branches.entity
 import Auto_Payment_Group from "../group/auto_payment.entity";
 import Event_Actions from "../event_action.entity";
 import Notifications from "../notification.entity";
+import Forms from "../form.entity";
 
 @Entity()
 export class Companies {   
@@ -92,4 +93,7 @@ export class CompanyBranches {
 
     @OneToMany(() => Student_payments, payment => payment)
     student_payment: Student_payments[]
+
+    @OneToMany(() => Forms, forms => forms)
+    forms: Forms[]
 }

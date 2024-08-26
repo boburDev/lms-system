@@ -19,6 +19,7 @@ import Funnels from './leads/funnels'
 import FunnelColumns from './leads/columns'
 import Leads from './leads/leads'
 import UserDashboard from './dashboard/user'
+import Forms from './forms'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -41,6 +42,7 @@ export default makeExecutableSchema({
         FunnelColumns.schema,
         Leads.schema,
         UserDashboard.schema,
+        Forms.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -62,5 +64,6 @@ export default makeExecutableSchema({
         FunnelColumns.resolvers,
         Leads.resolvers,
         UserDashboard.resolvers,
+        Forms.resolvers,
     ]
 })

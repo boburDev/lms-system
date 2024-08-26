@@ -1,41 +1,32 @@
-{
-  "initial": {
-    "form_title": "Bizning o’quv markazimizga xush kelibsiz!",
-    "form_title_desc": "Bizning o’quv markazimizda darslar juda qiziqarli va o’quvchilarning bilimiga qarab dars o’tiladi",
-    "form_header_pic": "https://fastly.picsum.photos/id/1023/642/162.jpg?hmac=eCjsP_2wNbgk-TCxwLIPw0GiyZ_JWb8cVPrAJedczLw",
-    "title_font": "Roboto",
-    "title_font_size": "23",
-    "question_font": "Roboto",
-    "question_font_size": "15",
-    "text_font": "Roboto",
-    "text_font_size": "11",
-    "line_color": "#0F55AF",
-    "background_color": "#F6F8FA"
+[
+  {
+    "title": "intro",
+    "desc": "desc",
+    "type": "header",
+    "required": true
   },
-  "option": [
-    {
-      "title": "F.I.O",
-      "type": "input",
-      "required": true,
-      "input_value": ""
-    },
-    {
-      "title": "Telefon raqam",
-      "type": "textarea",
-      "required": true,
-      "input_value": ""
-    },
-    {
-      "title": "Kurs tanlang",
-      "type": "select",
-      "required": false,
-      "input_value": [{ "id": 1, "name": "english" }]
-    },
-    {
-      "title": "Comment",
-      "type": "textarea",
-      "required": false,
-      "input_value": ""
-    }
-  ]
-}
+  {
+    "title": "name",
+    "desc": "",
+    "type": "input",
+    "required": true
+  },
+  {
+    "title": "phone",
+    "desc": "",
+    "type": "textarea",
+    "required": true
+  },
+  {
+    "title": "choose_course",
+    "desc": "",
+    "type": "select",
+    "required": false
+  },
+  {
+    "title": "comment",
+    "desc": "",
+    "type": "textarea",
+    "required": false
+  }
+]

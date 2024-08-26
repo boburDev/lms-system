@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { CompanyBranches } from "../company/company.entity";
 import Funnel_Columns from "./columns.entity";
 import Leads from "./leads.entity";
+import { Form_Funnels } from "../form.entity";
 
 @Entity()
 export default class Funnels {
@@ -32,4 +33,7 @@ export default class Funnels {
 
     @OneToMany(() => Leads, lead => lead.funnels)
     leads: Leads[]
+
+    @OneToMany(() => Form_Funnels, form_funnel => form_funnel.forms)
+    form_funnels: Form_Funnels[]
 }

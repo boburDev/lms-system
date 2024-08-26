@@ -20,6 +20,17 @@ const resolvers = {
       })
       return data
     },
+    employerById: async (_parametr: unknown, input: { employerId: string }, context: any) => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const employerRepository = AppDataSource.getRepository(EmployerEntity)
+      let data = await employerRepository.createQueryBuilder("employer")
+        .where("employer.employer_id = :Id", { Id: input.employerId })
+        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+        .andWhere("employer.employer_deleted IS NULL")
+        .getOne()
+      if (!data) throw new Error(`Bu Filialda bu hodim mavjud emas`)
+      return data
+    },
     employerRoles: async (_parametr: unknown, {}, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       if (['ceo', 'director', 'administrator'].includes(context.role)) return employerPermissionByRole(context.role)
