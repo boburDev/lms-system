@@ -1,12 +1,12 @@
 import { AddDiscountInput, Discount, RemoveGroupDiscountInput } from "../../../types/discount";
 import AppDataSource from "../../../config/ormconfig";
-import Student_groups from "../../../entities/student/student_groups.entity";
+import StudentGroups from "../../../entities/student/student_groups.entity";
 
 const resolvers = {
     Query: {
         groupDiscounts: async (_parent: unknown, { groupId }: { groupId: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const studentDiscountRepository = AppDataSource.getRepository(Student_groups)
+            const studentDiscountRepository = AppDataSource.getRepository(StudentGroups)
             let studentData = await studentDiscountRepository.find({
                 relations: ['student'],
                 where: { group_id: groupId }
@@ -17,7 +17,7 @@ const resolvers = {
     Mutation: {
         addGroupDiscount: async (_parent: unknown, { input }: { input: AddDiscountInput }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const studentDiscountRepository = AppDataSource.getRepository(Student_groups)
+            const studentDiscountRepository = AppDataSource.getRepository(StudentGroups)
             let studentData = await studentDiscountRepository.findOne({
                 relations: ['student'],
                 where: { group_id: input.groupId, student_id: input.studentId }
@@ -34,7 +34,7 @@ const resolvers = {
         },
         removeGroupDiscount: async (_parent: unknown, { input }: { input: RemoveGroupDiscountInput }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const studentDiscountRepository = AppDataSource.getRepository(Student_groups)
+            const studentDiscountRepository = AppDataSource.getRepository(StudentGroups)
             let studentData = await studentDiscountRepository.findOne({
                 relations: ['student'],
                 where: { group_id: input.groupId, student_id: input.studentId }

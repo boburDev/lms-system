@@ -23,18 +23,18 @@ export default class Forms {
     @JoinColumn({ name: 'form_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Form_Configs, form_configs => form_configs.forms)
-    form_configs: Form_Configs[]
+    @OneToMany(() => FormConfigs, form_configs => form_configs.forms)
+    form_configs: FormConfigs[]
     
-    @OneToMany(() => Form_Items, form_items => form_items.forms)
-    form_items: Form_Items[]
+    @OneToMany(() => FormItems, form_items => form_items.forms)
+    form_items: FormItems[]
     
-    @OneToMany(() => Form_Funnels, form_funnel => form_funnel.forms)
-    form_funnels: Form_Funnels[]
+    @OneToMany(() => FormFunnels, form_funnel => form_funnel.forms)
+    form_funnels: FormFunnels[]
 }
 
 @Entity()
-export class Form_Configs {
+export class FormConfigs {
     @PrimaryGeneratedColumn('uuid')
     form_config_id: string
 
@@ -74,7 +74,7 @@ export class Form_Configs {
 }
 
 @Entity()
-export class Form_Items {
+export class FormItems {
     @PrimaryGeneratedColumn('uuid')
     form_item_id: string
 
@@ -118,13 +118,13 @@ export class Form_Item_Options {
     @Column()
     form_item_id: string
 
-    @ManyToOne(() => Form_Items, form => form.form_item_optins)
+    @ManyToOne(() => FormItems, form => form.form_item_optins)
     @JoinColumn({ name: 'form_item_id' })
-    form_items: Form_Items
+    form_items: FormItems
 }
 
 @Entity()
-export class Form_Funnels {
+export class FormFunnels {
     @PrimaryGeneratedColumn('uuid')
     form_funnel_id: string
 

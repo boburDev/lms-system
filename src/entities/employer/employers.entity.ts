@@ -2,14 +2,14 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneT
 import { CompanyBranches } from "../company/company.entity";
 import bcrypt from 'bcrypt';
 import Groups from "../group/groups.entity";
-import Student_payments from "../student/student_payments.entity";
+import StudentPayments from "../student/student_payments.entity";
 import Tasks from "../tasks.entity";
 import Leads from "../funnel/leads.entity";
-import Salary_History from "./salary-history.entity";
-import Forget_Password from "../options/forget_password.entity";
-import Connect_Time from "../application_usage/connect_time.entity";
-import Daily_Time_Colleagues from "../application_usage/daily_time_colleagues.entity";
-import Event_Actions from "../event_action.entity";
+import SalaryHistory from "./salary-history.entity";
+import ForgetPassword from "../options/forget_password.entity";
+import ConnectTime from "../application_usage/connect_time.entity";
+import DailyTimeColleagues from "../application_usage/daily_time_colleagues.entity";
+import EventActions from "../event_action.entity";
 
 @Entity()
 export default class Employers {   
@@ -56,29 +56,29 @@ export default class Employers {
     @OneToMany(() => Groups, group => group.group_id)
     group: Groups[];
 
-    @OneToMany(() => Salary_History, history => history.salary_history_id)
-    salary_histories: Salary_History[];
+    @OneToMany(() => SalaryHistory, history => history.salary_history_id)
+    salary_histories: SalaryHistory[];
 
-    @OneToMany(() => Event_Actions, event_actions => event_actions)
-    event_actions: Event_Actions[]
+    @OneToMany(() => EventActions, event_actions => event_actions)
+    event_actions: EventActions[]
 
-    @OneToMany(() => Student_payments, payment => payment)
-    student_payment: Student_payments[]
+    @OneToMany(() => StudentPayments, payment => payment)
+    student_payment: StudentPayments[]
 
     @OneToMany(() => Tasks, tasks => tasks)
     branch_task: Tasks[]
 
-    @OneToMany(() => Forget_Password, tasks => tasks)
-    forget_passwords: Forget_Password[]
+    @OneToMany(() => ForgetPassword, tasks => tasks)
+    forget_passwords: ForgetPassword[]
 
     @OneToMany(() => Leads, leads => leads)
     leads: Leads[]
 
-    @OneToMany(() => Daily_Time_Colleagues, dailyTime => dailyTime)
-    daily_time_colleagues: Daily_Time_Colleagues[]
+    @OneToMany(() => DailyTimeColleagues, dailyTime => dailyTime)
+    daily_time_colleagues: DailyTimeColleagues[]
 
-    @OneToMany(() => Connect_Time, connectTime => connectTime)
-    connect_time: Connect_Time[]
+    @OneToMany(() => ConnectTime, connectTime => connectTime)
+    connect_time: ConnectTime[]
     
     @BeforeInsert()
     async hashPassword() {

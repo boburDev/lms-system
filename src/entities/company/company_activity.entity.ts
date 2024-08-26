@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "./company.entity";
 
 @Entity()
-export default class Branch_Activities {
+export default class BranchActivities {
     @PrimaryGeneratedColumn('uuid')
     branch_activity_id: string
 

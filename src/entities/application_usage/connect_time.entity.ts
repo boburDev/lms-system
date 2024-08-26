@@ -4,7 +4,7 @@ import Employers from "../employer/employers.entity";
 
 
 @Entity()
-export default class Connect_Time {
+export default class ConnectTime {
     @PrimaryGeneratedColumn('uuid')
     connect_id: string
 

@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "../company/company.entity";
 
 @Entity()
-export default class Daily_Time_Branches {
+export default class DailyTimeBranches {
     @PrimaryGeneratedColumn('uuid')
     daily_time_branch_id: string
 

@@ -3,7 +3,7 @@ import { CompanyBranches } from "../company/company.entity";
 import Employers from "../employer/employers.entity";
 
 @Entity()
-export default class Forget_Password {
+export default class ForgetPassword {
     @Column({ type: 'int' })
     sended_code: number
 

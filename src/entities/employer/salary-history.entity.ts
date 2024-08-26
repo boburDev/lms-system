@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import Employers from "./employers.entity";
 
 @Entity()
-export default class Salary_History {
+export default class SalaryHistory {
     @PrimaryGeneratedColumn('uuid')
     salary_history_id: string
 

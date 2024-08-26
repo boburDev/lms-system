@@ -1,12 +1,12 @@
 import AppDataSource from "../../../config/ormconfig";
-import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
+import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.entity";
 
 const resolvers = {
     Query: {
         findCalendar: async (_parametr: unknown, input: { startDate: string, endDate: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             // console.log(input)
-            const groupAttendanceRepository = AppDataSource.getRepository(Group_attendences)
+            const groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences)
             const startDate = new Date(input.startDate);
             const endDate = new Date(input.endDate);
             // console.log('Query Start Date:', startDate);

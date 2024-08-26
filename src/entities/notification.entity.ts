@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "./company/company.entity";
-import Employer_Notifications from "./employer/employer-notification.entity";
+import EmployerNotifications from "./employer/employer-notification.entity";
 
 @Entity()
 export default class Notifications {
@@ -29,6 +29,6 @@ export default class Notifications {
     @JoinColumn({ name: 'notification_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Employer_Notifications, notification => notification)
-    employer_notifications: Employer_Notifications[]
+    @OneToMany(() => EmployerNotifications, notification => notification)
+    employer_notifications: EmployerNotifications[]
 }

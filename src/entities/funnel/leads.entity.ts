@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "../company/company.entity";
-import Funnel_Columns from "./columns.entity";
+import FunnelColumns from "./columns.entity";
 import Courses from "../course.entity";
 import Employers from "../employer/employers.entity";
 import Funnels from "./funnels.entity";
@@ -47,9 +47,9 @@ export default class Leads {
     @JoinColumn({ name: 'lead_course_id' })
     courses: Courses
 
-    @ManyToOne(() => Funnel_Columns, funnel_column => funnel_column.leads)
+    @ManyToOne(() => FunnelColumns, funnel_column => funnel_column.leads)
     @JoinColumn({ name: 'lead_funnel_column_id' })
-    funnel_columns: Funnel_Columns
+    funnel_columns: FunnelColumns
     
     @ManyToOne(() => Funnels, funnels => funnels.leads)
     @JoinColumn({ name: 'lead_funnel_id' })

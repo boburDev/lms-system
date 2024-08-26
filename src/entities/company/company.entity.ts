@@ -4,11 +4,11 @@ import Employers from "../employer/employers.entity";
 import Rooms from "../room.entity";
 import Courses from "../course.entity";
 import Students from "../student/students.entity";
-import Student_payments from "../student/student_payments.entity";
+import StudentPayments from "../student/student_payments.entity";
 import Funnels from "../funnel/funnels.entity";
-import Daily_Time_Branches from "../application_usage/daily_time_branches.entity";
-import Auto_Payment_Group from "../group/auto_payment.entity";
-import Event_Actions from "../event_action.entity";
+import DailyTimeBranches from "../application_usage/daily_time_branches.entity";
+import AutoPaymentGroup from "../group/auto_payment.entity";
+import EventActions from "../event_action.entity";
 import Notifications from "../notification.entity";
 import Forms from "../form.entity";
 
@@ -76,23 +76,23 @@ export class CompanyBranches {
     @OneToMany(() => Students, students => students)
     students: Students[]
 
-    @OneToMany(() => Event_Actions, event_actions => event_actions)
-    event_actions: Event_Actions[]
+    @OneToMany(() => EventActions, event_actions => event_actions)
+    event_actions: EventActions[]
 
-    @OneToMany(() => Daily_Time_Branches, dailyTime => dailyTime)
-    daily_time_branches: Daily_Time_Branches[]
+    @OneToMany(() => DailyTimeBranches, dailyTime => dailyTime)
+    daily_time_branches: DailyTimeBranches[]
 
     @OneToMany(() => Funnels, funnels => funnels)
     funnels: Funnels[]
 
-    @OneToMany(() => Auto_Payment_Group, paymentAuto => paymentAuto)
-    auto_payment_group: Auto_Payment_Group[]
+    @OneToMany(() => AutoPaymentGroup, paymentAuto => paymentAuto)
+    auto_payment_group: AutoPaymentGroup[]
     
     @OneToMany(() => Notifications, notification => notification)
     notifications: Notifications[]
 
-    @OneToMany(() => Student_payments, payment => payment)
-    student_payment: Student_payments[]
+    @OneToMany(() => StudentPayments, payment => payment)
+    student_payment: StudentPayments[]
 
     @OneToMany(() => Forms, forms => forms)
     forms: Forms[]

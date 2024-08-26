@@ -1,7 +1,7 @@
 import { AddstudentPayment, studentPayment } from "../../../types/payment";
 import AppDataSource from "../../../config/ormconfig";
-import Student_payments from "../../../entities/student/student_payments.entity";
-import Student_cashes from "../../../entities/student/student_cashes.entity";
+import StudentPayments from "../../../entities/student/student_payments.entity";
+import StudentCashes from "../../../entities/student/student_cashes.entity";
 import StudentEntity from "../../../entities/student/students.entity";
 import EmployerEntity from "../../../entities/employer/employers.entity";
 import { paymentTypes } from "../../../utils/status_and_positions";
@@ -17,7 +17,7 @@ const resolvers = {
             if (input.type == 1) {
                 let startDate = input.startDate ? new Date(input.startDate) : null
                 let endDate = input.endDate ? new Date(input.endDate) : null
-                const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+                const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
                 let query = await studentCashCountRepository.createQueryBuilder("cash")
                     .leftJoinAndSelect("cash.payment", "payment")
                     .leftJoinAndSelect("payment.employer", "employer")
@@ -49,7 +49,7 @@ const resolvers = {
                 }
                 results.studentCash.push(...result)
             } else if (input.type == 2) {
-                const studentPaymentCountRepository = AppDataSource.getRepository(Student_payments)
+                const studentPaymentCountRepository = AppDataSource.getRepository(StudentPayments)
                 let data = await studentPaymentCountRepository.createQueryBuilder("payment")
                     .leftJoinAndSelect("payment.employer", "employer")
                     .where("payment.student_id = :studentId", { studentId: input.studentId })
@@ -62,7 +62,7 @@ const resolvers = {
         },
         paymentById: async (_parametr: unknown, Id: { Id: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
+            const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
             let data = await studentCashCountRepository.createQueryBuilder("cash")
                 .leftJoinAndSelect("cash.payment", "payment")
                 .leftJoinAndSelect("payment.employer", "employer")
@@ -102,8 +102,8 @@ const resolvers = {
 
             let paymentType = paymentTypes(input.paymentType)
 
-            const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
-            let studentCash = new Student_cashes()
+            const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
+            let studentCash = new StudentCashes()
             let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
             studentCash.cash_amount = input.cashAmount
             studentCash.check_type = Number(paymentType)
@@ -114,8 +114,8 @@ const resolvers = {
 
             let studentCashData = await studentCashCountRepository.save(studentCash)
 
-            const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
-            let studentPayment = new Student_payments()
+            const studentPaymentRepository = AppDataSource.getRepository(StudentPayments)
+            let studentPayment = new StudentPayments()
             studentPayment.student_payment_debit = input.cashAmount
             studentPayment.student_payment_type = Number(paymentType)
             studentPayment.student_payment_payed_at = new Date()
@@ -164,8 +164,8 @@ const resolvers = {
 
                 let paymentType = paymentTypes(input.paymentType)
 
-                const studentCashCountRepository = AppDataSource.getRepository(Student_cashes)
-                let studentCash = new Student_cashes()
+                const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
+                let studentCash = new StudentCashes()
                 let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
                 studentCash.cash_amount = -input.cashAmount
                 studentCash.check_type = Number(paymentType)
@@ -176,8 +176,8 @@ const resolvers = {
 
                 let studentCashData = await studentCashCountRepository.save(studentCash)
 
-                const studentPaymentRepository = AppDataSource.getRepository(Student_payments)
-                let studentPayment = new Student_payments()
+                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments)
+                let studentPayment = new StudentPayments()
                 studentPayment.student_payment_credit = input.cashAmount
                 studentPayment.student_payment_type = Number(paymentType)
                 studentPayment.student_payment_payed_at = new Date()

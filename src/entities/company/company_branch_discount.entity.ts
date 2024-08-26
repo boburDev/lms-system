@@ -3,7 +3,7 @@ import { CompanyBranches } from "./company.entity";
 import Discounts from "../options/discount.entity";
 
 @Entity()
-export default class Branch_Discounts {
+export default class BranchDiscounts {
     @PrimaryGeneratedColumn('uuid')
     branch_discount_id: string
 

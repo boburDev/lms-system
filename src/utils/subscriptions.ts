@@ -1,7 +1,7 @@
 import { verify } from "./jwt";
 import { pubsub } from "./pubSub";
 import AppDataSource from "../config/ormconfig";
-import Connect_Time from "../entities/application_usage/connect_time.entity";
+import ConnectTime from "../entities/application_usage/connect_time.entity";
 import { ConnectionContext } from "../interfaces/subcribtion";
 
 const map = new Map<string, number>();
@@ -18,8 +18,8 @@ export default {
                 const date: number = Date.now();
                 
                 if (isUser) {
-                    const connectRepository = AppDataSource.getRepository(Connect_Time)
-                    let newConnect = new Connect_Time()
+                    const connectRepository = AppDataSource.getRepository(ConnectTime)
+                    let newConnect = new ConnectTime()
                     newConnect.branch_id = tokenData.branchId
                     newConnect.colleague_id = tokenData.colleagueId
                     newConnect.connect_time = Date.now()
@@ -56,7 +56,7 @@ export default {
                 const endDate = new Date()
 
                 if (data.isUser) {
-                    const connectRepository = AppDataSource.getRepository(Connect_Time)
+                    const connectRepository = AppDataSource.getRepository(ConnectTime)
                     let connection = await connectRepository.createQueryBuilder("connect_time")
                         .where("connect_time.connect_id = :Id", { Id: data.connectId })
                         .getOne();
@@ -66,7 +66,7 @@ export default {
                         let newDate = new Date(endDate.getTime() - 1) // 1 milliseconds
                         connection.disconnect_time = newDate.getTime()
                         await connectRepository.save(connection)
-                        let newConnect = new Connect_Time()
+                        let newConnect = new ConnectTime()
                         newConnect.branch_id = data.branchId
                         newConnect.colleague_id = data.colleagueId
                         newConnect.connect_time = Date.now()

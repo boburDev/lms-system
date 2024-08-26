@@ -3,9 +3,9 @@ import { CompanyBranches } from "../company/company.entity";
 import Employers from "../employer/employers.entity";
 import Rooms from "../room.entity";
 import Courses from "../course.entity";
-import Student_groups, { Student_attendences } from "../student/student_groups.entity";
-import Salary_History from "../employer/salary-history.entity";
-import Auto_Payment_Group from "./auto_payment.entity";
+import StudentGroups, { StudentAttendences } from "../student/student_groups.entity";
+import SalaryHistory from "../employer/salary-history.entity";
+import AutoPaymentGroup from "./auto_payment.entity";
 
 @Entity()
 export default class Groups {   
@@ -67,24 +67,24 @@ export default class Groups {
     @JoinColumn({ name: 'group_course_id'})
     course: Courses;
 
-    @OneToMany(() => Group_attendences, attendence => attendence.groups)
-    attendence: Group_attendences[]
+    @OneToMany(() => GroupAttendences, attendence => attendence.groups)
+    attendence: GroupAttendences[]
     
-    @OneToMany(() => Student_attendences, attendence => attendence.student_attendence)
-    student_attendences: Student_attendences[]
+    @OneToMany(() => StudentAttendences, attendence => attendence.student_attendence)
+    student_attendences: StudentAttendences[]
 
-    @OneToMany(() => Salary_History, history => history.salary_history_id)
-    salary_histories: Salary_History[];
+    @OneToMany(() => SalaryHistory, history => history.salary_history_id)
+    salary_histories: SalaryHistory[];
 
-    @OneToMany(() => Student_groups, st_group => st_group.group)
-    student_group: Student_groups[]
+    @OneToMany(() => StudentGroups, st_group => st_group.group)
+    student_group: StudentGroups[]
 
-    @OneToMany(() => Auto_Payment_Group, paymentAuto => paymentAuto)
-    auto_payment_group: Auto_Payment_Group[]
+    @OneToMany(() => AutoPaymentGroup, paymentAuto => paymentAuto)
+    auto_payment_group: AutoPaymentGroup[]
 }
 
 @Entity()
-export class Group_attendences {
+export class GroupAttendences {
     @PrimaryGeneratedColumn('uuid')
     group_attendence_id: string
 

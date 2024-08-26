@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CompanyBranches } from "../company/company.entity";
-import Funnel_Columns from "./columns.entity";
+import FunnelColumns from "./columns.entity";
 import Leads from "./leads.entity";
-import { Form_Funnels } from "../form.entity";
+import { FormFunnels } from "../form.entity";
 
 @Entity()
 export default class Funnels {
@@ -28,12 +28,12 @@ export default class Funnels {
     @JoinColumn({ name: 'funnel_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Funnel_Columns, funnel_column => funnel_column.funnels)
-    funnel_column: Funnel_Columns[]
+    @OneToMany(() => FunnelColumns, funnel_column => funnel_column.funnels)
+    funnel_column: FunnelColumns[]
 
     @OneToMany(() => Leads, lead => lead.funnels)
     leads: Leads[]
 
-    @OneToMany(() => Form_Funnels, form_funnel => form_funnel.forms)
-    form_funnels: Form_Funnels[]
+    @OneToMany(() => FormFunnels, form_funnel => form_funnel.forms)
+    form_funnels: FormFunnels[]
 }

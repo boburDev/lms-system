@@ -2,10 +2,10 @@ import StudentEntity from "../../../entities/student/students.entity";
 import AppDataSource from "../../../config/ormconfig";
 import { AddStudentInput, Student, UpdateStudentInput } from "../../../types/student";
 import Groups from "../../../entities/group/groups.entity";
-import Student_groups, { Student_attendences } from "../../../entities/student/student_groups.entity";
+import StudentGroups, { StudentAttendences } from "../../../entities/student/student_groups.entity";
 import { getDays } from "../../../utils/date";
-// import Student_payments from "../../../entities/student/student_payments.entity";
-// import Student_cashes from "../../../entities/student/student_cashes.entity";
+// import StudentPayments from "../../../entities/student/student_payments.entity";
+// import StudentCashes from "../../../entities/student/student_cashes.entity";
 
 const resolvers = {
   Query: {
@@ -91,11 +91,11 @@ const resolvers = {
         
         if (!((groupStartDate <= addedDate) && (addedDate <= groupEndDate))) throw new Error("Guruhning tugash voqti utib ketgandan ken qushomisiz!")
 
-        const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+        const studentGroupRepository = AppDataSource.getRepository(StudentGroups)
         let data = await studentGroupRepository.findOneBy({ student_id: studentData.student_id, group_id: input.groupId })
         if (data !== null) throw new Error(`Bu gruppada uquvchi uqimoqda`)
 
-        let studentGroup = new Student_groups()
+        let studentGroup = new StudentGroups()
         studentGroup.student_group_add_time = new Date(input.addedDate)
         studentGroup.student_group_lesson_end = dataGroup.group_end_date
         studentGroup.student_id = studentData.student_id
@@ -104,10 +104,10 @@ const resolvers = {
         await studentGroupRepository.save(studentGroup)
 
         const days = getDays(new Date(input.addedDate), dataGroup.group_end_date)
-        const groupAttendenceRepository = AppDataSource.getRepository(Student_attendences)
+        const groupAttendenceRepository = AppDataSource.getRepository(StudentAttendences)
 
         for (const i of days) {
-          let studentAttendence = new Student_attendences()
+          let studentAttendence = new StudentAttendences()
           studentAttendence.student_attendence_group_id = dataGroup.group_id
           studentAttendence.student_attendence_student_id = studentData.student_id
           studentAttendence.student_attendence_day = i

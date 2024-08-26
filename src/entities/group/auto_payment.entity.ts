@@ -3,7 +3,7 @@ import { CompanyBranches } from "../company/company.entity";
 import Groups from "./groups.entity";
 
 @Entity()
-export default class Auto_Payment_Group {
+export default class AutoPaymentGroup {
     @PrimaryGeneratedColumn('uuid')
     auto_payment_group_id: string
 

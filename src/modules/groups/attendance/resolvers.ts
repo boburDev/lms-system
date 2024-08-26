@@ -1,8 +1,8 @@
 import { Group } from "../../../types/group";
 import AppDataSource from "../../../config/ormconfig";
-import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
+import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.entity";
 import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
-import { Student_attendences } from "../../../entities/student/student_groups.entity";
+import { StudentAttendences } from "../../../entities/student/student_groups.entity";
 
 const resolvers = {
     Query: {
@@ -75,7 +75,7 @@ const resolvers = {
 	Mutation: {
 		updateStudentAttendanceStatus: async (_parent: unknown, { input }: { input: updateStudentAttendenceStatus }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
-			let studentAttendanceRepository = AppDataSource.getRepository(Student_attendences)
+			let studentAttendanceRepository = AppDataSource.getRepository(StudentAttendences)
 			let data = await studentAttendanceRepository.findOneBy({ student_attendence_id: input.attendId, student_attendence_group_id: input.groupId })
 			if (data === null) throw new Error(`Bu o'quvchining malumotlari mavjud emas`)
 			data.student_attendence_status = input.attendStatus
@@ -84,7 +84,7 @@ const resolvers = {
 		},
 		updateGroupAttendanceStatus: async (_parent: unknown, { input }: { input: updateGroupAttendanceStatus }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
-			let groupAttendanceRepository = AppDataSource.getRepository(Group_attendences)
+			let groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences)
 			let data = await groupAttendanceRepository.findOneBy({ group_attendence_id: input.attendId, group_attendence_group_id: input.groupId })
 			if (data === null) throw new Error(`Bu guruhning malumotlari mavjud emas`)
 			data.group_attendence_status = input.attendStatus

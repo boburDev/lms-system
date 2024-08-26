@@ -1,6 +1,6 @@
 import { IsNull } from "typeorm";
 import AppDataSource from "../../config/ormconfig";
-import FormsEntiry, { Form_Configs, Form_Funnels, Form_Items } from "../../entities/form.entity";
+import FormsEntiry, { FormConfigs, FormFunnels, FormItems } from "../../entities/form.entity";
 import { AddFormInput, Form } from "../../types/forms";
 import initialData from './form_initial.json'
 
@@ -38,17 +38,17 @@ const resolvers = {
                 form.form_branch_id = context.branchId
                 let newForm = await formRepository.save(form)
 
-                const formConfigsRepository = AppDataSource.getRepository(Form_Configs)
-                let formConfigs = new Form_Configs()
+                const formConfigsRepository = AppDataSource.getRepository(FormConfigs)
+                let formConfigs = new FormConfigs()
                 formConfigs.form_id = newForm.form_id
                 await formConfigsRepository.save(formConfigs)
 
                 const funnels = input.Funnels
 
                 if (funnels.length) {
-                    const formFunnelRepository = AppDataSource.getRepository(Form_Funnels)
+                    const formFunnelRepository = AppDataSource.getRepository(FormFunnels)
                     for (const i of funnels) {
-                        let formFunnel = new Form_Funnels()
+                        let formFunnel = new FormFunnels()
                         formFunnel.form_id = newForm.form_id
                         formFunnel.funnel_id = i
                         await formFunnelRepository.save(formFunnel)
@@ -56,7 +56,7 @@ const resolvers = {
                 }
 
                 if (input.formType == 'lead') {
-                    const formItemsRepository = AppDataSource.getRepository(Form_Items)
+                    const formItemsRepository = AppDataSource.getRepository(FormItems)
                     let dataItemOrders = await formItemsRepository.createQueryBuilder("form")
                         .where("form.form_id = :formId", { formId: newForm.form_id })
                         .orderBy("form.form_item_order", "DESC")
@@ -64,7 +64,7 @@ const resolvers = {
                     let newOrder = dataItemOrders[0] && dataItemOrders[0]?.form_item_order ? dataItemOrders[0]?.form_item_order + 1 : 1
 
                     for (const i of initialData) {
-                        let formItems = new Form_Items()
+                        let formItems = new FormItems()
                         formItems.form_item_title = i.title
                         formItems.form_item_description = i.desc
                         formItems.form_item_type = i.type

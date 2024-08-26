@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import Employers from "../employer/employers.entity";
 
 @Entity()
-export default class Daily_Time_Colleagues {
+export default class DailyTimeColleagues {
     @PrimaryGeneratedColumn('uuid')
     daily_time_colleague_id: string
 

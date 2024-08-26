@@ -1,8 +1,8 @@
 import { AddGroupInput, Group, UpdateGroupInput } from '../../../types/group';
 import AppDataSource from "../../../config/ormconfig";
-import GroupEntity, { Group_attendences } from "../../../entities/group/groups.entity";
+import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.entity";
 import { getDays } from '../../../utils/date';
-import Student_groups, { Student_attendences } from '../../../entities/student/student_groups.entity';
+import StudentGroups, { StudentAttendences } from '../../../entities/student/student_groups.entity';
 
 const resolvers = {
   Query: {
@@ -91,10 +91,10 @@ const resolvers = {
       const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
 
       const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
-      const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
+      const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
 
       for (const i of days) {
-        let groupAttendence = new Group_attendences()
+        let groupAttendence = new GroupAttendences()
         groupAttendence.group_attendence_group_id = groupRepository.group_id
         groupAttendence.group_attendence_day = i
         await groupAttendenceRepository.save(groupAttendence);
@@ -141,7 +141,7 @@ const resolvers = {
       let students
 
       if (startDate < 0 || endDate > 0) {
-        const studentGroupRepository = AppDataSource.getRepository(Student_groups)
+        const studentGroupRepository = AppDataSource.getRepository(StudentGroups)
 
         students = await studentGroupRepository.createQueryBuilder("student_groups")
           .where("student_groups.group_id = :groupId", { groupId: input.groupId })
@@ -153,20 +153,20 @@ const resolvers = {
 
       if (startDate < 0) {
         const days = getDays(new Date(input.startDate), group.group_start_date)
-        const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
+        const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
 
         for (const i of days) {
-          let groupAttendence = new Group_attendences()
+          let groupAttendence = new GroupAttendences()
           groupAttendence.group_attendence_group_id = group.group_id
           groupAttendence.group_attendence_day = i
           await groupAttendenceRepository.save(groupAttendence);
         }
 
         if (students && students.length > 1) {
-          const groupStudentAttendenceRepository = AppDataSource.getRepository(Student_attendences)
+          const groupStudentAttendenceRepository = AppDataSource.getRepository(StudentAttendences)
           for (const student of students) {
             for (const i of days) {
-              let studentAttendence = new Student_attendences()
+              let studentAttendence = new StudentAttendences()
               studentAttendence.student_attendence_group_id = group.group_id
               studentAttendence.student_attendence_student_id = student.student_id
               studentAttendence.student_attendence_day = i
@@ -178,20 +178,20 @@ const resolvers = {
 
       if (endDate > 0) {
         const days = getDays(group.group_end_date, new Date(input.endDate))
-        const groupAttendenceRepository = AppDataSource.getRepository(Group_attendences)
+        const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
 
         for (const i of days) {
-          let groupAttendence = new Group_attendences()
+          let groupAttendence = new GroupAttendences()
           groupAttendence.group_attendence_group_id = group.group_id
           groupAttendence.group_attendence_day = i
           await groupAttendenceRepository.save(groupAttendence);
         }
 
         if (students && students.length > 1) {
-          const groupStudentAttendenceRepository = AppDataSource.getRepository(Student_attendences)
+          const groupStudentAttendenceRepository = AppDataSource.getRepository(StudentAttendences)
           for (const student of students) {
             for (const i of days) {
-              let studentAttendence = new Student_attendences()
+              let studentAttendence = new StudentAttendences()
               studentAttendence.student_attendence_group_id = group.group_id
               studentAttendence.student_attendence_student_id = student.student_id
               studentAttendence.student_attendence_day = i

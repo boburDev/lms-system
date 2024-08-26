@@ -3,7 +3,7 @@ import Students from "./students.entity";
 import Groups from "../group/groups.entity";
 
 @Entity()
-export default class Student_groups {
+export default class StudentGroups {
     @PrimaryGeneratedColumn('uuid')
     student_group_id: string
 
@@ -50,7 +50,7 @@ export default class Student_groups {
 }
 
 @Entity()
-export class Student_attendences {
+export class StudentAttendences {
     @PrimaryGeneratedColumn('uuid')
     student_attendence_id: string
 

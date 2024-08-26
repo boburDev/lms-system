@@ -17,7 +17,7 @@ const resolvers = {
                     'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE sg.student_group_status = 2 AND sg.student_group_lesson_end BETWEEN :startDate AND :endDate AND sg.student_left_group_time IS NULL) AS "activeStudents"',
                     'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE sg.student_group_status = 3) AS "notPayedStudents"',
                     'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE sg.student_group_status = 4) AS "trialStudents"',
-                    'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE EXISTS (SELECT 1 FROM Student_attendences sa WHERE sa.student_attendence_status = 3 AND sa.student_attendence_day BETWEEN :startDate AND :endDate AND sa.student_attendence_student_id = students.student_id)) AS "missedStudents"',
+                    'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE EXISTS (SELECT 1 FROM StudentAttendences sa WHERE sa.student_attendence_status = 3 AND sa.student_attendence_day BETWEEN :startDate AND :endDate AND sa.student_attendence_student_id = students.student_id)) AS "missedStudents"',
                     'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE sg.student_group_status = 6 AND sg.student_left_group_time IS NOT NULL) AS "leftStudents"',
                     'COUNT(DISTINCT sg.student_group_id) FILTER (WHERE sg.student_group_status = 7) AS "leftTrialStudents"',
                 ])

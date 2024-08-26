@@ -2,7 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { CompanyBranches } from "./company.entity";
 
 @Entity()
-export default class Branch_Payment_History {
+export default class BranchPaymentHistory {
     @PrimaryGeneratedColumn('uuid')
     payment_history_id: string
 

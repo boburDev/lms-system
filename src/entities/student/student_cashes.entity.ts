@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, ObjectType, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToOne } from "typeorm";
 import Students from "./students.entity";
 import { CompanyBranches } from "../company/company.entity";
-import Student_payments from "./student_payments.entity";
+import StudentPayments from "./student_payments.entity";
 
 @Entity()
-export default class Student_cashes {
+export default class StudentCashes {
     @PrimaryGeneratedColumn('uuid')
     student_cash_id: string
 
@@ -32,8 +32,8 @@ export default class Student_cashes {
     @Column()
     student_id: string
 
-    @OneToOne(() => Student_payments, payment => payment.cashes)
-    payment: Student_payments;
+    @OneToOne(() => StudentPayments, payment => payment.cashes)
+    payment: StudentPayments;
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'branch_id' })

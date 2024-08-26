@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import Notifications from "../notification.entity";
 
 @Entity()
-export default class Employer_Notifications {
+export default class EmployerNotifications {
     @PrimaryGeneratedColumn('uuid')
     employer_notification_id: string
 

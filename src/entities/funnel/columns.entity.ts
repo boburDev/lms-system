@@ -3,7 +3,7 @@ import Funnels from "./funnels.entity";
 import Leads from "./leads.entity";
 
 @Entity()
-export default class Funnel_Columns {
+export default class FunnelColumns {
     @PrimaryGeneratedColumn('uuid')
     funnel_column_id: string
 

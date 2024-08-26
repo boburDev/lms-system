@@ -1,14 +1,14 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToOne } from "typeorm";
 import Students from "./students.entity";
 import Employers from "../employer/employers.entity";
-import Student_cashes from "./student_cashes.entity";
+import StudentCashes from "./student_cashes.entity";
 // select
 // student_payment_debit,
 // student_payment_credit,
 // student_payment_type
 // from student_payments where student_id = 'fed33499-77d3-42f7-b1b6-70084a8b2022';
 @Entity()
-export default class Student_payments {
+export default class StudentPayments {
     @PrimaryGeneratedColumn('uuid')
     student_payment_id: string
 
@@ -47,7 +47,7 @@ export default class Student_payments {
     @JoinColumn({ name: 'employer_id' })
     employer: Employers
 
-    @OneToOne(() => Student_cashes, cash => cash.payment)
+    @OneToOne(() => StudentCashes, cash => cash.payment)
     @JoinColumn({ name: 'student_cash_id'})
-    cashes: Student_cashes;
+    cashes: StudentCashes;
 }

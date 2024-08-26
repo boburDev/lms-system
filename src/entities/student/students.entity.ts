@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, OneToMany, Check } from "typeorm";
 import { CompanyBranches } from "../company/company.entity";
-import Student_payments from './student_payments.entity'
+import StudentPayments from './student_payments.entity'
 import { ParentInfo } from "../../types/student"
-import Student_cashes from "./student_cashes.entity";
-import Student_groups, { Student_attendences } from "./student_groups.entity";
+import StudentCashes from "./student_cashes.entity";
+import StudentGroups, { StudentAttendences } from "./student_groups.entity";
 
 @Entity()
 export default class Students {
@@ -51,15 +51,15 @@ export default class Students {
     @JoinColumn({ name: 'student_branch_id' })
     branches: CompanyBranches
 
-    @OneToMany(() => Student_payments, payment => payment.student)
-    student_payment: Student_payments[]
+    @OneToMany(() => StudentPayments, payment => payment.student)
+    student_payment: StudentPayments[]
 
-    @OneToMany(() => Student_groups, st_group => st_group.student)
-    student_group: Student_groups[]
+    @OneToMany(() => StudentGroups, st_group => st_group.student)
+    student_group: StudentGroups[]
 
-    @OneToMany(() => Student_cashes, cash => cash.student)
-    student_cash: Student_cashes[]
+    @OneToMany(() => StudentCashes, cash => cash.student)
+    student_cash: StudentCashes[]
     
-    @OneToMany(() => Student_attendences, student => student.students)
-    student_attendence: Student_attendences[]
+    @OneToMany(() => StudentAttendences, student => student.students)
+    student_attendence: StudentAttendences[]
 }

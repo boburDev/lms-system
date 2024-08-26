@@ -3,7 +3,7 @@ import { CompanyBranches } from "./company/company.entity";
 import Employers from "./employer/employers.entity";
 
 @Entity()
-export default class Event_Actions {
+export default class EventActions {
     @PrimaryGeneratedColumn('uuid')
     event_action_id: string
 

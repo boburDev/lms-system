@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "./company.entity";
 
 @Entity()
-export default class Sms_Service_Branches {
+export default class SmsServiceBranches {
     @PrimaryGeneratedColumn('uuid')
     sms_service_id: string
 

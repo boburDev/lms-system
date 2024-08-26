@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export default class Sms_Prices {
+export default class SmsPrices {
     @PrimaryGeneratedColumn('uuid')
     sms_price_id: string
 
