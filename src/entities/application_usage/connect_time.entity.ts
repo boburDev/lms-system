@@ -2,7 +2,6 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { CompanyBranches } from "../company/company.entity";
 import Employers from "../employer/employers.entity";
 
-
 @Entity()
 export default class ConnectTime {
     @PrimaryGeneratedColumn('uuid')
