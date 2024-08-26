@@ -7,8 +7,9 @@ export async function catchErrors(input: any) {
 
     let newError = new ErrorHandlings()
     newError.error_type = input.type
-    newError.error_function_name = input.funcName
+    newError.error_inputs = input.inputs
     newError.error_message = input.message
+    newError.error_function_name = input.funcName
     newError.error_body = JSON.stringify(input.body)
     newError.error_branch_id = input.branchId
     await errorCatchingRepository.save(newError)

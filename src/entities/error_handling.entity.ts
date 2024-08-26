@@ -10,6 +10,9 @@ export default class ErrorHandlings {
     error_type: string
 
     @Column()
+    error_inputs: string
+    
+    @Column()
     error_message: string
 
     @Column()
