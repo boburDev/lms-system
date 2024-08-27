@@ -57,5 +57,4 @@ const PORT = process.env.PORT || 8080
         console.log(`http://localhost:${PORT}${server.graphqlPath}`)
         // console.log(`ws://localhost:${PORT}` + server)
     })
-
 })()

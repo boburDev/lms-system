@@ -7,8 +7,11 @@ export default class EventActions {
     @PrimaryGeneratedColumn('uuid')
     event_action_id: string
 
+    @Column()
+    object_id: string
+
     @Column({ type: 'int' })
-    event_action_type: number // created, deleted, updated
+    event_action_type: number // created = 1, deleted = 2, updated = 3
 
     @Column({ type: 'text' })
     event_action_before: string
@@ -22,14 +25,17 @@ export default class EventActions {
     @Column({ type: 'varchar', length: 64 })
     event_action_object_name: string
     
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    event_action_created_at: Date
-
     @Column()
     employer_id: string
-
+    
+    @Column({ nullable: true })
+    employer_name: string
+    
     @Column()
     branch_id: string
+    
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    event_action_created_at: Date
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'branch_id' })

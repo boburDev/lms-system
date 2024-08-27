@@ -2,27 +2,41 @@ import AppDataSource from "../config/ormconfig";
 import ErrorHandlings from "../entities/error_handling.entity";
 import EventActions from "../entities/event_action.entity";
 
-export async function catchErrors(input: any) {
+export async function catchErrors(error: unknown, funcName: string, branchId?: string, args?: string) {
     const errorCatchingRepository = AppDataSource.getRepository(ErrorHandlings)
+    let err = (error as Error)
 
     let newError = new ErrorHandlings()
-    newError.error_type = input.type
-    newError.error_inputs = input.inputs
-    newError.error_message = input.message
-    newError.error_function_name = input.funcName
-    newError.error_body = JSON.stringify(input.body)
-    newError.error_branch_id = input.branchId
+    newError.error_type = err.name
+    newError.error_inputs = JSON.stringify(args) || null
+    newError.error_message = err.message
+    newError.error_function_name = funcName
+    newError.error_body = JSON.stringify(err)
+    newError.error_branch_id = branchId || null
     await errorCatchingRepository.save(newError)
 }
 
-export async function writeActions(input: any) {
-    const writeActionRepository = AppDataSource.getRepository(EventActions)
+type Action = {
+    objectId: string
+    eventType: number
+    eventBefore: string
+    eventAfter: string
+    eventObject: string
+    eventObjectName: string,
+    employerId: string
+    employerName: string
+    branchId: string   
+}
 
+export async function writeActions(args: Action) {
+    const writeActionRepository = AppDataSource.getRepository(EventActions)
     let newAction = new EventActions()
-    // newAction.error_type = input.type
-    // newAction.error_function_name = input.funcName
-    // newAction.error_message = input.message
-    // newAction.error_body = JSON.stringify(input.body)
-    // newAction.error_branch_id = input.branchId
+    newAction.object_id = args.objectId
+    newAction.event_action_type = args.eventType
+    newAction.event_action_before = args.eventBefore
+    newAction.event_action_after = args.eventAfter
+    newAction.event_action_object = args.eventObject
+    newAction.event_action_object_name = args.eventObjectName
+    newAction.branch_id = args.branchId
     await writeActionRepository.save(newAction)
 }

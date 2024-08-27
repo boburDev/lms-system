@@ -1,6 +1,6 @@
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import { authentification } from './authentification';
-import { catchErrors } from './global-entities';
+import { catchErrors, writeActions } from './global-entities';
 
 export default async ({ req, connection }: any) => {
     try {
@@ -15,7 +15,10 @@ export default async ({ req, connection }: any) => {
                 } else if (context && !context.isAdmin && !context.isActive && req.body.query.slice(0, 8) === "mutation") {
                     throw new Error(`pay failed`);
                 }
-                context['error'] = catchErrors
+                if (req.body.query.slice(0, 8) === "mutation") {
+                    context['writeActions'] = writeActions
+                }
+                context['catchErrors'] = catchErrors
                 return context
             } else {
                 throw new Error("Token does not exist")

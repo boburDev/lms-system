@@ -9,8 +9,8 @@ export default class ErrorHandlings {
     @Column()
     error_type: string
 
-    @Column()
-    error_inputs: string
+    @Column({ nullable: true})
+    error_inputs: string | null
     
     @Column()
     error_message: string
@@ -22,7 +22,7 @@ export default class ErrorHandlings {
     error_body: string
 
     @Column({ nullable: true})
-    error_branch_id?: string
+    error_branch_id: string | null
 
     @ManyToOne(() => CompanyBranches, branch => branch.company_branch_id)
     @JoinColumn({ name: 'error_branch_id' })
