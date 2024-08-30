@@ -10,6 +10,8 @@ import ForgetPassword from "../options/forget_password.entity";
 import ConnectTime from "../application_usage/connect_time.entity";
 import DailyTimeColleagues from "../application_usage/daily_time_colleagues.entity";
 import EventActions from "../event_action.entity";
+import { Permission } from "../../modules/employers/resolvers";
+// import { RolePermissions } from "../../interfaces/role_permissions";
 
 @Entity()
 export default class Employers {   
@@ -22,17 +24,20 @@ export default class Employers {
     @Column({ length: 32, nullable: false})
     employer_phone: string
 
-    @Column({ nullable: true })
-    employer_birthday: Date
+    @Column({ type: 'timestamp', nullable: true })
+    employer_birthday: Date | null
 
     @Column({ type: 'int', nullable: true })
-    employer_gender: number
+    employer_gender: number | null
 
     @Column({ length: 64, nullable: true })
     employer_password: string
 
     @Column({ nullable: true })
     employer_position: number
+
+    @Column({ type: "boolean", nullable: true, default: true })
+    employer_activated: boolean
 
     @Column({ type: 'boolean', nullable: true, default: true })
     employer_notification_mode: boolean
@@ -45,6 +50,9 @@ export default class Employers {
     
     @Column({ type: 'timestamp', nullable: true})
     employer_deleted: Date
+
+    @Column({ type: 'jsonb', nullable: false, default: {} })
+    permissions: Permission;
     
     @Column()
     employer_branch_id: string

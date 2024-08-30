@@ -10,8 +10,9 @@ type Query {
 
 type Mutation {
   addEmployer(input: AddEmployerInput): Employer!
-  updateEmployer(input: AddEmployerInput): Employer!
+  updateEmployer(input: UpdateEmployerInput): Employer!
   updateEmployerProfile(input: UpdateEmployerProfileInput): Employer!
+  deactivateEmployer(employerId: String!): Employer!
   deleteEmployer(employerId: String!): Employer!
 }
 
@@ -23,19 +24,29 @@ type Employer {
   employerGender: String
   employerPosition: String!
   employerUseLang: String
-  employerCreatedAt: String!
-  employerDeletedAt: String
+  employerPermission: String
   employerBranchId: String!
 }
 
 input AddEmployerInput {
   employerName: String!
   employerPhone: String!
-  employerGender: String!
-  employerBirthday: String!
+  employerGender: String
+  employerBirthday: String
   employerPosition: String!
   employerPassword: String!
   employerPermission: String!
+}
+
+input UpdateEmployerInput {
+  employerId: String!
+  employerName: String
+  employerPhone: String
+  employerGender: String
+  employerBirthday: String
+  employerPosition: String
+  employerPassword: String
+  employerPermission: String
 }
 
 input UpdateEmployerInput {

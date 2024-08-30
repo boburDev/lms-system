@@ -1,4 +1,18 @@
+import { Permission } from "../modules/employers/resolvers"
+
 type AddEmployerInput = {
+    employerName: string
+    employerPhone: string
+    employerPosition: string
+    employerPassword: string
+    employerBranchId: string
+    employerGender: string
+    employerBirthday: string
+    employerPermission: string
+}
+
+type UpdateEmployerInput = {
+    employerId: string
     employerName: string
     employerPhone: string
     employerPosition: string
@@ -29,10 +43,12 @@ type Employer = {
     employer_created: string
     employer_deleted: string
     employer_branch_id: string
+    permissions: Permission
 }
 
 export {
     Employer,
     AddEmployerInput,
+    UpdateEmployerInput,
     UpdateEmployerProfileInput
 }

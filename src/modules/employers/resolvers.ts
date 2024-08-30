@@ -1,11 +1,12 @@
-import { AddEmployerInput, Employer, UpdateEmployerProfileInput } from "../../types/employer";
+import { AddEmployerInput, Employer, UpdateEmployerInput, UpdateEmployerProfileInput } from "../../types/employer";
 import AppDataSource from "../../config/ormconfig";
 import EmployerEntity from "../../entities/employer/employers.entity";
-import positionIndicator, { getPermissions } from "../../utils/status_and_positions";
+import positionIndicator, { genderIndicator, getPermissions } from "../../utils/status_and_positions";
 import permission from './employer_permission.json'
 import SalaryEntity from "../../entities/employer/salary.entity";
+import { IsNull } from "typeorm";
 
-type Permission = {
+export type Permission = {
   [key: string]: Permission | boolean;
 };
 
@@ -15,7 +16,7 @@ const resolvers = {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       let data = await employerRepository.find({
-        where: { employer_branch_id: context.branchId },
+        where: { employer_branch_id: context.branchId, employer_activated: true, employer_deleted: IsNull() },
         order: { employer_created: "DESC" }
       })
       return data
@@ -26,6 +27,7 @@ const resolvers = {
       let data = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_id = :Id", { Id: input.employerId })
         .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+        .andWhere("employer.employer_activated = true")
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
       if (!data) throw new Error(`Bu Filialda bu hodim mavjud emas`)
@@ -44,34 +46,67 @@ const resolvers = {
     }
   },
   Mutation: {
-    addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity | null> => {
+    addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const employerRepository = AppDataSource.getRepository(EmployerEntity)
+      
+      let data = await employerRepository.createQueryBuilder("employer")
+        .where("employer.employer_phone = :phone", { phone: input.employerPhone })
+        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })        
+        .andWhere("employer.employer_activated = true")
+        .andWhere("employer.employer_deleted IS NULL")
+        .getOne()
+
+        if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
+    
+      let employer = new EmployerEntity()
+      employer.employer_name = input.employerName
+      employer.employer_phone = input.employerPhone
+      if (!isNaN(new Date(input.employerBirthday).getTime()) ) {
+        employer.employer_birthday = new Date(input.employerBirthday)
+      }
+      if (input.employerGender) {
+        employer.employer_gender = Number(genderIndicator(input.employerGender)) || null
+      }
+      employer.employer_position = Number(positionIndicator(input.employerPosition))
+      employer.employer_password = input.employerPassword
+      employer.permissions = employerPermission
+      employer.employer_branch_id = context.branchId
+      let newEmployer = await employerRepository.save(employer)
+
+      const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
+      let employerSalary = new SalaryEntity()
+      employerSalary.salary_history_branch_id = context.branchId
+      employerSalary.salary_history_employer_id = newEmployer.employer_id
+      await employerSalaryRepository.save(employerSalary)
+      
+      return newEmployer
+    },
+    updateEmployer: async (_parent: unknown, { input }: { input: UpdateEmployerInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 
-      // let data = await employerRepository.createQueryBuilder("employer")
-      //   .where("employer.employer_phone = :phone", { phone: input.employerPhone })
-      //   .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
-      //   .andWhere("employer.employer_deleted IS NULL")
-      //   .getOne()
+      let employer = await employerRepository.createQueryBuilder("employer")
+        .where("employer.employer_id = :Id", { Id: input.employerId })
+        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+        .andWhere("employer.employer_activated = true")
+        .andWhere("employer.employer_deleted IS NULL")
+        .getOne()
 
-      // if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas!`)
+      let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
 
-      // let employer = new EmployerEntity()
-      // employer.employer_name = input.employerName
-      // employer.employer_phone = input.employerPhone
-      // employer.employer_position = Number(positionIndicator(input.employerPosition))
-      // employer.employer_password = input.employerPassword
-      // employer.employer_branch_id = context.branchId
-      // let newEmployer = await employerRepository.save(employer)
+      employer.employer_name = input.employerName || employer.employer_name
+      employer.employer_phone = input.employerPhone || employer.employer_phone
+      employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday
+      employer.employer_gender = Number(genderIndicator(input.employerGender)) || employer.employer_gender
+      employer.employer_position = Number(positionIndicator(input.employerPosition)) || employer.employer_position
+      employer.employer_password = input.employerPassword || employer.employer_password
+      employer.permissions = employerPermission || employer.permissions
+      let updateEmployer = await employerRepository.save(employer)
 
-      // const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
-      // let employerSalary = new SalaryEntity()
-      // employerSalary.salary_history_branch_id = context.branchId
-      // employerSalary.salary_history_employer_id = newEmployer.employer_id
-      // await employerSalaryRepository.save(employerSalary)
-      
-      // return newEmployer
-      return null
+      return updateEmployer
     },
     updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
@@ -80,6 +115,7 @@ const resolvers = {
       let employer = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_id = :Id", { Id: input.employerId })
         .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
+        .andWhere("employer.employer_activated = true")
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
 
@@ -92,12 +128,25 @@ const resolvers = {
       employer.employer_usage_lang = input.employerLang || employer.employer_usage_lang
       return await employerRepository.save(employer)
     },
+    deactivateEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
+      if (!context?.branchId) throw new Error("Not exist access token!");
+      const employerRepository = AppDataSource.getRepository(EmployerEntity)
+      let data = await employerRepository.createQueryBuilder("employer")
+        .where("employer.employer_id = :id", { id: employerId })
+        .andWhere("employer.employer_activated = true")
+        .andWhere("employer.employer_deleted IS NULL")
+        .getOne()
+      
+      if (!data) throw new Error(`Bu hodim mavjud emas`)
+      data.employer_activated = false
+      await employerRepository.save(data)
+      return data
+    },
     deleteEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
 
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
-
       let data = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_id = :id", { id: employerId })
         .andWhere("employer.employer_deleted IS NULL")
@@ -125,8 +174,7 @@ const resolvers = {
     employerGender: (global: Employer) => global.employer_gender,
     employerPosition: (global: Employer) => positionIndicator(global.employer_position),
     employerUseLang: (global: Employer) => global.employer_usage_lang,
-    employerCreatedAt: (global: Employer) => global.employer_created,
-    employerDeletedAt: (global: Employer) => global.employer_deleted,
+    employerPermission: (global: Employer) => JSON.stringify(global.permissions),
     employerBranchId: (global: Employer) => global.employer_branch_id,
   }
 };
@@ -142,7 +190,7 @@ function employerPermissionByRole(str:string) {
   return [] 
 }
 
-function getChangedPermissions(template: Permission, input: Permission): Permission {
+function getChangedPermissions(template: Permission, input: Permission = {}): Permission {
   const changed: Permission = {};
 
   for (const key in template) {
