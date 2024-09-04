@@ -5,7 +5,7 @@ import { pubsub } from "../../utils/pubSub";
 
 const resolvers = {
   Query: {
-    rooms: async (_parametr: unknown, {}, context:any): Promise<RoomEntity[] | null> => {
+    rooms: async (_parametr: unknown, { }, context: any): Promise<RoomEntity[] | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors
       const branchId = context.branchId
@@ -21,7 +21,7 @@ const resolvers = {
         throw error;
       }
     },
-    roomById: async (_parametr: unknown, { Id }: { Id: string }, context:any): Promise<RoomEntity | null> => {
+    roomById: async (_parametr: unknown, { Id }: { Id: string }, context: any): Promise<RoomEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors
       const branchId = context.branchId
@@ -39,14 +39,13 @@ const resolvers = {
     },
   },
   Mutation: {
-    addRoom: async (_parent: unknown, input: AddRoomInput, context:any): Promise<RoomEntity> => {
+    addRoom: async (_parent: unknown, { input }: { input: AddRoomInput }, context: any): Promise<RoomEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors
       const branchId = context.branchId
       const writeActions = context.writeActions
       try {
         const roomRepository = AppDataSource.getRepository(RoomEntity)
-
         let data = await roomRepository.createQueryBuilder("room")
           .where("room.room_name = :name", { name: input.roomName })
           .andWhere("room.room_branch_id = :branchId", { branchId })
@@ -69,7 +68,7 @@ const resolvers = {
         throw error;
       }
     },
-    updateRoom: async (_parent: unknown, input: UpdateRoomInput, context:any): Promise<RoomEntity> => {
+    updateRoom: async (_parent: unknown, { input }: { input: UpdateRoomInput }, context: any): Promise<RoomEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors
       const branchId = context.branchId
@@ -90,7 +89,7 @@ const resolvers = {
 
         return data
       } catch (error) {
-        await catchErrors(error, 'updateRoom', branchId, input) 
+        await catchErrors(error, 'updateRoom', branchId, input)
         throw error;
       }
     },
@@ -117,7 +116,7 @@ const resolvers = {
         })
         return result
       } catch (error) {
-        await catchErrors(error, 'deleteRoom', branchId, input) 
+        await catchErrors(error, 'deleteRoom', branchId, input)
         throw error;
       }
     }
@@ -133,7 +132,7 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator('ROOM_DELETED')
     }
   },
-  Room:{
+  Room: {
     roomId: (global: Room) => global?.room_id,
     roomName: (global: Room) => global?.room_name,
   },

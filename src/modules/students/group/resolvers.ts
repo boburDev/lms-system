@@ -210,12 +210,15 @@ const resolvers = {
             const studentGroupRepository = AppDataSource.getRepository(StudentGroups)
             let studentOldAttendance = await studentGroupRepository.findOneBy({ student_id: input.studentId, group_id: input.fromGroupId })
             if (!studentOldAttendance) throw new Error("student group not found");
-
+            if (studentOldAttendance.student_group_lesson_end.getTime() - new Date(input.addedDate).getTime() < 0) throw new Error("Guruh yakunlangan bu guruhdagi uquvchini boshqa guruhga kuchira olmaysiz");
+            
             const checkStatus = studentOldAttendance.student_group_status == 4 ? true : false
             let today = new Date()
             today.setHours(0, 0, 0, 0)
             let date = { startDate: today, endDate: new Date(dataGroup.group_end_date) }
             let fromToday = input.fromToday ? '>=' : '>'
+            // console.log(studentOldAttendance)
+
             await AppDataSource.createQueryBuilder()
                 .delete()
                 .from(StudentAttendences)
@@ -226,11 +229,11 @@ const resolvers = {
             studentOldAttendance.student_group_status = checkStatus ? 7 : 6
             studentOldAttendance.student_left_group_time = new Date()
             await studentGroupRepository.save(studentOldAttendance)
-
             let studentGroup = new StudentGroups()
             studentGroup.student_group_add_time = new Date(input.addedDate)
             studentGroup.student_id = input.studentId
             studentGroup.group_id = input.toGroupId
+            studentGroup.student_group_lesson_end = dataToGroup.group_end_date
             studentGroup.student_group_status = 4
             let newStudentGroup = await studentGroupRepository.save(studentGroup)
 

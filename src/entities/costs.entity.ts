@@ -7,7 +7,7 @@ export default class Costs {
     @PrimaryGeneratedColumn('uuid')
     cost_id: string
 
-    @Column({ length: 64, nullable: false })
+    @Column({ length: 64 })
     cost_name: string
    
     @Column({ type: 'int' })

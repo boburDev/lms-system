@@ -33,37 +33,43 @@ const resolvers = {
       if (!data) throw new Error(`Bu Filialda bu hodim mavjud emas`)
       return data
     },
-    employerRoles: async (_parametr: unknown, {}, context: any) => {
+    employerRoles: async (_parametr: unknown, { }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       if (['ceo', 'director', 'administrator'].includes(context.role)) return employerPermissionByRole(context.role)
-      throw new Error("Unexpected role");
+      throw new Error("You don't have permission");
     },
     employerPermissions: async (_parametr: unknown, { employerRole }: { employerRole: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      let permissions = getPermissions(employerRole, permission)
-      if (permissions && permissions.error) throw new Error(permissions.message);
-      return JSON.stringify(permissions)
+      if (['ceo', 'director', 'administrator'].includes(context.role)) {
+        let permissions = getPermissions(employerRole, permission)
+        if (permissions && permissions.error) throw new Error(permissions.message);
+        return JSON.stringify(permissions)
+      } else {
+        throw new Error("You don't have permission");
+      }
     }
   },
   Mutation: {
     addEmployer: async (_parent: unknown, { input }: { input: AddEmployerInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
+      if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
+
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
-      
+
       let data = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_phone = :phone", { phone: input.employerPhone })
-        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })        
+        .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
         .andWhere("employer.employer_activated = true")
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
 
-        if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+      if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
       let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
-    
+
       let employer = new EmployerEntity()
       employer.employer_name = input.employerName
       employer.employer_phone = input.employerPhone
-      if (!isNaN(new Date(input.employerBirthday).getTime()) ) {
+      if (!isNaN(new Date(input.employerBirthday).getTime())) {
         employer.employer_birthday = new Date(input.employerBirthday)
       }
       if (input.employerGender) {
@@ -80,11 +86,13 @@ const resolvers = {
       employerSalary.salary_history_branch_id = context.branchId
       employerSalary.salary_history_employer_id = newEmployer.employer_id
       await employerSalaryRepository.save(employerSalary)
-      
+
       return newEmployer
     },
     updateEmployer: async (_parent: unknown, { input }: { input: UpdateEmployerInput }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
+      if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
+
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 
       let employer = await employerRepository.createQueryBuilder("employer")
@@ -95,6 +103,7 @@ const resolvers = {
         .getOne()
 
       if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas!`)
+      if (employer.employer_id == context.colleagueId) throw new Error(`Shaxsiy maluotlarni faqat profilda uzgartirish mumkin!`)
       let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
 
       employer.employer_name = input.employerName || employer.employer_name
@@ -130,13 +139,15 @@ const resolvers = {
     },
     deactivateEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
+      if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
+
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       let data = await employerRepository.createQueryBuilder("employer")
         .where("employer.employer_id = :id", { id: employerId })
         .andWhere("employer.employer_activated = true")
         .andWhere("employer.employer_deleted IS NULL")
         .getOne()
-      
+
       if (!data) throw new Error(`Bu hodim mavjud emas`)
       data.employer_activated = false
       await employerRepository.save(data)
@@ -144,6 +155,7 @@ const resolvers = {
     },
     deleteEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
+      if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
 
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
@@ -157,7 +169,7 @@ const resolvers = {
         .getOne()
       if (!data || !dataSalary) throw new Error(`Bu hodim mavjud emas`)
 
-      
+
       dataSalary.salary_deleted = new Date()
       await employerSalaryRepository.save(dataSalary)
 
@@ -179,7 +191,7 @@ const resolvers = {
   }
 };
 
-function employerPermissionByRole(str:string) {
+function employerPermissionByRole(str: string) {
   if (str == 'ceo') {
     return ['director', 'administrator', 'teacher', 'marketolog', 'casher']
   } else if (str == 'director') {
@@ -187,7 +199,7 @@ function employerPermissionByRole(str:string) {
   } else if (str == 'administrator') {
     return ['administrator', 'teacher']
   }
-  return [] 
+  return []
 }
 
 function getChangedPermissions(template: Permission, input: Permission = {}): Permission {
