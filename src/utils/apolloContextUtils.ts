@@ -1,7 +1,7 @@
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import { authentification } from './authentification';
 import { catchErrors, writeActions } from './global-entities';
-
+import { Action } from './global-entities'
 export default async ({ req, connection }: any) => {
     try {
         if (connection) {
@@ -26,7 +26,7 @@ export default async ({ req, connection }: any) => {
         }
     } catch (error: unknown) {
         let err = (error as Error)
-        console.log(err.name)
+        console.log(1, err.name)
         
         if (err.message + "" === "auth failed") {
             throw new AuthenticationError("Authentication failed");

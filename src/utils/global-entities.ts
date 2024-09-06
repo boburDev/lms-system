@@ -16,7 +16,7 @@ export async function catchErrors(error: unknown, funcName: string, branchId?: s
     await errorCatchingRepository.save(newError)
 }
 
-type Action = {
+export type Action = {
     objectId: string
     eventType: number
     eventBefore: string
@@ -25,18 +25,20 @@ type Action = {
     eventObjectName: string,
     employerId: string
     employerName: string
-    branchId: string   
+    branchId: string
 }
 
 export async function writeActions(args: Action) {
-    // const writeActionRepository = AppDataSource.getRepository(EventActions)
-    // let newAction = new EventActions()
-    // newAction.object_id = args.objectId
-    // newAction.event_action_type = args.eventType
-    // newAction.event_action_before = args.eventBefore
-    // newAction.event_action_after = args.eventAfter
-    // newAction.event_action_object = args.eventObject
-    // newAction.event_action_object_name = args.eventObjectName
-    // newAction.branch_id = args.branchId
+    const writeActionRepository = AppDataSource.getRepository(EventActions)
+    let newAction = new EventActions()
+    newAction.object_id = args.objectId
+    newAction.event_action_type = args.eventType
+    newAction.event_action_before = args.eventBefore
+    newAction.event_action_after = args.eventAfter
+    newAction.event_action_object = args.eventObject
+    newAction.event_action_object_name = args.eventObjectName
+    newAction.branch_id = args.branchId
+    console.log(newAction)
+    
     // await writeActionRepository.save(newAction)
 }

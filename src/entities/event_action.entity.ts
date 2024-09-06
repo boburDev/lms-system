@@ -11,7 +11,7 @@ export default class EventActions {
     object_id: string
 
     @Column({ type: 'int' })
-    event_action_type: number // created = 1, deleted = 2, updated = 3
+    event_action_type: number // created = 1, updated = 2, deleted = 3
 
     @Column({ type: 'text' })
     event_action_before: string
@@ -22,8 +22,8 @@ export default class EventActions {
     @Column({ type: 'varchar', length: 32 })
     event_action_object: string
 
-    @Column({ type: 'varchar', length: 64 })
-    event_action_object_name: string
+    @Column({ type: 'varchar', length: 64, nullable: true })
+    event_action_object_name: string | null
     
     @Column()
     employer_id: string

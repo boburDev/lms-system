@@ -58,7 +58,17 @@ const resolvers = {
         room.room_name = input.roomName
         room.room_branch_id = branchId
         let result = await roomRepository.save(room)
-
+        let actionArgs = {
+          objectId: result.room_id,
+          eventType: 1,
+          eventBefore: "",
+          eventAfter: input.roomName,
+          eventObject: "room",
+          employerId: context.colleagueId,
+          employerName: context.colleagueName,
+          branchId: branchId
+        }
+        await writeActions(actionArgs)
         pubsub.publish('ROOM_CREATED', {
           createRoom: result
         })
@@ -83,10 +93,22 @@ const resolvers = {
           .getOne()
 
         if (!data) throw new Error(`Room not found`)
+        if (data.room_name == input.roomName) throw new Error("Cannot update similar data");
+        
+        let actionArgs = {
+          objectId: input.roomId,
+          eventType: 2,
+          eventBefore: data.room_name,
+          eventAfter: input.roomName,
+          eventObject: "room",
+          employerId: context.colleagueId,
+          employerName: context.colleagueName,
+          branchId: branchId
+        }
 
         data.room_name = input.roomName
         data = await roomRepository.save(data)
-
+        await writeActions(actionArgs)
         return data
       } catch (error) {
         await catchErrors(error, 'updateRoom', branchId, input)
@@ -110,6 +132,18 @@ const resolvers = {
 
         data.room_deleted = new Date()
         let result = await roomRepository.save(data)
+
+        let actionArgs = {
+          objectId: input.roomId,
+          eventType: 3,
+          eventBefore: data.room_name,
+          eventAfter: '',
+          eventObject: "room",
+          employerId: context.colleagueId,
+          employerName: context.colleagueName,
+          branchId: branchId
+        }
+        await writeActions(actionArgs)
 
         pubsub.publish('ROOM_DELETED', {
           deleteRoom: result
