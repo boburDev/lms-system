@@ -31,18 +31,25 @@ const resolvers = {
     },
     groupCount: async (_parametr: unknown, { isArchive }: { isArchive: boolean }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const groupRepository = AppDataSource.getRepository(GroupEntity)
+      const catchErrors = context.catchErrors
+      const branchId = context.branchId
+      try {
+        const groupRepository = AppDataSource.getRepository(GroupEntity)
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const endDateCondition = isArchive ? "<" : ">";
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDateCondition = isArchive ? "<" : ">";
 
-      return await groupRepository.createQueryBuilder("groups")
-        .where("groups.group_deleted IS NULL")
-        .andWhere("groups.group_branch_id = :branchId", { branchId: context.branchId })
-        .andWhere(`groups.group_end_date ${endDateCondition} :endDate`, { endDate: today.toISOString().split('T')[0] })
-        .andWhere("groups.group_deleted IS NULL")
-        .getCount();
+        return await groupRepository.createQueryBuilder("groups")
+          .where("groups.group_deleted IS NULL")
+          .andWhere("groups.group_branch_id = :branchId", { branchId })
+          .andWhere(`groups.group_end_date ${endDateCondition} :endDate`, { endDate: today.toISOString().split('T')[0] })
+          .andWhere("groups.group_deleted IS NULL")
+          .getCount();
+      } catch (error) {
+        await catchErrors(error, 'groupCount', branchId)
+        throw error;
+      }
     },
     groupByIdOrDate: async (_parametr: unknown, input: AddGroupInput, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
@@ -72,35 +79,42 @@ const resolvers = {
   Mutation: {
     addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise<GroupEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      let verifyGroup = await checkGroup(input.employerId, input.roomId, context.branchId, input.groupDays.join(' '), input.startTime, input.endTime)
-      if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
+      const catchErrors = context.catchErrors
+      const branchId = context.branchId
+      try {
+        let verifyGroup = await checkGroup(input.employerId, input.roomId, branchId, input.groupDays.join(' '), input.startTime, input.endTime)
+        if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
 
-      let group = new GroupEntity()
-      group.group_name = input.groupName
-      group.group_course_id = input.courseId
-      group.group_branch_id = context.branchId
-      group.group_colleague_id = input.employerId
-      group.group_room_id = input.roomId
-      group.group_start_date = new Date(input.startDate)
-      group.group_end_date = new Date(input.endDate)
-      group.group_start_time = input.startTime
-      group.group_end_time = input.endTime
-      group.group_days = input.groupDays.join(' ')
-      group.group_lesson_count = input.lessonCount
+        let group = new GroupEntity()
+        group.group_name = input.groupName
+        group.group_course_id = input.courseId
+        group.group_branch_id = branchId
+        group.group_colleague_id = input.employerId
+        group.group_room_id = input.roomId
+        group.group_start_date = new Date(input.startDate)
+        group.group_end_date = new Date(input.endDate)
+        group.group_start_time = input.startTime
+        group.group_end_time = input.endTime
+        group.group_days = input.groupDays.join(' ')
+        group.group_lesson_count = input.lessonCount
 
-      const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
+        const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
 
-      const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
-      const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
+        const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
+        const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
 
-      for (const i of days) {
-        let groupAttendence = new GroupAttendences()
-        groupAttendence.group_attendence_group_id = groupRepository.group_id
-        groupAttendence.group_attendence_day = i
-        await groupAttendenceRepository.save(groupAttendence);
+        for (const i of days) {
+          let groupAttendence = new GroupAttendences()
+          groupAttendence.group_attendence_group_id = groupRepository.group_id
+          groupAttendence.group_attendence_day = i
+          await groupAttendenceRepository.save(groupAttendence);
+        }
+
+        return groupRepository
+      } catch (error) {
+        await catchErrors(error, 'addGroup', branchId, input)
+        throw error
       }
-
-      return groupRepository
     },
     updateGroup: async (_parent: unknown, { input }: { input: UpdateGroupInput }, context: any): Promise<GroupEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
