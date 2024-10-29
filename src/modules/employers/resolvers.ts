@@ -25,7 +25,7 @@ const resolvers = {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
       let data = await employerRepository.createQueryBuilder("employer")
-        .where("employer.employer_id = :Id", { Id: input.employerId })
+        .where("employer.employer_id = :Id", { Id: input.employerId || context.colleagueId })
         .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
         .andWhere("employer.employer_activated = true")
         .andWhere("employer.employer_deleted IS NULL")
@@ -103,9 +103,12 @@ const resolvers = {
         .getOne()
 
       if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas!`)
-      if (employer.employer_id == context.colleagueId) throw new Error(`Shaxsiy maluotlarni faqat profilda uzgartirish mumkin!`)
-      let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
-
+      // if (employer.employer_id == context.colleagueId) throw new Error(`Shaxsiy maluotlarni faqat profilda uzgartirish mumkin!`)
+    console.log();
+    
+      let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission || '{}'))
+      console.log(1);
+      
       employer.employer_name = input.employerName || employer.employer_name
       employer.employer_phone = input.employerPhone || employer.employer_phone
       employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday
@@ -113,11 +116,12 @@ const resolvers = {
       employer.employer_position = Number(positionIndicator(input.employerPosition)) || employer.employer_position
       employer.employer_password = input.employerPassword || employer.employer_password
       employer.permissions = employerPermission || employer.permissions
+      
       let updateEmployer = await employerRepository.save(employer)
 
       return updateEmployer
     },
-    updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {
+    updateEmployerProfile: async (_parent: unknown, { input }: { input: UpdateEmployerProfileInput }, context: any): Promise<EmployerEntity> => {      
       if (!context?.branchId) throw new Error("Not exist access token!");
       const employerRepository = AppDataSource.getRepository(EmployerEntity)
 

@@ -109,4 +109,3 @@ export const create = async (req: Request, res: Response) => {
         res.status(400).json({ data: null, error: (error as Error).message })
     }
 }
-

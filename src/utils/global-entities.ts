@@ -39,6 +39,5 @@ export async function writeActions(args: Action) {
     newAction.event_action_object_name = args.eventObjectName
     newAction.branch_id = args.branchId
     console.log(newAction)
-    
-    // await writeActionRepository.save(newAction)
+    await writeActionRepository.save(newAction)
 }

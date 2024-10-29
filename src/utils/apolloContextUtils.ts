@@ -1,7 +1,6 @@
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import { authentification } from './authentification';
 import { catchErrors, writeActions } from './global-entities';
-import { Action } from './global-entities'
 export default async ({ req, connection }: any) => {
     try {
         if (connection) {

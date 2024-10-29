@@ -21,6 +21,12 @@ export default class ErrorHandlings {
     @Column({ type: "text", nullable: true })
     error_body: string
 
+    @Column({ type: 'int', default: 1 })
+    error_status: number
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    error_created_at: Date
+
     @Column({ nullable: true})
     error_branch_id: string
 

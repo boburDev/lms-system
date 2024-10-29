@@ -99,6 +99,8 @@ export default class Employers {
         if (this.employer_password) {
             // If a password is provided, hash it
             const saltRounds = 10;
+            console.log(await bcrypt.hash(this.employer_password, saltRounds));
+            
             this.employer_password = await bcrypt.hash(this.employer_password, saltRounds);
         }
     }
