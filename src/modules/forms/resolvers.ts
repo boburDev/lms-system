@@ -8,26 +8,45 @@ const picPath = `https://fastly.picsum.photos/id/1023/642/162.jpg?hmac=eCjsP_2wN
 
 const resolvers = {
     Query: {
-        forms: async (_parametr: unknown, {}, context: any) => {
+        forms: async (_parametr: unknown, { }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const formRepository = AppDataSource.getRepository(FormsEntiry)
-            return await formRepository.createQueryBuilder("form")
-                .where("form.form_deleted IS NULL")
-                .getMany()
+            const catchErrors = context.catchErrors;
+            const branchId = context.branchId;
+            try {
+                const formRepository = AppDataSource.getRepository(FormsEntiry)
+                return await formRepository.createQueryBuilder("form")
+                    .where("form.form_deleted IS NULL")
+                    .getMany()
+            } catch (error) {
+                await catchErrors(error, 'forms', branchId);
+                throw error;
+            }
+
         },
         formById: async (_parametr: unknown, { Id }: { Id: string }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
-            const formRepository = AppDataSource.getRepository(FormsEntiry)
-            return await formRepository.createQueryBuilder("form")
-                .where("form.form_id = :Id", { Id })
-                .andWhere("form.form_deleted IS NULL")
-                .getOne()
+            const catchErrors = context.catchErrors;
+            const branchId = context.branchId
+
+            try {
+                const formRepository = AppDataSource.getRepository(FormsEntiry)
+                return await formRepository.createQueryBuilder("form")
+                    .where("form.form_id = :Id", { Id })
+                    .andWhere("form.form_deleted IS NULL")
+                    .getOne()
+            } catch (error) {
+                await catchErrors(error, 'formById', branchId);
+                throw error;
+            }
+
         }
     },
     Mutation: {
         addForm: async (_parent: unknown, { input }: { input: AddFormInput }, context: any) => {
+            if (!context?.branchId) throw new Error("Not exist access token!");
+            const catchErrors = context.catchErrors;
+            const branchId = context.branchId
             try {
-                if (!context?.branchId) throw new Error("Not exist access token!");
                 const formRepository = AppDataSource.getRepository(FormsEntiry)
 
                 let data = await formRepository.findOneBy({ form_name: input.formName, form_deleted: IsNull() })
@@ -76,7 +95,8 @@ const resolvers = {
                 }
                 return newForm
             } catch (error) {
-                console.log(error)
+                await catchErrors(error, 'addForm', branchId, input);
+                throw error;
             }
         },
     },
