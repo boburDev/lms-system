@@ -12,39 +12,38 @@ const resolvers = {
 			if (!context || (context && !context.isAdmin)) throw new Error("Not exist access token!");
 			const catchErrors = context.catchErrors;
 			const branchId = context.branchId;
-			let newInput: any = {
-				countryId: input.countryId,
-				regionId: input.regionId,
-				districtId: input.districtId
-			}
-			let lastValue = {};
-
-			for (const key in newInput) {
-				if (newInput[key]) {
-					lastValue = { [key]: newInput[key] };
-				}
-			}
-
-			const branchesRepository = AppDataSource.getRepository(CompanyBranches);
-			const queryBuilder = branchesRepository.createQueryBuilder('branch')
-				.leftJoinAndSelect('branch.companies', 'company')
-				.leftJoinAndSelect('branch.districts', 'district')
-				.leftJoinAndSelect('district.regions', 'region')
-				.leftJoinAndSelect('region.countries', 'country');
-
-			if (newInput && newInput.countryId) {
-				queryBuilder.andWhere('country.country_id = :countryId', { countryId: newInput.countryId });
-			}
-
-			if (newInput && newInput.regionId) {
-				queryBuilder.andWhere('region.region_id = :regionId', { regionId: newInput.regionId });
-			}
-
-			if (newInput && newInput.districtId) {
-				queryBuilder.andWhere('district.district_id = :districtId', { districtId: newInput.districtId });
-			}
-
 			try {
+				let newInput: any = {
+					countryId: input.countryId,
+					regionId: input.regionId,
+					districtId: input.districtId
+				}
+				let lastValue = {};
+
+				for (const key in newInput) {
+					if (newInput[key]) {
+						lastValue = { [key]: newInput[key] };
+					}
+				}
+
+				const branchesRepository = AppDataSource.getRepository(CompanyBranches);
+				const queryBuilder = branchesRepository.createQueryBuilder('branch')
+					.leftJoinAndSelect('branch.companies', 'company')
+					.leftJoinAndSelect('branch.districts', 'district')
+					.leftJoinAndSelect('district.regions', 'region')
+					.leftJoinAndSelect('region.countries', 'country');
+
+				if (newInput && newInput.countryId) {
+					queryBuilder.andWhere('country.country_id = :countryId', { countryId: newInput.countryId });
+				}
+
+				if (newInput && newInput.regionId) {
+					queryBuilder.andWhere('region.region_id = :regionId', { regionId: newInput.regionId });
+				}
+
+				if (newInput && newInput.districtId) {
+					queryBuilder.andWhere('district.district_id = :districtId', { districtId: newInput.districtId });
+				}
 				const branches = await queryBuilder.getMany();
 
 				const result = branches.reduce((acc: { company_id: string, company_name: string, companyBranches: CompanyBranches[] }[], branch: CompanyBranches) => {
@@ -72,11 +71,10 @@ const resolvers = {
 			if (!context?.branchId) throw new Error("Not exist access token!");
 			const catchErrors = context.catchErrors;
             const branchId = context.branchId;
-			const activityRepository = AppDataSource.getRepository(BranchActivityEntity);
-			const branchRepository = AppDataSource.getRepository(CompanyBranches);
-			const employerRepository = AppDataSource.getRepository(EmployersEntity);
-
 			try {
+				const activityRepository = AppDataSource.getRepository(BranchActivityEntity);
+				const branchRepository = AppDataSource.getRepository(CompanyBranches);
+				const employerRepository = AppDataSource.getRepository(EmployersEntity);
 				let employerData = await employerRepository.findOneBy({ employer_phone: input.derectorPhone, employer_position: 1 });
 				if (employerData !== null) throw new Error(`Bu "${input.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`);
 
@@ -133,9 +131,8 @@ const resolvers = {
 			if (!context?.branchId) throw new Error("Not exist access token!");
 			const catchErrors = context.catchErrors;
             const branchId = context.branchId;
-			const branchRepository = AppDataSource.getRepository(CompanyBranches);
-
 			try {
+				const branchRepository = AppDataSource.getRepository(CompanyBranches);
 				let branch = await branchRepository.findOneBy({ company_branch_id: input.branchId });
 				if (!branch) throw new Error("Branch not found");
 
