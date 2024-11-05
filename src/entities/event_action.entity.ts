@@ -13,10 +13,10 @@ export default class EventActions {
     @Column({ type: 'int' })
     event_action_type: number // created = 1, updated = 2, deleted = 3
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     event_action_before: string
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     event_action_after: string
 
     @Column({ type: 'varchar', length: 32 })

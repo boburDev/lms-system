@@ -2,6 +2,7 @@ import CostEntity from "../../entities/costs.entity";
 import AppDataSource from "../../config/ormconfig";
 import { AddCostInput, Cost, UpdateCostInput } from "../../types/cost";
 import { costTypes } from "../../utils/status_and_positions";
+import { getChanges } from "../../utils/eventRecorder";
 
 const resolvers = {
   Query: {
@@ -65,9 +66,9 @@ const resolvers = {
 
   Mutation: {
     addCost: async (_parent: unknown, { input }: { input: AddCostInput }, context: any): Promise<CostEntity> => {
-      if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      if (!branchId) throw new Error("Not exist access token!");
+      const catchErrors = context.catchErrors;
       const writeActions = context.writeActions;
 
       try {
@@ -88,18 +89,30 @@ const resolvers = {
         cost.cost_branch_id = context.branchId;
 
         let result = await costRepository.save(cost);
-        let actionArgs = {
-          objectId: result.cost_id,
-          eventType: 1,
-          eventBefore: "",
-          eventAfter: input.costName,
-          eventObject: "cost",
-          employerId: context.colleagueId,
-          employerName: context.colleagueName,
-          branchId: branchId
-        };
 
-        await writeActions(actionArgs);
+        const costChanges = getChanges({}, cost, [
+          "cost_name",
+          "cost_amount",
+          "cost_type",
+          "cost_type_value",
+          "cost_payed_at"
+        ]);
+        
+        for (const change of costChanges) {
+          let actionArgs = {
+            objectId: result.cost_id,
+            eventType: 1,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Cost",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || "",
+          }
+          await writeActions(actionArgs);
+        }
+
         return result;
       } catch (error) {
         await catchErrors(error, 'addCost', branchId, input);
@@ -124,16 +137,7 @@ const resolvers = {
 
         if (!data) throw new Error(`Cost not found`);
 
-        let actionArgs = {
-          objectId: input.costId,
-          eventType: 2,
-          eventBefore: data.cost_name,
-          eventAfter: input.costName,
-          eventObject: "cost",
-          employerId: context.colleagueId,
-          employerName: context.colleagueName,
-          branchId: branchId
-        };
+        const originalCost = { ...data };
 
         let costType = costTypes(input.costType);
         data.cost_name = input.costName || data.cost_name;
@@ -147,8 +151,33 @@ const resolvers = {
         data.cost_payed_at = new Date(input.costPayedAt) || data.cost_payed_at;
         data.colleague_id = input.costColleagueId || data.colleague_id;
 
+
+        const costChanges = getChanges(originalCost, data, [
+          "cost_name",
+          "cost_amount",
+          "cost_type",
+          "cost_type_value",
+          "cost_payed_at",
+          "colleague_id"
+        ]);
+
         let result = await costRepository.save(data);
-        await writeActions(actionArgs); // Log the update action
+
+        for (const change of costChanges) {
+          let actionArgs = {
+            objectId: data.cost_id,
+            eventType: 2,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Cost",
+            eventObjectName: change.field,
+            employerId: context.employerId || "",
+            employerName: context.employerName || "",
+            branchId: context.branchId || "",
+          }
+          await writeActions(actionArgs);
+        }
+
         return result;
       } catch (error) {
         await catchErrors(error, 'updateCost', branchId, input);
@@ -157,7 +186,9 @@ const resolvers = {
     },
 
     deleteCost: async (_parent: unknown, { Id }: { Id: string }, context: any): Promise<CostEntity> => {
+      const branchId = context.branchId;
       if (!context?.branchId) throw new Error("Not exist access token!");
+      const writeActions = context.writeActions;
       const costRepository = AppDataSource.getRepository(CostEntity);
 
       try {
@@ -170,6 +201,20 @@ const resolvers = {
         if (!data) throw new Error(`Cost not found`);
 
         data.cost_deleted = new Date();
+
+        let actionArgs = {
+          objectId: data.cost_id,
+          eventType: 3,
+          eventBefore: data.cost_name,
+          eventAfter: "",
+          eventObject: "cost",
+          eventObjectName: "delete cost",
+          employerId: context.colleagueId,
+          employerName: context.colleagueName,
+          branchId: branchId
+        };
+        await writeActions(actionArgs);
+
         return await costRepository.save(data);
       } catch (error) {
         await context.catchErrors(error, 'deleteCost', context.branchId);

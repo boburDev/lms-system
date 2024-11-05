@@ -38,6 +38,8 @@ export async function writeActions(args: Action) {
     newAction.event_action_object = args.eventObject
     newAction.event_action_object_name = args.eventObjectName
     newAction.branch_id = args.branchId
-    console.log(newAction)
+    newAction.employer_id = args.employerId
+    newAction.employer_name = args.employerName
+    
     await writeActionRepository.save(newAction)
 }

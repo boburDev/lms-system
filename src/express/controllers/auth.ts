@@ -27,6 +27,7 @@ export const login = async (req:Request, res: Response) => {
                 let payload = {
                     branchId: user.employer_branch_id,
                     colleagueId: user.employer_id,
+                    colleagueName: user.employer_name,
                     role: positionIndicator(user.employer_position)
                 }
                 let branchData = await branchRepository.findOne({
@@ -71,6 +72,7 @@ export const loginBySubdomain = async (req: Request, res: Response) => {
         let payload = {
             branchId: user.employer_branch_id,
             colleagueId: user.employer_id,
+            colleagueName: user.employer_name,
             role: positionIndicator(user.employer_position)
         }
         
@@ -208,6 +210,7 @@ export const signup = async (req:Request, res: Response) => {
         let payload = {
             branchId: newEmployer.employer_branch_id,
             colleagueId: newEmployer.employer_id,
+            colleagueName: newEmployer.employer_name,
             role: positionIndicator(newEmployer.employer_position)
         }
         // console.log(payload, newEmployer);

@@ -1,12 +1,12 @@
-import readline from 'readline';
-import bcrypt from 'bcryptjs';
+// import readline from 'readline';
 import AppDataSource from "../config/ormconfig";
 import AdminEntity from "../entities/admin.entity";
+import bcrypt from 'bcrypt';
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+// const rl = readline.createInterface({
+//     input: process.stdin,
+//     output: process.stdout
+// });
 
 
 const getUserInputStep1 = async () => {
@@ -18,7 +18,7 @@ const getUserInputStep1 = async () => {
             await getUserInputStep2();
         } else {
             console.log('SuperAdmin mavjud...');
-            rl.close();
+            // rl.close();
             process.exit();
         }
     } catch (error) {
@@ -47,7 +47,7 @@ const getUserInputStep2 = async () => {
     } catch (error) {
         console.error('Error creating Super User:', error);
     } finally {
-        rl.close();
+        // rl.close();
         process.exit();
     }
 };
