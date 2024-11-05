@@ -71,7 +71,7 @@ const resolvers = {
         await writeActions(actionArgs)
         pubsub.publish('ROOM_CREATED', {
           createRoom: result
-        })
+        })  
         return result
       } catch (error) {
         await catchErrors(error, 'addRoom', branchId, input)
