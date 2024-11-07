@@ -2,6 +2,8 @@ import RoomEntity from "../../entities/room.entity";
 import AppDataSource from "../../config/ormconfig";
 import { AddRoomInput, Room, UpdateRoomInput } from "../../types/room";
 import { pubsub } from "../../utils/pubSub";
+import { IsNull } from "typeorm";
+import { getChanges } from "../../utils/eventRecorder";
 
 const resolvers = {
   Query: {
@@ -41,119 +43,89 @@ const resolvers = {
   Mutation: {
     addRoom: async (_parent: unknown, { input }: { input: AddRoomInput }, context: any): Promise<RoomEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors
-      const branchId = context.branchId
-      const writeActions = context.writeActions
+      const catchErrors = context.catchErrors;
+      const branchId = context.branchId;
+      const writeActions = context.writeActions;
+
       try {
-        const roomRepository = AppDataSource.getRepository(RoomEntity)
-        let data = await roomRepository.createQueryBuilder("room")
-          .where("room.room_name = :name", { name: input.roomName })
-          .andWhere("room.room_branch_id = :branchId", { branchId })
-          .andWhere("room.room_deleted IS NULL")
-          .getOne()
+        const roomRepository = AppDataSource.getRepository(RoomEntity);
 
-        if (data !== null) throw new Error(`Bu uquv markazida "${input.roomName}" nomli hona mavjud`)
+        // Check if room already exists
+        const existingRoom = await roomRepository.findOne({ where: { room_name: input.roomName, room_branch_id: branchId, room_deleted: IsNull() } });
+        if (existingRoom) throw new Error(`Room "${input.roomName}" already exists`);
 
-        let room = new RoomEntity()
-        room.room_name = input.roomName
-        room.room_branch_id = branchId
-        let result = await roomRepository.save(room)
-        let actionArgs = {
-          objectId: result.room_id,
-          eventType: 1,
-          eventBefore: "",
-          eventAfter: input.roomName,
-          eventObject: "room",
-          employerId: context.colleagueId,
-          employerName: context.colleagueName,
-          branchId: branchId
+        // Create new room
+        const room = new RoomEntity();
+        room.room_name = input.roomName;
+        room.room_branch_id = branchId;
+        const result = await roomRepository.save(room);
+
+        // Log creation with writeActions
+        const roomChanges = getChanges({}, result, ["room_name"]);
+        for (const change of roomChanges) {
+          await writeActions({
+            objectId: result.room_id,
+            eventType: 1,  // Assuming 1 represents "add" actions
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Room",
+            eventObjectName: change.field,
+            employerId: context.colleagueId,
+            employerName: context.colleagueName,
+            branchId: branchId
+          });
         }
-        await writeActions(actionArgs)
-        pubsub.publish('ROOM_CREATED', {
-          createRoom: result
-        })  
-        return result
+
+        pubsub.publish('ROOM_CREATED', { createRoom: result });
+        return result;
       } catch (error) {
-        await catchErrors(error, 'addRoom', branchId, input)
+        await catchErrors(error, 'addRoom', branchId, input);
         throw error;
       }
     },
-    updateRoom: async (_parent: unknown, { input }: { input: UpdateRoomInput }, context: any): Promise<RoomEntity> => {
+    deleteRoom: async (_parent: unknown, { roomId }: { roomId: string }, context: any): Promise<RoomEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors
-      const branchId = context.branchId
-      const writeActions = context.writeActions
+      const catchErrors = context.catchErrors;
+      const branchId = context.branchId;
+      const writeActions = context.writeActions;
+
       try {
-        const roomRepository = AppDataSource.getRepository(RoomEntity)
+        const roomRepository = AppDataSource.getRepository(RoomEntity);
 
-        let data = await roomRepository.createQueryBuilder("room")
-          .where("room.room_id = :Id", { Id: input.roomId })
-          .andWhere("room.room_branch_id = :branchId", { branchId })
-          .andWhere("room.room_deleted IS NULL")
-          .getOne()
+        // Fetch the room to delete
+        const data = await roomRepository.findOne({ where: { room_id: roomId, room_deleted: IsNull() } });
+        if (!data) throw new Error("Room not found");
 
-        if (!data) throw new Error(`Room not found`)
-        if (data.room_name == input.roomName) throw new Error("Cannot update similar data");
-        
-        let actionArgs = {
-          objectId: input.roomId,
-          eventType: 2,
-          eventBefore: data.room_name,
-          eventAfter: input.roomName,
-          eventObject: "room",
-          employerId: context.colleagueId,
-          employerName: context.colleagueName,
-          branchId: branchId
+        // Preserve original data for logging
+        const originalRoom = { ...data };
+
+        // Soft delete the room
+        data.room_deleted = new Date();
+        const deletedRoom = await roomRepository.save(data);
+
+        // Log deletion
+        const roomChanges = getChanges(originalRoom, deletedRoom, ["room_name", "room_deleted"]);
+        for (const change of roomChanges) {
+          await writeActions({
+            objectId: roomId,
+            eventType: 3,  // Assuming 3 represents "delete" actions
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Room",
+            eventObjectName: "deleteRoom",
+            employerId: context.colleagueId,
+            employerName: context.colleagueName,
+            branchId: branchId
+          });
         }
 
-        data.room_name = input.roomName
-        data = await roomRepository.save(data)
-        await writeActions(actionArgs)
-        return data
+        pubsub.publish('ROOM_DELETED', { deleteRoom: deletedRoom });
+        return deletedRoom;
       } catch (error) {
-        await catchErrors(error, 'updateRoom', branchId, input)
+        await catchErrors(error, 'deleteRoom', branchId, { roomId });
         throw error;
       }
     },
-    deleteRoom: async (_parent: unknown, input: { roomId: string }, context: any): Promise<RoomEntity> => {
-      if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors
-      const branchId = context.branchId
-      const writeActions = context.writeActions
-      try {
-        const roomRepository = AppDataSource.getRepository(RoomEntity)
-
-        let data = await roomRepository.createQueryBuilder("room")
-          .where("room.room_id = :id", { id: input.roomId })
-          .andWhere("room.room_deleted IS NULL")
-          .getOne()
-
-        if (data === null) throw new Error(`Bu hona mavjud emas`)
-
-        data.room_deleted = new Date()
-        let result = await roomRepository.save(data)
-
-        let actionArgs = {
-          objectId: input.roomId,
-          eventType: 3,
-          eventBefore: data.room_name,
-          eventAfter: '',
-          eventObject: "room",
-          employerId: context.colleagueId,
-          employerName: context.colleagueName,
-          branchId: branchId
-        }
-        await writeActions(actionArgs)
-
-        pubsub.publish('ROOM_DELETED', {
-          deleteRoom: result
-        })
-        return result
-      } catch (error) {
-        await catchErrors(error, 'deleteRoom', branchId, input)
-        throw error;
-      }
-    }
   },
   Subscription: {
     createRoom: {

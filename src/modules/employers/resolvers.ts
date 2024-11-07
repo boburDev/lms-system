@@ -5,6 +5,7 @@ import positionIndicator, { genderIndicator, getPermissions } from "../../utils/
 import permission from './employer_permission.json'
 import SalaryEntity from "../../entities/employer/salary.entity";
 import { IsNull } from "typeorm";
+import { getChanges } from "../../utils/eventRecorder";
 
 export type Permission = {
   [key: string]: Permission | boolean;
@@ -71,42 +72,62 @@ const resolvers = {
       if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        const employerRepository = AppDataSource.getRepository(EmployerEntity)
+        const employerRepository = AppDataSource.getRepository(EmployerEntity);
 
-        let data = await employerRepository.createQueryBuilder("employer")
+        let existingEmployer = await employerRepository.createQueryBuilder("employer")
           .where("employer.employer_phone = :phone", { phone: input.employerPhone })
           .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
           .andWhere("employer.employer_activated = true")
           .andWhere("employer.employer_deleted IS NULL")
-          .getOne()
+          .getOne();
 
-        if (data != null) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
-        let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission))
+        if (existingEmployer) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`);
+        let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission));
 
-        let employer = new EmployerEntity()
-        employer.employer_name = input.employerName
-        employer.employer_phone = input.employerPhone
+        let employer = new EmployerEntity();
+        employer.employer_name = input.employerName;
+        employer.employer_phone = input.employerPhone;
         if (!isNaN(new Date(input.employerBirthday).getTime())) {
-          employer.employer_birthday = new Date(input.employerBirthday)
+          employer.employer_birthday = new Date(input.employerBirthday);
         }
-        if (input.employerGender) {
-          employer.employer_gender = Number(genderIndicator(input.employerGender)) || null
+        employer.employer_gender = Number(genderIndicator(input.employerGender)) || null;
+        employer.employer_position = Number(positionIndicator(input.employerPosition));
+        employer.employer_password = input.employerPassword;
+        employer.permissions = employerPermission;
+        employer.employer_branch_id = context.branchId;
+
+        let newEmployer = await employerRepository.save(employer);
+
+        // Log each field of the newly created employer
+        const employerChanges = getChanges({}, newEmployer, [
+          "employer_name",
+          "employer_phone",
+          "employer_birthday",
+          "employer_gender",
+          "employer_position",
+          "employer_password",
+          "permissions",
+          "employer_branch_id"
+        ]);
+
+        for (const change of employerChanges) {
+          await writeActions({
+            objectId: newEmployer.employer_id,
+            eventType: 1,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Employer",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || "",
+          });
         }
-        employer.employer_position = Number(positionIndicator(input.employerPosition))
-        employer.employer_password = input.employerPassword
-        employer.permissions = employerPermission
-        employer.employer_branch_id = context.branchId
-        let newEmployer = await employerRepository.save(employer)
 
-        const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
-        let employerSalary = new SalaryEntity()
-        employerSalary.salary_history_branch_id = context.branchId
-        employerSalary.salary_history_employer_id = newEmployer.employer_id
-        await employerSalaryRepository.save(employerSalary)
-
-        return newEmployer
+        return newEmployer;
       } catch (error) {
         await catchErrors(error, 'addEmployer', branchId, input);
         throw error;
@@ -117,35 +138,60 @@ const resolvers = {
       if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        const employerRepository = AppDataSource.getRepository(EmployerEntity)
+        const employerRepository = AppDataSource.getRepository(EmployerEntity);
 
         let employer = await employerRepository.createQueryBuilder("employer")
           .where("employer.employer_id = :Id", { Id: input.employerId })
           .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
           .andWhere("employer.employer_activated = true")
           .andWhere("employer.employer_deleted IS NULL")
-          .getOne()
+          .getOne();
 
-        if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas!`)
-        // if (employer.employer_id == context.colleagueId) throw new Error(`Shaxsiy maluotlarni faqat profilda uzgartirish mumkin!`)
-        console.log();
+        if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas!`);
 
-        let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission || '{}'))
-        console.log(1);
+        const originalEmployer = { ...employer };
+        let employerPermission = getChangedPermissions(permission, JSON.parse(input.employerPermission || '{}'));
 
-        employer.employer_name = input.employerName || employer.employer_name
-        employer.employer_phone = input.employerPhone || employer.employer_phone
-        employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday
-        employer.employer_gender = Number(genderIndicator(input.employerGender)) || employer.employer_gender
-        employer.employer_position = Number(positionIndicator(input.employerPosition)) || employer.employer_position
-        employer.employer_password = input.employerPassword || employer.employer_password
-        employer.permissions = employerPermission || employer.permissions
+        // Apply updates
+        employer.employer_name = input.employerName || employer.employer_name;
+        employer.employer_phone = input.employerPhone || employer.employer_phone;
+        employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday;
+        employer.employer_gender = Number(genderIndicator(input.employerGender)) || employer.employer_gender;
+        employer.employer_position = Number(positionIndicator(input.employerPosition)) || employer.employer_position;
+        employer.employer_password = input.employerPassword || employer.employer_password;
+        employer.permissions = employerPermission || employer.permissions;
 
-        let updateEmployer = await employerRepository.save(employer)
+        let updatedEmployer = await employerRepository.save(employer);
 
-        return updateEmployer
+        // Log each change in the updated employer entity
+        const employerChanges = getChanges(originalEmployer, updatedEmployer, [
+          "employer_name",
+          "employer_phone",
+          "employer_birthday",
+          "employer_gender",
+          "employer_position",
+          "employer_password",
+          "permissions"
+        ]);
+
+        for (const change of employerChanges) {
+          await writeActions({
+            objectId: updatedEmployer.employer_id,
+            eventType: 2,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Employer",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || ""
+          });
+        }
+
+        return updatedEmployer;
       } catch (error) {
         await catchErrors(error, 'updateEmployer', branchId, input);
         throw error;
@@ -155,25 +201,55 @@ const resolvers = {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        const employerRepository = AppDataSource.getRepository(EmployerEntity)
+        const employerRepository = AppDataSource.getRepository(EmployerEntity);
 
         let employer = await employerRepository.createQueryBuilder("employer")
           .where("employer.employer_id = :Id", { Id: input.employerId })
           .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
           .andWhere("employer.employer_activated = true")
           .andWhere("employer.employer_deleted IS NULL")
-          .getOne()
+          .getOne();
 
-        if (!employer) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`)
+        if (!employer) throw new Error(`Bu Filialda "${input.employerPhone}" raqamli hodim mavjud`);
 
-        employer.employer_name = input.employerName || employer.employer_name
-        employer.employer_phone = input.employerPhone || employer.employer_phone
-        employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday
-        employer.employer_gender = input.employerGender || employer.employer_gender
-        employer.employer_usage_lang = input.employerLang || employer.employer_usage_lang
-        return await employerRepository.save(employer)
+        const originalProfile = { ...employer };
+
+        // Update fields
+        employer.employer_name = input.employerName || employer.employer_name;
+        employer.employer_phone = input.employerPhone || employer.employer_phone;
+        employer.employer_birthday = new Date(input.employerBirthday) || employer.employer_birthday;
+        employer.employer_gender = input.employerGender || employer.employer_gender;
+        employer.employer_usage_lang = input.employerLang || employer.employer_usage_lang;
+
+        let updatedProfile = await employerRepository.save(employer);
+
+        // Log profile updates
+        const profileChanges = getChanges(originalProfile, updatedProfile, [
+          "employer_name",
+          "employer_phone",
+          "employer_birthday",
+          "employer_gender",
+          "employer_usage_lang"
+        ]);
+
+        for (const change of profileChanges) {
+          await writeActions({
+            objectId: updatedProfile.employer_id,
+            eventType: 2,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "EmployerProfile",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || ""
+          });
+        }
+
+        return updatedProfile;
       } catch (error) {
         await catchErrors(error, 'updateEmployerProfile', branchId, input);
         throw error;
@@ -184,58 +260,85 @@ const resolvers = {
       if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        const employerRepository = AppDataSource.getRepository(EmployerEntity)
-        let data = await employerRepository.createQueryBuilder("employer")
+        const employerRepository = AppDataSource.getRepository(EmployerEntity);
+        let employer = await employerRepository.createQueryBuilder("employer")
           .where("employer.employer_id = :id", { id: employerId })
           .andWhere("employer.employer_activated = true")
           .andWhere("employer.employer_deleted IS NULL")
-          .getOne()
+          .getOne();
 
-        if (!data) throw new Error(`Bu hodim mavjud emas`)
-        data.employer_activated = false
-        await employerRepository.save(data)
-        return data
+        if (!employer) throw new Error(`Bu hodim mavjud emas`);
+        employer.employer_activated = false;
+        await employerRepository.save(employer);
+
+        // Log deactivation
+        await writeActions({
+          objectId: employer.employer_id,
+          eventType: 2,
+          eventBefore: "true",
+          eventAfter: "false",
+          eventObject: "Employer",
+          eventObjectName: "deactivateEmployer",
+          employerId: context.colleagueId || "",
+          employerName: context.colleagueName || "",
+          branchId: context.branchId || ""
+        });
+
+        return employer;
       } catch (error) {
         await catchErrors(error, 'deactivateEmployer', branchId, employerId);
         throw error;
       }
-
-
     },
     deleteEmployer: async (_parent: unknown, { employerId }: { employerId: string }, context: any): Promise<EmployerEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       if (!['ceo', 'director', 'administrator'].includes(context.role)) throw new Error("You don't have permission");
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        const employerRepository = AppDataSource.getRepository(EmployerEntity)
-        const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity)
-        let data = await employerRepository.createQueryBuilder("employer")
+        const employerRepository = AppDataSource.getRepository(EmployerEntity);
+        const employerSalaryRepository = AppDataSource.getRepository(SalaryEntity);
+
+        let employer = await employerRepository.createQueryBuilder("employer")
           .where("employer.employer_id = :id", { id: employerId })
           .andWhere("employer.employer_deleted IS NULL")
-          .getOne()
-        let dataSalary = await employerSalaryRepository.createQueryBuilder("salary")
+          .getOne();
+        let salary = await employerSalaryRepository.createQueryBuilder("salary")
           .where("salary.salary_history_employer_id = :id", { id: employerId })
           .andWhere("salary.salary_deleted IS NULL")
-          .getOne()
-        if (!data || !dataSalary) throw new Error(`Bu hodim mavjud emas`)
+          .getOne();
 
+        if (!employer || !salary) throw new Error(`Bu hodim mavjud emas`);
 
-        dataSalary.salary_deleted = new Date()
-        await employerSalaryRepository.save(dataSalary)
+        salary.salary_deleted = new Date();
+        await employerSalaryRepository.save(salary);
 
-        data.employer_deleted = new Date()
-        await employerRepository.save(data)
-        return data
+        employer.employer_deleted = new Date();
+        await employerRepository.save(employer);
+
+        // Log deletion
+        await writeActions({
+          objectId: employer.employer_id,
+          eventType: 3,
+          eventBefore: JSON.stringify(employer),
+          eventAfter: "",
+          eventObject: "Employer",
+          eventObjectName: "deleteEmployer",
+          employerId: context.colleagueId || "",
+          employerName: context.colleagueName || "",
+          branchId: context.branchId || ""
+        });
+
+        return employer;
       } catch (error) {
         await catchErrors(error, 'deleteEmployer', branchId, employerId);
         throw error;
       }
-
-
     }
   },
   Employer: {

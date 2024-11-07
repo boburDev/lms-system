@@ -5,6 +5,7 @@ import { AddCompanyBranchInput, BranchInfo, CompanyBranch, SearchCompanyInput, U
 import BranchActivityEntity from '../../entities/company/company_activity.entity';
 import positionIndicator from '../../utils/status_and_positions';
 import { sign } from '../../utils/jwt';
+import { getChanges } from '../../utils/eventRecorder';
 
 const resolvers = {
 	Query: {
@@ -70,19 +71,23 @@ const resolvers = {
 		addCompanyBranch: async (_parent: unknown, { input }: { input: AddCompanyBranchInput }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
 			const catchErrors = context.catchErrors;
-            const branchId = context.branchId;
+			const branchId = context.branchId;
+			const writeActions = context.writeActions;
+		
 			try {
 				const activityRepository = AppDataSource.getRepository(BranchActivityEntity);
 				const branchRepository = AppDataSource.getRepository(CompanyBranches);
 				const employerRepository = AppDataSource.getRepository(EmployersEntity);
+		
+				// Validate uniqueness of phone numbers
 				let employerData = await employerRepository.findOneBy({ employer_phone: input.derectorPhone, employer_position: 1 });
-				if (employerData !== null) throw new Error(`Bu "${input.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`);
-
+				if (employerData) throw new Error(`Bu "${input.derectorPhone}" nomerdan foydalana olmaysiz band qilingan`);
+		
 				let branchData = await branchRepository.findOneBy({ company_branch_phone: input.branchPhone });
-				if (branchData !== null) throw new Error(`"${input.branchName}" nomidan foydalana olmaysiz band qilingan`);
-
+				if (branchData) throw new Error(`"${input.branchName}" nomidan foydalana olmaysiz band qilingan`);
+		
+				// Create and populate new branch entity
 				let companyBranches = await branchRepository.findBy({ branch_company_id: input.companyId });
-
 				let subdomenIndex = String(companyBranches.length).padStart(4, '0');
 				let branch = new CompanyBranches();
 				branch.company_branch_name = input.branchName;
@@ -90,20 +95,59 @@ const resolvers = {
 				branch.company_branch_subdomen = `${subdomenIndex}-${input.branchName.replace(/([1234567890]|[\s]|[~`!@#$%^&*()_+{}:";'])/g, "").toLowerCase()}`;
 				branch.branch_district_id = input.districtId;
 				branch.branch_company_id = input.companyId;
-
+		
+				// Save the new branch
 				let newBranch = await branchRepository.save(branch);
-
+		
+				// Log each change in the newly created branch entity
+				const branchChanges = getChanges({}, newBranch, [
+					"company_branch_name",
+					"company_branch_phone",
+					"company_branch_subdomen",
+					"branch_district_id",
+					"branch_company_id"
+				]);
+		
+				for (const change of branchChanges) {
+					await writeActions({
+						objectId: newBranch.company_branch_id,
+						eventType: 1,
+						eventBefore: change.before,
+						eventAfter: change.after,
+						eventObject: "CompanyBranch",
+						eventObjectName: change.field,
+						employerId: context.colleagueId || "",
+						employerName: context.colleagueName || "",
+						branchId: context.branchId || "",
+					});
+				}
+		
+				// Create branch activity
 				let daysToAdd = 7;
 				const startDate = new Date();
 				const endDate = new Date(startDate);
 				endDate.setDate(endDate.getDate() + daysToAdd);
-
+		
 				let activity = new BranchActivityEntity();
 				activity.group_start_date = startDate;
 				activity.group_end_date = endDate;
 				activity.branch_id = newBranch.company_branch_id;
-				await activityRepository.save(activity);
-
+				let newActivity = await activityRepository.save(activity);
+		
+				// Log branch activity creation
+				await writeActions({
+					objectId: newActivity.branch_activity_id,
+					eventType: 1,
+					eventBefore: "", // No "before" state for creation
+					eventAfter: JSON.stringify(newActivity),
+					eventObject: "BranchActivity",
+					eventObjectName: "group_start_date to group_end_date",
+					employerId: context.colleagueId,
+					employerName: context.colleagueName,
+					branchId: context.branchId
+				});
+		
+				// Create a new employer for the branch
 				let employer = new EmployersEntity();
 				employer.employer_name = input.derectorName;
 				employer.employer_phone = input.derectorPhone;
@@ -111,12 +155,36 @@ const resolvers = {
 				employer.employer_branch_id = newBranch.company_branch_id;
 				employer.employer_password = input.password;
 				let newEmployer = await employerRepository.save(employer);
-
+		
+				// Log employer creation
+				const employerChanges = getChanges({}, newEmployer, [
+					"employer_name",
+					"employer_phone",
+					"employer_position",
+					"employer_branch_id"
+				]);
+		
+				for (const change of employerChanges) {
+					await writeActions({
+						objectId: newEmployer.employer_id,
+						eventType: 1,
+						eventBefore: change.before,
+						eventAfter: change.after,
+						eventObject: "Employer",
+						eventObjectName: change.field,
+						employerId: context.colleagueId || "",
+						employerName: context.colleagueName || "",
+						branchId: context.branchId || "",
+					});
+				}
+		
+				// Return the payload with token and redirect link
 				let payload = {
 					branchId: newEmployer.employer_branch_id,
 					colleagueId: newEmployer.employer_id,
 					role: positionIndicator(newEmployer.employer_position)
 				};
+				
 				return {
 					token: sign(payload),
 					redirect_link: `http://${newBranch?.company_branch_subdomen}.localhost:3000/`,
@@ -130,18 +198,48 @@ const resolvers = {
 		updateCompanyBranch: async (_parent: unknown, { input }: { input: UpdateCompanyBranchInput }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
 			const catchErrors = context.catchErrors;
-            const branchId = context.branchId;
+			const branchId = context.branchId;
+			const writeActions = context.writeActions;
+		
 			try {
 				const branchRepository = AppDataSource.getRepository(CompanyBranches);
+		
+				// Fetch original branch data
 				let branch = await branchRepository.findOneBy({ company_branch_id: input.branchId });
 				if (!branch) throw new Error("Branch not found");
-
+		
+				const originalBranch = { ...branch };
+		
+				// Update branch data
 				branch.company_branch_name = input.branchName || branch.company_branch_name;
 				branch.company_branch_phone = input.branchPhone || branch.company_branch_phone;
 				branch.branch_district_id = input.districtId || branch.branch_district_id;
-
-				await branchRepository.save(branch);
-				return branch;
+		
+				// Save changes
+				let updatedBranch = await branchRepository.save(branch);
+		
+				// Log changes
+				const branchChanges = getChanges(originalBranch, updatedBranch, [
+					"company_branch_name",
+					"company_branch_phone",
+					"branch_district_id"
+				]);
+		
+				for (const change of branchChanges) {
+					await writeActions({
+						objectId: branch.company_branch_id,
+						eventType: 2,
+						eventBefore: change.before,
+						eventAfter: change.after,
+						eventObject: "CompanyBranch",
+						eventObjectName: change.field,
+						employerId: context.colleagueId || "",
+						employerName: context.colleagueName || "",
+						branchId: context.branchId || ""
+					});
+				}
+		
+				return updatedBranch;
 			} catch (error) {
 				await catchErrors(error, 'updateCompanyBranch', branchId, input);
 				throw error;

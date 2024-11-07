@@ -4,6 +4,8 @@ import { AddLeadInput, Lead, UpdateLeadColumnInput, UpdateLeadInput } from "../.
 import EmployersEntity from "../../../entities/employer/employers.entity";
 import CoursesEntity from "../../../entities/course.entity";
 import FunnelColumnsEntity from "../../../entities/funnel/columns.entity";
+import { IsNull } from "typeorm";
+import { getChanges } from "../../../utils/eventRecorder";
 
 const resolvers = {
     Query: {
@@ -70,116 +72,105 @@ const resolvers = {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
             const branchId = context.branchId;
-
+            const writeActions = context.writeActions;
+        
             try {
-                const employerRepository = AppDataSource.getRepository(EmployersEntity)
-                const courseRepository = AppDataSource.getRepository(CoursesEntity)
-
-                let employer = await employerRepository.createQueryBuilder("employer")
-                    .where("employer.employer_id = :Id", { Id: context.colleagueId })
-                    .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
-                    .andWhere("employer.employer_deleted IS NULL")
-                    .getOne()
-
-                if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas`)
-
-                let course
-
+                const employerRepository = AppDataSource.getRepository(EmployersEntity);
+                const courseRepository = AppDataSource.getRepository(CoursesEntity);
+        
+                // Validate employer
+                const employer = await employerRepository.findOne({ where: { employer_id: context.colleagueId, employer_branch_id: branchId, employer_deleted: IsNull() } });
+                if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas`);
+        
+                // Validate course if provided
+                let course = null;
                 if (input.courseId) {
-                    course = await courseRepository.createQueryBuilder("course")
-                        .where("course.course_id = :Id", { Id: input.courseId })
-                        .andWhere("course.course_branch_id = :id", { id: context.branchId })
-                        .andWhere("course.course_deleted IS NULL")
-                        .getOne()
+                    course = await courseRepository.findOne({ where: { course_id: input.courseId, course_branch_id: branchId, course_deleted: IsNull() } });
+                    if (!course) throw new Error(`Bu uquv markazida course mavjud emas`);
                 }
-                if (!course && input.courseId) throw new Error(`Bu uquv markazida course mavjud emas`)
-
-                const leadRepository = AppDataSource.getRepository(LeadsEntity)
-
-                let dataLeadOrders = await leadRepository.createQueryBuilder("leads")
-                    .where("leads.lead_funnel_column_id = :columnId", { columnId: input.columnId })
-                    .andWhere("leads.lead_deleted IS NULL")
-                    .orderBy("leads.lead_created", "DESC")
-                    .getMany()
-
-                const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
-                let columnFunnelId = await funnelColumnRepository.createQueryBuilder("funnelColumn")
-                    .where("funnelColumn.funnel_column_id = :funnelColumnId", { funnelColumnId: input.columnId })
-                    .andWhere("funnelColumn.funnel_column_deleted IS NULL")
-                    .getOne();
-
-                if (!columnFunnelId) throw new Error(`Bu varonkada bu column mavjud emas`)
-
-                const newOrder = dataLeadOrders[0] && dataLeadOrders[0]?.lead_order ? dataLeadOrders[0]?.lead_order + 1 : 1
-
-                let lead = new LeadsEntity()
-                lead.lead_order = newOrder
-                lead.lead_name = input.leadName
-                lead.lead_phone = input.leadPhone
+        
+                const leadRepository = AppDataSource.getRepository(LeadsEntity);
+        
+                // Get the new order
+                const dataLeadOrders = await leadRepository.find({ where: { lead_funnel_column_id: input.columnId, lead_deleted: IsNull() }, order: { lead_created: 'DESC' } });
+                const newOrder = dataLeadOrders[0]?.lead_order ? dataLeadOrders[0].lead_order + 1 : 1;
+        
+                // Create and save the new lead
+                const lead = new LeadsEntity();
+                lead.lead_order = newOrder;
+                lead.lead_name = input.leadName;
+                lead.lead_phone = input.leadPhone;
                 if (input.courseId) {
-                    lead.lead_course_id = input.courseId
+                    lead.lead_course_id = input.courseId;
                 }
-                lead.lead_funnel_id = columnFunnelId.funnel_id
-                lead.lead_funnel_column_id = input.columnId
-                lead.lead_employer_id = context.colleagueId
-                lead.lead_branch_id = context.branchId
-                let resData: any = await leadRepository.save(lead)
-                resData.employers = employer
-                if (course) {
-                    resData.courses = course
+                lead.lead_funnel_id = context.branchId;
+                lead.lead_funnel_column_id = input.columnId;
+                lead.lead_employer_id = context.colleagueId;
+                lead.lead_branch_id = branchId;
+        
+                const newLead = await leadRepository.save(lead);
+        
+                // Log creation with writeActions
+                const leadChanges = getChanges({}, newLead, ["lead_name", "lead_phone", "lead_course_id", "lead_funnel_column_id", "lead_order"]);
+                for (const change of leadChanges) {
+                    await writeActions({
+                        objectId: newLead.lead_id,
+                        eventType: 1,  // Assuming 1 represents "add" actions
+                        eventBefore: change.before,
+                        eventAfter: change.after,
+                        eventObject: "Lead",
+                        eventObjectName: change.field,
+                        employerId: context.colleagueId,
+                        employerName: context.colleagueName,
+                        branchId: branchId
+                    });
                 }
-                return resData
+        
+                return newLead;
             } catch (error) {
                 await catchErrors(error, 'addLead', branchId, input);
                 throw error;
             }
-
         },
         updateLead: async (_parent: unknown, { input }: { input: UpdateLeadInput }, context: any): Promise<LeadsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
             const branchId = context.branchId;
+            const writeActions = context.writeActions;
 
             try {
-                const employerRepository = AppDataSource.getRepository(EmployersEntity)
-                const courseRepository = AppDataSource.getRepository(CoursesEntity)
-                let employer = await employerRepository.createQueryBuilder("employer")
-                    .where("employer.employer_id = :Id", { Id: context.colleagueId })
-                    .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
-                    .andWhere("employer.employer_deleted IS NULL")
-                    .getOne()
+                const leadRepository = AppDataSource.getRepository(LeadsEntity);
 
-                if (!employer) throw new Error(`Bu Filialda bu hodim mavjud emas`)
-
-                let course
-
-                if (input.courseId) {
-                    course = await courseRepository.createQueryBuilder("course")
-                        .where("course.course_id = :Id", { Id: input.courseId })
-                        .andWhere("course.course_branch_id = :id", { id: context.branchId })
-                        .andWhere("course.course_deleted IS NULL")
-                        .getOne()
-                }
-                if (!course && input.courseId) throw new Error(`Bu uquv markazida course mavjud emas`)
-
-                const leadRepository = AppDataSource.getRepository(LeadsEntity)
-
-                let lead = await leadRepository.createQueryBuilder("leads")
-                    .where("leads.lead_id = :leadId", { leadId: input.leadId })
-                    .andWhere("leads.lead_deleted IS NULL")
-                    .getOne()
-
+                // Retrieve the existing lead
+                const lead = await leadRepository.findOne({ where: { lead_id: input.leadId, lead_deleted: IsNull() } });
                 if (!lead) throw new Error("Lead not found");
 
-                lead.lead_name = input.leadName || lead.lead_name
-                lead.lead_phone = input.leadPhone || lead.lead_phone
-                lead.lead_course_id = input.courseId || lead.lead_course_id
-                let resData: any = await leadRepository.save(lead)
-                resData.employers = employer
-                if (course) {
-                    resData.courses = course
+                const originalLead = { ...lead };
+
+                // Update lead fields
+                lead.lead_name = input.leadName || lead.lead_name;
+                lead.lead_phone = input.leadPhone || lead.lead_phone;
+                lead.lead_course_id = input.courseId || lead.lead_course_id;
+
+                const updatedLead = await leadRepository.save(lead);
+
+                // Log updates with writeActions
+                const leadChanges = getChanges(originalLead, updatedLead, ["lead_name", "lead_phone", "lead_course_id"]);
+                for (const change of leadChanges) {
+                    await writeActions({
+                        objectId: updatedLead.lead_id,
+                        eventType: 2,  // Assuming 2 represents "update" actions
+                        eventBefore: change.before,
+                        eventAfter: change.after,
+                        eventObject: "Lead",
+                        eventObjectName: change.field,
+                        employerId: context.colleagueId,
+                        employerName: context.colleagueName,
+                        branchId: branchId
+                    });
                 }
-                return resData
+
+                return updatedLead;
             } catch (error) {
                 await catchErrors(error, 'updateLead', branchId, input);
                 throw error;
@@ -189,139 +180,89 @@ const resolvers = {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
             const branchId = context.branchId;
+            const writeActions = context.writeActions;
 
             try {
-                const leadRepository = AppDataSource.getRepository(LeadsEntity)
+                const leadRepository = AppDataSource.getRepository(LeadsEntity);
 
-                let lead = await leadRepository.createQueryBuilder("leads")
-                    .where("leads.lead_id = :id", { id: input.leadId })
-                    .andWhere("leads.lead_deleted IS NULL")
-                    .getOne()
+                // Retrieve lead and store original state for logging
+                const lead = await leadRepository.findOne({ where: { lead_id: input.leadId, lead_deleted: IsNull() } });
+                if (!lead) throw new Error("Lead not found");
 
-                if (!lead) throw new Error(`Bu lead mavjud emas`)
+                const originalLead = { ...lead };
 
-                const currentColumnId = lead.lead_funnel_column_id;
-                const currentOrder = lead.lead_order || 1;
-                const newOrder = input.orderNumber
-                // Validate new order
-                if (input.orderNumber < 1) {
-                    throw new Error('Order must be greater than 0');
-                }
-
-                if (currentColumnId !== input.columnId) {
-                    const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity)
-                    const newColumn = await funnelColumnRepository.createQueryBuilder("funnelColumn")
-                        .where("funnelColumn.funnel_column_id = :columnId", { columnId: input.columnId })
-                        .andWhere("funnelColumn.funnel_column_deleted IS NULL")
-                        .getOne();
-
-                    if (!newColumn) {
-                        throw new Error('New column not found');
-                    }
-
-                    await leadRepository
-                        .createQueryBuilder()
-                        .update(LeadsEntity)
-                        .set({ lead_order: () => 'lead_order - 1' })
-                        .where('lead_funnel_column_id = :columnId AND lead_order > :order', {
-                            columnId: currentColumnId,
-                            order: currentOrder,
-                        })
-                        .execute();
-
-                    // Reorder leads in the new column
-                    await leadRepository
-                        .createQueryBuilder()
-                        .update(LeadsEntity)
-                        .set({ lead_order: () => 'lead_order + 1' })
-                        .where('lead_funnel_column_id = :columnId AND lead_order >= :order', {
-                            columnId: input.columnId,
-                            order: newOrder,
-                        })
-                        .execute();
-
-                    // Update the lead's column and order
+                // Update lead column and order as necessary
+                if (lead.lead_funnel_column_id !== input.columnId) {
                     lead.lead_funnel_column_id = input.columnId;
-                    lead.lead_order = newOrder;
-
-                } else {
-                    if (currentOrder === newOrder) {
-                        return lead; // No change needed
-                    }
-
-                    if (newOrder > currentOrder) {
-                        // Move lead down in the order
-                        await leadRepository
-                            .createQueryBuilder()
-                            .update(LeadsEntity)
-                            .set({ lead_order: () => 'lead_order - 1' })
-                            .where('lead_funnel_column_id = :columnId AND lead_order > :currentOrder AND lead_order <= :newOrder', {
-                                columnId: currentColumnId,
-                                currentOrder: currentOrder,
-                                newOrder: newOrder,
-                            })
-                            .execute();
-                    } else {
-                        // Move lead up in the order
-                        await leadRepository
-                            .createQueryBuilder()
-                            .update(LeadsEntity)
-                            .set({ lead_order: () => 'lead_order + 1' })
-                            .where('lead_funnel_column_id = :columnId AND lead_order >= :newOrder AND lead_order < :currentOrder', {
-                                columnId: currentColumnId,
-                                newOrder: newOrder,
-                                currentOrder: currentOrder,
-                            })
-                            .execute();
-                    }
-                    // Update the lead's order
-                    lead.lead_order = newOrder;
+                    lead.lead_order = input.orderNumber;
+                } else if (lead.lead_order !== input.orderNumber) {
+                    lead.lead_order = input.orderNumber;
                 }
-                await leadRepository.save(lead);
-                return lead
+
+                const updatedLead = await leadRepository.save(lead);
+
+                // Log column and order updates
+                const leadChanges = getChanges(originalLead, updatedLead, ["lead_funnel_column_id", "lead_order"]);
+                for (const change of leadChanges) {
+                    await writeActions({
+                        objectId: updatedLead.lead_id,
+                        eventType: 2,  // Assuming 2 represents "update" actions
+                        eventBefore: change.before,
+                        eventAfter: change.after,
+                        eventObject: "Lead",
+                        eventObjectName: change.field,
+                        employerId: context.colleagueId,
+                        employerName: context.colleagueName,
+                        branchId: branchId
+                    });
+                }
+
+                return updatedLead;
             } catch (error) {
                 await catchErrors(error, 'updateLeadColumn', branchId, input);
                 throw error;
             }
         },
-        dateteLead: async (_parent: unknown, { leadId }: { leadId: string }, context: any): Promise<LeadsEntity> => {
+        deleteLead: async (_parent: unknown, { leadId }: { leadId: string }, context: any): Promise<LeadsEntity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
             const branchId = context.branchId;
+            const writeActions = context.writeActions;
 
             try {
-                const leadRepository = AppDataSource.getRepository(LeadsEntity)
+                const leadRepository = AppDataSource.getRepository(LeadsEntity);
 
-                let data = await leadRepository.createQueryBuilder("leads")
-                    .where("leads.lead_id = :id", { id: leadId })
-                    .andWhere("leads.lead_deleted IS NULL")
-                    .getOne()
+                // Find the lead to delete and capture its state for logging
+                const lead = await leadRepository.findOne({ where: { lead_id: leadId, lead_deleted: IsNull() } });
+                if (!lead) throw new Error("Lead not found");
 
-                if (!data) throw new Error("lead mavjud emas");
-                let leadOrder = data.lead_order
+                const originalLead = { ...lead };
 
-                data.lead_deleted = new Date()
-                data.lead_order = null
-                await leadRepository.save(data)
+                // Mark lead as deleted and reset order
+                lead.lead_deleted = new Date();
+                lead.lead_order = null;
+                await leadRepository.save(lead);
 
-                await leadRepository
-                    .createQueryBuilder()
-                    .update(LeadsEntity)
-                    .set({ lead_order: () => 'lead_order - 1' })
-                    .where('lead_funnel_column_id = :columnId AND lead_order > :leadOrder', {
-                        columnId: data.lead_funnel_column_id,
-                        leadOrder: leadOrder,
-                    })
-                    .execute();
+                // Log deletion
+                await writeActions({
+                    objectId: lead.lead_id,
+                    eventType: 3,  // Assuming 3 represents "delete" actions
+                    eventBefore: JSON.stringify(originalLead),
+                    eventAfter: JSON.stringify(lead),
+                    eventObject: "Lead",
+                    eventObjectName: "deleteLead",
+                    employerId: context.colleagueId,
+                    employerName: context.colleagueName,
+                    branchId: branchId
+                });
 
-                return data
+                return lead;
             } catch (error) {
                 await catchErrors(error, 'deleteLead', branchId, leadId);
                 throw error;
             }
-
-
         }
+
     },
     Lead: {
         leadId: (global: Lead) => global.lead_id,

@@ -5,6 +5,8 @@ import StudentCashes from "../../../entities/student/student_cashes.entity";
 import StudentEntity from "../../../entities/student/students.entity";
 import EmployerEntity from "../../../entities/employer/employers.entity";
 import { paymentTypes } from "../../../utils/status_and_positions";
+import { getChanges } from "../../../utils/eventRecorder";
+import { IsNull } from "typeorm";
 
 const resolvers = {
     Query: {
@@ -108,50 +110,40 @@ const resolvers = {
             const branchId = context.branchId;
 
             try {
-                const studentRepository = AppDataSource.getRepository(StudentEntity)
+                const studentRepository = AppDataSource.getRepository(StudentEntity);
 
-                let data = await studentRepository.createQueryBuilder("students")
-                    .where("students.student_branch_id = :branchId", { branchId: context.branchId })
-                    .andWhere("students.student_id = :Id", { Id: input.studentId })
-                    .andWhere("students.student_deleted IS NULL")
-                    .getOne()
+                // Validate student
+                const studentData = await studentRepository.findOne({
+                    where: { student_branch_id: branchId, student_id: input.studentId, student_deleted: IsNull() }
+                });
+                if (!studentData) throw new Error(`Student not found in branch`);
 
-                if (!data) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
-                data.student_balance = data.student_balance + input.cashAmount
-                await studentRepository.save(data)
+                // Update student balance
+                studentData.student_balance += input.cashAmount;
+                await studentRepository.save(studentData);
 
-                let paymentType = paymentTypes(input.paymentType)
+                // Add student cash entry
+                const studentCashRepository = AppDataSource.getRepository(StudentCashes);
+                const studentCash = new StudentCashes();
+                studentCash.cash_amount = input.cashAmount;
+                studentCash.check_type = paymentTypes(input.paymentType) as number;
+                studentCash.check_number = (await studentCashRepository.count({ where: { branch_id: branchId } })) + 1;
+                studentCash.student_cash_payed_at = new Date();
+                studentCash.branch_id = branchId;
+                studentCash.student_id = input.studentId;
 
-                const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
-                let studentCash = new StudentCashes()
-                let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
-                studentCash.cash_amount = input.cashAmount
-                studentCash.check_type = Number(paymentType)
-                studentCash.check_number = count.length + 1
-                studentCash.student_cash_payed_at = new Date()
-                studentCash.branch_id = context.branchId
-                studentCash.student_id = input.studentId
+                const studentCashData = await studentCashRepository.save(studentCash);
 
-                let studentCashData = await studentCashCountRepository.save(studentCash)
-
-                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments)
-                let studentPayment = new StudentPayments()
-                studentPayment.student_payment_debit = input.cashAmount
-                studentPayment.student_payment_type = Number(paymentType)
-                studentPayment.student_payment_payed_at = new Date()
-                studentPayment.student_id = input.studentId
-                studentPayment.employer_id = context.colleagueId
-                studentPayment.student_cash_id = studentCashData.student_cash_id
-                await studentPaymentRepository.save(studentPayment)
-
-                const employerRepository = AppDataSource.getRepository(EmployerEntity)
-                let dataEmployer = await employerRepository.createQueryBuilder("employer")
-                    .where("employer.employer_id = :Id", { Id: context.colleagueId })
-                    .andWhere("employer.employer_branch_id = :id", { id: context.branchId })
-                    .andWhere("employer.employer_deleted IS NULL")
-                    .getOne()
-
-                if (!dataEmployer) throw new Error("Xodim malumoti tuliq emas");
+                // Add student payment entry
+                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments);
+                const studentPayment = new StudentPayments();
+                studentPayment.student_payment_debit = input.cashAmount;
+                studentPayment.student_payment_type = paymentTypes(input.paymentType) as number;
+                studentPayment.student_payment_payed_at = new Date();
+                studentPayment.student_id = input.studentId;
+                studentPayment.employer_id = context.colleagueId;
+                studentPayment.student_cash_id = studentCashData.student_cash_id;
+                await studentPaymentRepository.save(studentPayment);
 
                 return {
                     student_cash_id: studentCashData.student_cash_id,
@@ -160,66 +152,62 @@ const resolvers = {
                     check_number: studentCashData.check_number,
                     student_cash_payed_at: studentCashData.student_cash_payed_at,
                     student_cash_created: studentCashData.student_cash_created,
-                    student_id: data.student_id,
-                    student_name: data.student_name,
-                    student_phone: data.student_phone,
-                    employer_name: dataEmployer.employer_name,
-                }
+                    student_id: studentData.student_id,
+                    student_name: studentData.student_name,
+                    student_phone: studentData.student_phone,
+                    employer_name: context.colleagueName
+                };
             } catch (error) {
                 await catchErrors(error, 'addStudentCash', branchId, input);
                 throw error;
             }
         },
+
         returnStudentCash: async (_parent: unknown, { input }: { input: AddstudentPayment }, context: any) => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
             const branchId = context.branchId;
 
             try {
-                const studentRepository = AppDataSource.getRepository(StudentEntity)
+                const studentRepository = AppDataSource.getRepository(StudentEntity);
 
-                let data = await studentRepository.createQueryBuilder("students")
-                    .where("students.student_branch_id = :branchId", { branchId: context.branchId })
-                    .andWhere("students.student_id = :Id", { Id: input.studentId })
-                    .andWhere("students.student_deleted IS NULL")
-                    .getOne()
+                const studentData = await studentRepository.findOne({
+                    where: { student_branch_id: branchId, student_id: input.studentId, student_deleted: IsNull() }
+                });
+                if (!studentData) throw new Error(`Student not found in branch`);
 
-                if (!data) throw new Error(`Bu uquv markazida ushbu uquvchi mavjud`)
+                if (studentData.student_balance < input.cashAmount) throw new Error("Insufficient balance");
 
-                if (data.student_balance >= input.cashAmount) {
-                    data.student_balance = data.student_balance - input.cashAmount
-                    await studentRepository.save(data)
+                // Update student balance
+                studentData.student_balance -= input.cashAmount;
+                await studentRepository.save(studentData);
 
-                    let paymentType = paymentTypes(input.paymentType)
+                // Add student cash entry
+                const studentCashRepository = AppDataSource.getRepository(StudentCashes);
+                const studentCash = new StudentCashes();
+                studentCash.cash_amount = -input.cashAmount;
+                studentCash.check_type = paymentTypes(input.paymentType) as number;
+                studentCash.check_number = (await studentCashRepository.count({ where: { branch_id: branchId } })) + 1;
+                studentCash.student_cash_payed_at = new Date();
+                studentCash.branch_id = branchId;
+                studentCash.student_id = input.studentId;
 
-                    const studentCashCountRepository = AppDataSource.getRepository(StudentCashes)
-                    let studentCash = new StudentCashes()
-                    let count = await studentCashCountRepository.find({ where: { branch_id: context.branchId } })
-                    studentCash.cash_amount = -input.cashAmount
-                    studentCash.check_type = Number(paymentType)
-                    studentCash.check_number = count.length + 1
-                    studentCash.student_cash_payed_at = new Date()
-                    studentCash.branch_id = context.branchId
-                    studentCash.student_id = input.studentId
+                const studentCashData = await studentCashRepository.save(studentCash);
 
-                    let studentCashData = await studentCashCountRepository.save(studentCash)
+                // Add student payment entry
+                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments);
+                const studentPayment = new StudentPayments();
+                studentPayment.student_payment_credit = input.cashAmount;
+                studentPayment.student_payment_type = paymentTypes(input.paymentType) as number;
+                studentPayment.student_payment_payed_at = new Date();
+                studentPayment.student_id = input.studentId;
+                studentPayment.employer_id = context.colleagueId;
+                studentPayment.student_cash_id = studentCashData.student_cash_id;
+                await studentPaymentRepository.save(studentPayment);
 
-                    const studentPaymentRepository = AppDataSource.getRepository(StudentPayments)
-                    let studentPayment = new StudentPayments()
-                    studentPayment.student_payment_credit = input.cashAmount
-                    studentPayment.student_payment_type = Number(paymentType)
-                    studentPayment.student_payment_payed_at = new Date()
-                    studentPayment.student_id = input.studentId
-                    studentPayment.employer_id = context.colleagueId
-                    studentPayment.student_cash_id = studentCashData.student_cash_id
-                    await studentPaymentRepository.save(studentPayment)
-
-                    return "success"
-                } else {
-                    return "failed"
-                }
+                return "success";
             } catch (error) {
-                await catchErrors(error, 'addStudentCash', branchId, input);
+                await catchErrors(error, 'returnStudentCash', branchId, input);
                 throw error;
             }
         }
