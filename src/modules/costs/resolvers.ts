@@ -205,7 +205,7 @@ const resolvers = {
         let actionArgs = {
           objectId: data.cost_id,
           eventType: 3,
-          eventBefore: data.cost_name,
+          eventBefore: data.cost_name,  
           eventAfter: "",
           eventObject: "cost",
           eventObjectName: "delete cost",
