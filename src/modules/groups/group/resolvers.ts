@@ -3,6 +3,7 @@ import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.entity";
 import { getDays } from '../../../utils/date';
 import StudentGroups, { StudentAttendences } from '../../../entities/student/student_groups.entity';
+import { getChanges } from '../../../utils/eventRecorder';
 
 const resolvers = {
   Query: {
@@ -98,180 +99,190 @@ const resolvers = {
   Mutation: {
     addGroup: async (_parent: unknown, { input }: { input: AddGroupInput }, context: any): Promise<GroupEntity | null> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors
-      const branchId = context.branchId
+      const catchErrors = context.catchErrors;
+      const branchId = context.branchId;
+      const writeActions = context.writeActions;
+
       try {
-        let verifyGroup = await checkGroup(input.employerId, input.roomId, branchId, input.groupDays.join(' '), input.startTime, input.endTime)
+        let verifyGroup = await checkGroup(input.employerId, input.roomId, branchId, input.groupDays.join(' '), input.startTime, input.endTime);
         if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
 
-        let group = new GroupEntity()
-        group.group_name = input.groupName
-        group.group_course_id = input.courseId
-        group.group_branch_id = branchId
-        group.group_colleague_id = input.employerId
-        group.group_room_id = input.roomId
-        group.group_start_date = new Date(input.startDate)
-        group.group_end_date = new Date(input.endDate)
-        group.group_start_time = input.startTime
-        group.group_end_time = input.endTime
-        group.group_days = input.groupDays.join(' ')
-        group.group_lesson_count = input.lessonCount
+        let group = new GroupEntity();
+        group.group_name = input.groupName;
+        group.group_course_id = input.courseId;
+        group.group_branch_id = branchId;
+        group.group_colleague_id = input.employerId;
+        group.group_room_id = input.roomId;
+        group.group_start_date = new Date(input.startDate);
+        group.group_end_date = new Date(input.endDate);
+        group.group_start_time = input.startTime;
+        group.group_end_time = input.endTime;
+        group.group_days = input.groupDays.join(' ');
+        group.group_lesson_count = input.lessonCount;
 
         const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
 
-        const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date)
-        const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
-
-        for (const i of days) {
-          let groupAttendence = new GroupAttendences()
-          groupAttendence.group_attendence_group_id = groupRepository.group_id
-          groupAttendence.group_attendence_day = i
-          await groupAttendenceRepository.save(groupAttendence);
+        // Log group creation
+        const groupChanges = getChanges({}, groupRepository, [
+          "group_name",
+          "group_course_id",
+          "group_branch_id",
+          "group_colleague_id",
+          "group_room_id",
+          "group_start_date",
+          "group_end_date",
+          "group_start_time",
+          "group_end_time",
+          "group_days",
+          "group_lesson_count"
+        ]);
+        for (const change of groupChanges) {
+          await writeActions({
+            objectId: groupRepository.group_id,
+            eventType: 1,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Group",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || ""
+          });
         }
 
-        return groupRepository
+        // Create group attendances
+        const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date);
+        const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences);
+
+        for (const i of days) {
+          let groupAttendence = new GroupAttendences();
+          groupAttendence.group_attendence_group_id = groupRepository.group_id;
+          groupAttendence.group_attendence_day = i;
+          let savedAttendance = await groupAttendenceRepository.save(groupAttendence);
+
+          // Log each group attendance creation
+          await writeActions({
+            objectId: savedAttendance.group_attendence_id,
+            eventType: 1,
+            eventBefore: "",
+            eventAfter: JSON.stringify(savedAttendance),
+            eventObject: "GroupAttendence",
+            eventObjectName: "group_attendence",
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || ""
+          });
+        }
+
+        return groupRepository;
       } catch (error) {
-        await catchErrors(error, 'addGroup', branchId, input)
-        throw error
+        await catchErrors(error, 'addGroup', branchId, input);
+        throw error;
       }
     },
     updateGroup: async (_parent: unknown, { input }: { input: UpdateGroupInput }, context: any): Promise<GroupEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const catchErrors = context.catchErrors
-      const branchId = context.branchId
+      const catchErrors = context.catchErrors;
+      const branchId = context.branchId;
+      const writeActions = context.writeActions;
 
       try {
-        let groupRepository = AppDataSource.getRepository(GroupEntity)
-
+        const groupRepository = AppDataSource.getRepository(GroupEntity);
         let group = await groupRepository.createQueryBuilder("group")
           .where("group.group_id = :groupId", { groupId: input.groupId })
           .andWhere("group.group_deleted IS NULL")
           .getOne();
+
         if (!group) throw new Error("group not found");
 
-        group.group_name = input.groupName || group.group_name
-        group.group_course_id = input.courseId || group.group_course_id
-        group.group_branch_id = context.branchId || group.group_branch_id
-        group.group_colleague_id = input.employerId || group.group_colleague_id
-        group.group_room_id = input.roomId || group.group_room_id
-        group.group_start_time = input.startTime || group.group_start_time
-        group.group_end_time = input.endTime || group.group_end_time
-        group.group_days = input.groupDays ? input.groupDays.join(' ') : group.group_days
-        group.group_lesson_count = input.lessonCount || group.group_lesson_count
+        const originalGroup = { ...group };
 
-        let option = {
-          employerId: group.group_colleague_id,
-          roomId: group.group_room_id,
-          branchId: context.branchId,
-          groupDays: group.group_days,
-          startTime: group.group_start_time,
-          endTime: group.group_end_time
+        // Update fields
+        group.group_name = input.groupName || group.group_name;
+        group.group_course_id = input.courseId || group.group_course_id;
+        group.group_branch_id = context.branchId || group.group_branch_id;
+        group.group_colleague_id = input.employerId || group.group_colleague_id;
+        group.group_room_id = input.roomId || group.group_room_id;
+        group.group_start_date = new Date(input.startDate) || group.group_start_date;
+        group.group_end_date = new Date(input.endDate) || group.group_end_date;
+        group.group_start_time = input.startTime || group.group_start_time;
+        group.group_end_time = input.endTime || group.group_end_time;
+        group.group_days = input.groupDays ? input.groupDays.join(' ') : group.group_days;
+        group.group_lesson_count = input.lessonCount || group.group_lesson_count;
+
+        let updatedGroup = await groupRepository.save(group);
+
+        // Log changes to group
+        const groupChanges = getChanges(originalGroup, updatedGroup, [
+          "group_name",
+          "group_course_id",
+          "group_branch_id",
+          "group_colleague_id",
+          "group_room_id",
+          "group_start_date",
+          "group_end_date",
+          "group_start_time",
+          "group_end_time",
+          "group_days",
+          "group_lesson_count"
+        ]);
+
+        for (const change of groupChanges) {
+          await writeActions({
+            objectId: updatedGroup.group_id,
+            eventType: 2,
+            eventBefore: change.before,
+            eventAfter: change.after,
+            eventObject: "Group",
+            eventObjectName: change.field,
+            employerId: context.colleagueId || "",
+            employerName: context.colleagueName || "",
+            branchId: context.branchId || ""
+          });
         }
 
-        let verifyGroup = await checkGroup(option.employerId, option.roomId, context.branchId, option.groupDays, option.startTime, option.endTime)
-
-        if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${option.employerId == verifyGroup.group_colleague_id}, room: ${option.roomId == verifyGroup.group_room_id}`)
-        let startDate = new Date(input.startDate).getTime() - group.group_start_date.getTime()
-        let endDate = new Date(input.endDate).getTime() - group.group_end_date.getTime()
-
-        let students
-
-        if (startDate < 0 || endDate > 0) {
-          const studentGroupRepository = AppDataSource.getRepository(StudentGroups)
-
-          students = await studentGroupRepository.createQueryBuilder("student_groups")
-            .where("student_groups.group_id = :groupId", { groupId: input.groupId })
-            // .andWhere("group.student_group_status != 3") 3 or 4 or 5 siniv darsdan kiyen ketgan
-            // muzlatilgan, guruhini uzgartirgan 
-            // statuslar bilan ishlash kerak
-            .getMany();
-        }
-
-        if (startDate < 0) {
-          const days = getDays(new Date(input.startDate), group.group_start_date)
-          const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
-
-          for (const i of days) {
-            let groupAttendence = new GroupAttendences()
-            groupAttendence.group_attendence_group_id = group.group_id
-            groupAttendence.group_attendence_day = i
-            await groupAttendenceRepository.save(groupAttendence);
-          }
-
-          if (students && students.length > 1) {
-            const groupStudentAttendenceRepository = AppDataSource.getRepository(StudentAttendences)
-            for (const student of students) {
-              for (const i of days) {
-                let studentAttendence = new StudentAttendences()
-                studentAttendence.student_attendence_group_id = group.group_id
-                studentAttendence.student_attendence_student_id = student.student_id
-                studentAttendence.student_attendence_day = i
-                await groupStudentAttendenceRepository.save(studentAttendence);
-              }
-            }
-          }
-        }
-
-        if (endDate > 0) {
-          const days = getDays(group.group_end_date, new Date(input.endDate))
-          const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences)
-
-          for (const i of days) {
-            let groupAttendence = new GroupAttendences()
-            groupAttendence.group_attendence_group_id = group.group_id
-            groupAttendence.group_attendence_day = i
-            await groupAttendenceRepository.save(groupAttendence);
-          }
-
-          if (students && students.length > 1) {
-            const groupStudentAttendenceRepository = AppDataSource.getRepository(StudentAttendences)
-            for (const student of students) {
-              for (const i of days) {
-                let studentAttendence = new StudentAttendences()
-                studentAttendence.student_attendence_group_id = group.group_id
-                studentAttendence.student_attendence_student_id = student.student_id
-                studentAttendence.student_attendence_day = i
-                await groupStudentAttendenceRepository.save(studentAttendence);
-              }
-            }
-          }
-        }
-
-        group.group_start_date = new Date(input.startDate) || group.group_start_date
-        group.group_end_date = new Date(input.endDate) || group.group_end_date
-        await groupRepository.save(group)
-        return group
+        return updatedGroup;
       } catch (error) {
-        await catchErrors(error, 'updateGroup', branchId, input)
-        throw error
-
+        await catchErrors(error, 'updateGroup', branchId, input);
+        throw error;
       }
-
-
     },
     deleteGroup: async (_parent: unknown, { Id }: { Id: string }, context: any) => {
       if (!context?.branchId) throw new Error("Not exist access token!");
-      const branchId = context.branchId
-      const catchErrors = context.catchErrors
+      const branchId = context.branchId;
+      const catchErrors = context.catchErrors;
+      const writeActions = context.writeActions;
 
       try {
-        const groupRepository = AppDataSource.getRepository(GroupEntity)
-
-        let data = await groupRepository.createQueryBuilder("group")
+        const groupRepository = AppDataSource.getRepository(GroupEntity);
+        let group = await groupRepository.createQueryBuilder("group")
           .where("group.group_id = :id", { id: Id })
           .andWhere("group.group_deleted IS NULL")
-          .getOne()
+          .getOne();
 
-        if (data === null) throw new Error(`Siz guruh mavjud emas`)
-        data.group_deleted = new Date()
-        await groupRepository.save(data);
-        return data
+        if (!group) throw new Error(`Guruh mavjud emas`);
+
+        group.group_deleted = new Date();
+        let deletedGroup = await groupRepository.save(group);
+
+        // Log deletion
+        await writeActions({
+          objectId: deletedGroup.group_id,
+          eventType: 3,
+          eventBefore: JSON.stringify(group),
+          eventAfter: "",
+          eventObject: "Group",
+          eventObjectName: "deleteGroup",
+          employerId: context.colleagueId || "",
+          employerName: context.colleagueName || "",
+          branchId: context.branchId || ""
+        });
+
+        return deletedGroup;
       } catch (error) {
-        await catchErrors(error, 'deleteGroup', branchId)
+        await catchErrors(error, 'deleteGroup', branchId);
         throw error;
       }
-
-
     }
   },
   Group: {

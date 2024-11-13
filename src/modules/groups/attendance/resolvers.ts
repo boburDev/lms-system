@@ -3,6 +3,7 @@ import AppDataSource from "../../../config/ormconfig";
 import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.entity";
 import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
 import { StudentAttendences } from "../../../entities/student/student_groups.entity";
+import { getChanges } from "../../../utils/eventRecorder";
 
 const resolvers = {
 	Query: {
@@ -85,41 +86,89 @@ const resolvers = {
 	Mutation: {
 		updateStudentAttendanceStatus: async (_parent: unknown, { input }: { input: updateStudentAttendenceStatus }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
-			let catchErrors = context.catchErrors;
+			const catchErrors = context.catchErrors;
 			const branchId = context.branchId;
-
+			const writeActions = context.writeActions;
+		
 			try {
-				let studentAttendanceRepository = AppDataSource.getRepository(StudentAttendences)
-				let data = await studentAttendanceRepository.findOneBy({ student_attendence_id: input.attendId, student_attendence_group_id: input.groupId })
-				if (data === null) throw new Error(`Bu o'quvchining malumotlari mavjud emas`)
-				data.student_attendence_status = input.attendStatus
-				await studentAttendanceRepository.save(data)
-				return 'success'
+				let studentAttendanceRepository = AppDataSource.getRepository(StudentAttendences);
+				
+				let data = await studentAttendanceRepository.findOneBy({ 
+					student_attendence_id: input.attendId, 
+					student_attendence_group_id: input.groupId 
+				});
+				
+				if (!data) throw new Error(`Bu o'quvchining malumotlari mavjud emas`);
+		
+				const originalStatus = { ...data };
+				data.student_attendence_status = input.attendStatus;
+		
+				let updatedStatus = await studentAttendanceRepository.save(data);
+		
+				// Log the change in attendance status
+				const attendanceChanges = getChanges(originalStatus, updatedStatus, ["student_attendence_status"]);
+				for (const change of attendanceChanges) {
+					await writeActions({
+						objectId: updatedStatus.student_attendence_id,
+						eventType: 2,
+						eventBefore: change.before,
+						eventAfter: change.after,
+						eventObject: "StudentAttendence",
+						eventObjectName: "student_attendence_status",
+						employerId: context.colleagueId || "",
+						employerName: context.colleagueName || "",
+						branchId: context.branchId || ""
+					});
+				}
+		
+				return 'success';
 			} catch (error) {
 				await catchErrors(error, 'updateStudentAttendanceStatus', branchId, input);
 				throw error;
 			}
-
-
 		},
 		updateGroupAttendanceStatus: async (_parent: unknown, { input }: { input: updateGroupAttendanceStatus }, context: any) => {
 			if (!context?.branchId) throw new Error("Not exist access token!");
-			let catchErrors = context.catchErrors;
+			const catchErrors = context.catchErrors;
 			const branchId = context.branchId;
-
+			const writeActions = context.writeActions;
+		
 			try {
-				let groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences)
-				let data = await groupAttendanceRepository.findOneBy({ group_attendence_id: input.attendId, group_attendence_group_id: input.groupId })
-				if (data === null) throw new Error(`Bu guruhning malumotlari mavjud emas`)
-				data.group_attendence_status = input.attendStatus
-				await groupAttendanceRepository.save(data)
-				return 'success'
+				let groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences);
+				
+				let data = await groupAttendanceRepository.findOneBy({ 
+					group_attendence_id: input.attendId, 
+					group_attendence_group_id: input.groupId 
+				});
+				
+				if (!data) throw new Error(`Bu guruhning malumotlari mavjud emas`);
+		
+				const originalStatus = { ...data };
+				data.group_attendence_status = input.attendStatus;
+		
+				let updatedStatus = await groupAttendanceRepository.save(data);
+		
+				// Log the change in group attendance status
+				const attendanceChanges = getChanges(originalStatus, updatedStatus, ["group_attendence_status"]);
+				for (const change of attendanceChanges) {
+					await writeActions({
+						objectId: updatedStatus.group_attendence_id,
+						eventType: 2,
+						eventBefore: change.before,
+						eventAfter: change.after,
+						eventObject: "GroupAttendence",
+						eventObjectName: "group_attendence_status",
+						employerId: context.colleagueId || "",
+						employerName: context.colleagueName || "",
+						branchId: context.branchId || ""
+					});
+				}
+		
+				return 'success';
 			} catch (error) {
 				await catchErrors(error, 'updateGroupAttendanceStatus', branchId, input);
 				throw error;
 			}
-
-
 		}
 	},
 	GroupAttendence: {
