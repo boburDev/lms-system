@@ -9,10 +9,10 @@ export default class Admin {
     @Column({ length: 32, unique: true })
     admin_username: string
 
-    @Column({ length: 16 })
+    @Column({ length: 32 })
     admin_name: string
 
-    @Column({ length: 16 })
+    @Column({ length: 32 })
     admin_lastname: string
 
     @Column({ length: 16, unique: true })
