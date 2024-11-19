@@ -13,6 +13,13 @@ type Mutation {
   deleteStudent(studentId: String): Student!
 }
 
+type Subscription {
+  createStudent: Student!
+  updateStudent: Student!
+  deleteStudent: Student!
+}
+
+
 input ParentInput {
   parentName: String!
   parentPhone: String!

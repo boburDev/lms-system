@@ -4,6 +4,7 @@ import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.en
 import { getDays } from '../../../utils/date';
 import StudentGroups, { StudentAttendences } from '../../../entities/student/student_groups.entity';
 import { getChanges } from '../../../utils/eventRecorder';
+import { pubsub } from '../../../utils/pubSub';
 
 const resolvers = {
   Query: {
@@ -107,7 +108,7 @@ const resolvers = {
         let verifyGroup = await checkGroup(input.employerId, input.roomId, branchId, input.groupDays.join(' '), input.startTime, input.endTime);
         if (verifyGroup) throw new Error(`Xona yoki o'qituvchi band bu vaqtlarda teacher: ${input.employerId == verifyGroup.group_colleague_id}, room: ${input.roomId == verifyGroup.group_room_id}`);
 
-        let group = new GroupEntity();
+        const group = new GroupEntity();
         group.group_name = input.groupName;
         group.group_course_id = input.courseId;
         group.group_branch_id = branchId;
@@ -122,7 +123,6 @@ const resolvers = {
 
         const groupRepository = await AppDataSource.getRepository(GroupEntity).save(group);
 
-        // Log group creation
         const groupChanges = getChanges({}, groupRepository, [
           "group_name",
           "group_course_id",
@@ -136,6 +136,7 @@ const resolvers = {
           "group_days",
           "group_lesson_count"
         ]);
+
         for (const change of groupChanges) {
           await writeActions({
             objectId: groupRepository.group_id,
@@ -146,33 +147,21 @@ const resolvers = {
             eventObjectName: change.field,
             employerId: context.colleagueId || "",
             employerName: context.colleagueName || "",
-            branchId: context.branchId || ""
+            branchId: branchId
           });
         }
 
-        // Create group attendances
         const days = getDays(groupRepository.group_start_date, groupRepository.group_end_date);
         const groupAttendenceRepository = AppDataSource.getRepository(GroupAttendences);
 
-        for (const i of days) {
-          let groupAttendence = new GroupAttendences();
+        for (const day of days) {
+          const groupAttendence = new GroupAttendences();
           groupAttendence.group_attendence_group_id = groupRepository.group_id;
-          groupAttendence.group_attendence_day = i;
-          let savedAttendance = await groupAttendenceRepository.save(groupAttendence);
-
-          // Log each group attendance creation
-          await writeActions({
-            objectId: savedAttendance.group_attendence_id,
-            eventType: 1,
-            eventBefore: "",
-            eventAfter: JSON.stringify(savedAttendance),
-            eventObject: "GroupAttendence",
-            eventObjectName: "group_attendence",
-            employerId: context.colleagueId || "",
-            employerName: context.colleagueName || "",
-            branchId: context.branchId || ""
-          });
+          groupAttendence.group_attendence_day = day;
+          await groupAttendenceRepository.save(groupAttendence);
         }
+
+        pubsub.publish("GROUP_ADDED", { groupAdded: groupRepository });
 
         return groupRepository;
       } catch (error) {
@@ -197,22 +186,20 @@ const resolvers = {
 
         const originalGroup = { ...group };
 
-        // Update fields
         group.group_name = input.groupName || group.group_name;
         group.group_course_id = input.courseId || group.group_course_id;
-        group.group_branch_id = context.branchId || group.group_branch_id;
+        group.group_branch_id = branchId || group.group_branch_id;
         group.group_colleague_id = input.employerId || group.group_colleague_id;
         group.group_room_id = input.roomId || group.group_room_id;
-        group.group_start_date = new Date(input.startDate) || group.group_start_date;
-        group.group_end_date = new Date(input.endDate) || group.group_end_date;
+        group.group_start_date = input.startDate ? new Date(input.startDate) : group.group_start_date;
+        group.group_end_date = input.endDate ? new Date(input.endDate) : group.group_end_date;
         group.group_start_time = input.startTime || group.group_start_time;
         group.group_end_time = input.endTime || group.group_end_time;
         group.group_days = input.groupDays ? input.groupDays.join(' ') : group.group_days;
         group.group_lesson_count = input.lessonCount || group.group_lesson_count;
 
-        let updatedGroup = await groupRepository.save(group);
+        const updatedGroup = await groupRepository.save(group);
 
-        // Log changes to group
         const groupChanges = getChanges(originalGroup, updatedGroup, [
           "group_name",
           "group_course_id",
@@ -237,9 +224,11 @@ const resolvers = {
             eventObjectName: change.field,
             employerId: context.colleagueId || "",
             employerName: context.colleagueName || "",
-            branchId: context.branchId || ""
+            branchId: branchId
           });
         }
+
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: updatedGroup });
 
         return updatedGroup;
       } catch (error) {
@@ -263,9 +252,8 @@ const resolvers = {
         if (!group) throw new Error(`Guruh mavjud emas`);
 
         group.group_deleted = new Date();
-        let deletedGroup = await groupRepository.save(group);
+        const deletedGroup = await groupRepository.save(group);
 
-        // Log deletion
         await writeActions({
           objectId: deletedGroup.group_id,
           eventType: 3,
@@ -275,14 +263,27 @@ const resolvers = {
           eventObjectName: "deleteGroup",
           employerId: context.colleagueId || "",
           employerName: context.colleagueName || "",
-          branchId: context.branchId || ""
+          branchId: branchId
         });
+
+        pubsub.publish("GROUP_DELETED", { groupDeleted: deletedGroup });
 
         return deletedGroup;
       } catch (error) {
         await catchErrors(error, 'deleteGroup', branchId);
         throw error;
       }
+    }
+  },
+  Subscription: {
+    groupAdded: {
+      subscribe: () => pubsub.asyncIterator("GROUP_ADDED")
+    },
+    groupUpdated: {
+      subscribe: () => pubsub.asyncIterator("GROUP_UPDATED")
+    },
+    groupDeleted: {
+      subscribe: () => pubsub.asyncIterator("GROUP_DELETED")
     }
   },
   Group: {

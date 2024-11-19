@@ -30,6 +30,8 @@ type Group {
   groupDays: [String]
 }
 
+
+
 type GroupById {
   groupId: ID!
   groupName: String!
@@ -45,6 +47,12 @@ type GroupById {
   endTime: String!
   groupDays: [String]
   students: [studentGroupInfo]
+}
+
+type Subscription {
+  groupAdded: Group!
+  groupUpdated: Group!
+  groupDeleted: Group!
 }
 
 type studentGroupInfo {

@@ -4,6 +4,7 @@ import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.en
 import { updateGroupAttendanceStatus, updateStudentAttendenceStatus } from "../../../types/attendance";
 import { StudentAttendences } from "../../../entities/student/student_groups.entity";
 import { getChanges } from "../../../utils/eventRecorder";
+import { pubsub } from "../../../utils/pubSub";
 
 const resolvers = {
 	Query: {
@@ -89,22 +90,22 @@ const resolvers = {
 			const catchErrors = context.catchErrors;
 			const branchId = context.branchId;
 			const writeActions = context.writeActions;
-		
+
 			try {
-				let studentAttendanceRepository = AppDataSource.getRepository(StudentAttendences);
-				
-				let data = await studentAttendanceRepository.findOneBy({ 
-					student_attendence_id: input.attendId, 
-					student_attendence_group_id: input.groupId 
+				const studentAttendanceRepository = AppDataSource.getRepository(StudentAttendences);
+
+				const data = await studentAttendanceRepository.findOneBy({
+					student_attendence_id: input.attendId,
+					student_attendence_group_id: input.groupId
 				});
-				
+
 				if (!data) throw new Error(`Bu o'quvchining malumotlari mavjud emas`);
-		
+
 				const originalStatus = { ...data };
 				data.student_attendence_status = input.attendStatus;
-		
-				let updatedStatus = await studentAttendanceRepository.save(data);
-		
+
+				const updatedStatus = await studentAttendanceRepository.save(data);
+
 				// Log the change in attendance status
 				const attendanceChanges = getChanges(originalStatus, updatedStatus, ["student_attendence_status"]);
 				for (const change of attendanceChanges) {
@@ -120,7 +121,10 @@ const resolvers = {
 						branchId: context.branchId || ""
 					});
 				}
-		
+
+				// Publish WebSocket event
+				pubsub.publish("UPDATE_STUDENT_ATTENDANCE", { updateStudentAttendance: updatedStatus });
+
 				return 'success';
 			} catch (error) {
 				await catchErrors(error, 'updateStudentAttendanceStatus', branchId, input);
@@ -132,22 +136,22 @@ const resolvers = {
 			const catchErrors = context.catchErrors;
 			const branchId = context.branchId;
 			const writeActions = context.writeActions;
-		
+
 			try {
-				let groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences);
-				
-				let data = await groupAttendanceRepository.findOneBy({ 
-					group_attendence_id: input.attendId, 
-					group_attendence_group_id: input.groupId 
+				const groupAttendanceRepository = AppDataSource.getRepository(GroupAttendences);
+
+				const data = await groupAttendanceRepository.findOneBy({
+					group_attendence_id: input.attendId,
+					group_attendence_group_id: input.groupId
 				});
-				
+
 				if (!data) throw new Error(`Bu guruhning malumotlari mavjud emas`);
-		
+
 				const originalStatus = { ...data };
 				data.group_attendence_status = input.attendStatus;
-		
-				let updatedStatus = await groupAttendanceRepository.save(data);
-		
+
+				const updatedStatus = await groupAttendanceRepository.save(data);
+
 				// Log the change in group attendance status
 				const attendanceChanges = getChanges(originalStatus, updatedStatus, ["group_attendence_status"]);
 				for (const change of attendanceChanges) {
@@ -163,7 +167,10 @@ const resolvers = {
 						branchId: context.branchId || ""
 					});
 				}
-		
+
+				// Publish WebSocket event
+				pubsub.publish("UPDATE_GROUP_ATTENDANCE", { updateGroupAttendance: updatedStatus });
+
 				return 'success';
 			} catch (error) {
 				await catchErrors(error, 'updateGroupAttendanceStatus', branchId, input);
@@ -171,36 +178,39 @@ const resolvers = {
 			}
 		}
 	},
+	Subscription: {
+		updateStudentAttendance: {
+			subscribe: () => pubsub.asyncIterator("UPDATE_STUDENT_ATTENDANCE")
+		},
+		updateGroupAttendance: {
+			subscribe: () => pubsub.asyncIterator("UPDATE_GROUP_ATTENDANCE")
+		}
+	},
 	GroupAttendence: {
 		groupAttendence: (global: Group) => {
-			return global.attendence && global.attendence.map(i => {
-				return {
-					attendId: i.group_attendence_id,
-					attendDay: i.group_attendence_day,
-					attendStatus: i.group_attendence_status,
-					groupId: i.group_attendence_group_id
-				}
-			})
+			return global.attendence && global.attendence.map(i => ({
+				attendId: i.group_attendence_id,
+				attendDay: i.group_attendence_day,
+				attendStatus: i.group_attendence_status,
+				groupId: i.group_attendence_group_id
+			}));
 		},
 		studentsAttendence: (global: Group) => {
 			return global.student_attendences && global.student_attendences.map(i => {
-				let data = i.student_days.map(j => {
-					return {
-						attendId: j.student_attendence_id,
-						attendDay: j.student_attendence_day,
-						attendStatus: j.student_attendence_status,
-						groupId: j.student_attendence_group_id
-					}
-				})
+				const data = i.student_days.map(j => ({
+					attendId: j.student_attendence_id,
+					attendDay: j.student_attendence_day,
+					attendStatus: j.student_attendence_status,
+					groupId: j.student_attendence_group_id
+				}));
 				return {
 					studentId: i.student_id,
 					studentName: i.student_name,
 					attendence: data
-				}
-
-			})
+				};
+			});
 		}
 	}
-}
+};
 
 export default resolvers;

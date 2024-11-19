@@ -10,8 +10,15 @@ type Query {
     addLead(input: AddLeadInput): Lead!
     updateLead(input: UpdateLeadInput): Lead!
     updateLeadColumn(input: UpdateLeadColumnInput): Lead!
-    dateteLead(leadId: String): Lead!
+    deleteLead(leadId: String): Lead!
 }
+
+type Subscription {
+    createLead: Lead!
+    updateLead: Lead!
+    deleteLead: Lead!
+}
+
 
 input AddLeadInput {
     leadName: String!

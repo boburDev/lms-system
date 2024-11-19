@@ -3,6 +3,7 @@ import AppDataSource from "../../../config/ormconfig";
 import FunnelColumnsEntity from "../../../entities/funnel/columns.entity";
 import { AddFunnelColumnInput, FunnelColumn, UpdateFunnelColumnInput } from "../../../types/funnel";
 import { getChanges } from "../../../utils/eventRecorder";
+import { pubsub } from "../../../utils/pubSub";
 
 const resolvers = {
     Query: {
@@ -62,7 +63,7 @@ const resolvers = {
                     .andWhere("funnelColumn.funnel_column_deleted IS NULL")
                     .getOne();
 
-                if (dataFunnelColumn !== null) throw new Error("Bu nomdagi varonkani columni mavjud");
+                if (dataFunnelColumn !== null) throw new Error("Column with this name already exists");
 
                 let funnelColumn = new FunnelColumnsEntity();
                 funnelColumn.funnel_column_name = input.funnelColumnName;
@@ -72,7 +73,7 @@ const resolvers = {
 
                 let savedFunnelColumn = await funnelColumnRepository.save(funnelColumn);
 
-                // Log the addition of the new funnel column
+                // Log the addition
                 const funnelColumnChanges = getChanges({}, savedFunnelColumn, ["funnel_column_name", "funnel_column_color", "funnel_column_order", "funnel_id"]);
                 for (const change of funnelColumnChanges) {
                     await writeActions({
@@ -87,6 +88,9 @@ const resolvers = {
                         branchId: branchId
                     });
                 }
+
+                // Publish WebSocket event
+                pubsub.publish("CREATE_FUNNEL_COLUMN", { createFunnelColumn: savedFunnelColumn });
 
                 return savedFunnelColumn;
             } catch (error) {
@@ -104,7 +108,7 @@ const resolvers = {
                 const funnelColumnRepository = AppDataSource.getRepository(FunnelColumnsEntity);
 
                 let dataFunnelColumn = await funnelColumnRepository.findOneBy({ funnel_column_id: input.funnelColumnId, funnel_column_deleted: IsNull() });
-                if (!dataFunnelColumn) throw new Error("Bu nomdagi varonkani columni mavjud emas");
+                if (!dataFunnelColumn) throw new Error("Column not found");
 
                 const originalFunnelColumn = { ...dataFunnelColumn };
 
@@ -114,7 +118,7 @@ const resolvers = {
 
                 let updatedFunnelColumn = await funnelColumnRepository.save(dataFunnelColumn);
 
-                // Log the updates to the funnel column
+                // Log updates
                 const funnelColumnChanges = getChanges(originalFunnelColumn, updatedFunnelColumn, ["funnel_column_name", "funnel_column_color", "funnel_column_order"]);
                 for (const change of funnelColumnChanges) {
                     await writeActions({
@@ -129,6 +133,9 @@ const resolvers = {
                         branchId: branchId
                     });
                 }
+
+                // Publish WebSocket event
+                pubsub.publish("UPDATE_FUNNEL_COLUMN", { updateFunnelColumn: updatedFunnelColumn });
 
                 return updatedFunnelColumn;
             } catch (error) {
@@ -151,16 +158,15 @@ const resolvers = {
                     .andWhere("funnelColumn.funnel_column_deleted IS NULL")
                     .getOne();
 
-                if (!dataFunnelColumn) throw new Error("Bu nomdagi column mavjud emas");
-
-                if (dataFunnelColumn.leads.length > 0) throw new Error("you can't delete column until you don't delete your leads");
+                if (!dataFunnelColumn) throw new Error("Column not found");
+                if (dataFunnelColumn.leads.length > 0) throw new Error("Cannot delete column with leads");
 
                 const originalFunnelColumn = { ...dataFunnelColumn };
 
                 dataFunnelColumn.funnel_column_deleted = new Date();
                 let deletedFunnelColumn = await funnelColumnRepository.save(dataFunnelColumn);
 
-                // Log the deletion of the funnel column
+                // Log deletion
                 await writeActions({
                     objectId: deletedFunnelColumn.funnel_column_id,
                     eventType: 3,
@@ -173,11 +179,25 @@ const resolvers = {
                     branchId: branchId
                 });
 
+                // Publish WebSocket event
+                pubsub.publish("DELETE_FUNNEL_COLUMN", { deleteFunnelColumn: deletedFunnelColumn });
+
                 return deletedFunnelColumn;
             } catch (error) {
                 await catchErrors(error, 'deleteFunnelColumn', branchId, Id);
                 throw error;
             }
+        }
+    },
+    Subscription: {
+        createFunnelColumn: {
+            subscribe: () => pubsub.asyncIterator("CREATE_FUNNEL_COLUMN")
+        },
+        updateFunnelColumn: {
+            subscribe: () => pubsub.asyncIterator("UPDATE_FUNNEL_COLUMN")
+        },
+        deleteFunnelColumn: {
+            subscribe: () => pubsub.asyncIterator("DELETE_FUNNEL_COLUMN")
         }
     },
     FunnelColumn: {
@@ -187,6 +207,6 @@ const resolvers = {
         funnelColumnOrder: (global: FunnelColumn) => global.funnel_column_order,
         funnelId: (global: FunnelColumn) => global.funnel_id,
     }
-}
+};
 
 export default resolvers;

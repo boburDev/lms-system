@@ -12,6 +12,12 @@ type Mutation {
     deleteFunnelColumn (Id: String!): FunnelColumn!
 }
 
+type Subscription {
+    createFunnelColumn: FunnelColumn!
+    updateFunnelColumn: FunnelColumn!
+    deleteFunnelColumn: FunnelColumn!
+}
+
 input AddFunnelColumnInput {
     funnelColumnName: String!
     funnelColumnColor: String!

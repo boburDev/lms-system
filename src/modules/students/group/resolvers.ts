@@ -5,6 +5,7 @@ import GroupEntity, { GroupAttendences } from "../../../entities/group/groups.en
 import Groups from "../../../entities/group/groups.entity";
 import { getDays } from "../../../utils/date";
 import { getChanges } from "../../../utils/eventRecorder";
+import { pubsub } from "../../../utils/pubSub";
 
 const resolvers = {
     Mutation: {
@@ -39,6 +40,9 @@ const resolvers = {
                         branchId: branchId,
                     });
                 }
+
+                // Publish update event
+                pubsub.publish('STUDENT_GROUP_UPDATED', { studentGroupUpdated: data });
 
                 return 'success';
             } catch (error) {
@@ -77,6 +81,9 @@ const resolvers = {
                         branchId: branchId,
                     });
                 }
+
+                // Publish creation event
+                pubsub.publish('STUDENT_GROUP_CREATED', { studentGroupCreated: newStudentGroup });
 
                 return 'succeed';
             } catch (error) {
@@ -258,12 +265,26 @@ const resolvers = {
                     });
                 }
 
+                // Publish deletion event
+                pubsub.publish('STUDENT_GROUP_DELETED', { studentGroupDeleted: data });
+
                 return 'success';
             } catch (error) {
                 await catchErrors(error, 'deleteStudentGroup', branchId, input);
                 throw error;
             }
         }
+    },
+    Subscription: {
+        studentGroupCreated: {
+            subscribe: () => pubsub.asyncIterator('STUDENT_GROUP_CREATED'),
+        },
+        studentGroupUpdated: {
+            subscribe: () => pubsub.asyncIterator('STUDENT_GROUP_UPDATED'),
+        },
+        studentGroupDeleted: {
+            subscribe: () => pubsub.asyncIterator('STUDENT_GROUP_DELETED'),
+        },
     },
 }
 

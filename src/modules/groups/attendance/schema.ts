@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express'
+import { gql } from 'apollo-server-express';
 
 export default gql`
     type Query {
@@ -7,7 +7,12 @@ export default gql`
 
     type Mutation {
         updateStudentAttendanceStatus(input: updateStudentAttendenceStatus!): String!
-        updateGroupAttendanceStatus(input: updateGroupAttendenceStatus!): String!
+        updateGroupAttendanceStatus(input: updateGroupAttendanceStatus!): String!
+    }
+
+    type Subscription {
+        updateStudentAttendance: StudentAttendence!
+        updateGroupAttendance: GroupAttendence!
     }
 
     type GroupAttendence {
@@ -20,11 +25,20 @@ export default gql`
         studentName: String
         attendence: [Attendence]
     }
+
     type Attendence {
         attendId: ID!
         attendDay: String!
         attendStatus: Int!
         groupId: ID!
+    }
+
+    type StudentAttendence {
+        attendId: ID!
+        attendDay: String!
+        attendStatus: Int!
+        groupId: ID!
+        studentId: ID!
     }
 
     input updateStudentAttendenceStatus {
@@ -33,9 +47,10 @@ export default gql`
         attendStatus: Int!
         studentId: ID!
     }
-    input updateGroupAttendenceStatus {
+
+    input updateGroupAttendanceStatus {
         attendId: ID!
         groupId: ID!
         attendStatus: Int!
     }
-`
+`;

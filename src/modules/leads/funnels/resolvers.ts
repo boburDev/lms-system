@@ -3,6 +3,7 @@ import AppDataSource from "../../../config/ormconfig";
 import FunnelsEnitity from "../../../entities/funnel/funnels.entity";
 import { getChanges } from "../../../utils/eventRecorder";
 import { IsNull } from "typeorm";
+import { pubsub } from "../../../utils/pubSub";
 
 const resolvers = {
     Query: {
@@ -55,16 +56,18 @@ const resolvers = {
                 const funnelRepository = AppDataSource.getRepository(FunnelsEnitity);
 
                 // Check if a funnel with the same name already exists in the branch
-                let dataFunnel = await funnelRepository.findOne({ where: { funnel_branch_id: branchId, funnel_name: input.funnelName, funnel_deleted: IsNull() } });
-                if (dataFunnel) throw new Error("Bu nomdagi varonka mavjud");
+                const existingFunnel = await funnelRepository.findOne({
+                    where: { funnel_branch_id: branchId, funnel_name: input.funnelName, funnel_deleted: IsNull() },
+                });
+                if (existingFunnel) throw new Error("Bu nomdagi varonka mavjud");
 
                 // Create and save the new funnel
-                let funnel = new FunnelsEnitity();
+                const funnel = new FunnelsEnitity();
                 funnel.funnel_name = input.funnelName;
                 funnel.funnel_branch_id = branchId;
-                let newFunnel = await funnelRepository.save(funnel);
+                const newFunnel = await funnelRepository.save(funnel);
 
-                // Use getChanges to capture initial state
+                // Log changes
                 const funnelChanges = getChanges({}, newFunnel, ["funnel_name", "funnel_branch_id"]);
                 for (const change of funnelChanges) {
                     await writeActions({
@@ -76,9 +79,12 @@ const resolvers = {
                         eventObjectName: change.field,
                         employerId: context.colleagueId || "",
                         employerName: context.colleagueName || "",
-                        branchId: branchId
+                        branchId,
                     });
                 }
+
+                // Publish to WebSocket
+                pubsub.publish("CREATE_FUNNEL", { createFunnel: newFunnel });
 
                 return newFunnel;
             } catch (error) {
@@ -86,7 +92,6 @@ const resolvers = {
                 throw error;
             }
         },
-
         updateFunnel: async (_parent: unknown, { input }: { input: AddFunnelInput }, context: any): Promise<FunnelsEnitity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
@@ -96,18 +101,20 @@ const resolvers = {
             try {
                 const funnelRepository = AppDataSource.getRepository(FunnelsEnitity);
 
-                // Find existing funnel
-                let dataFunnel = await funnelRepository.findOne({ where: { funnel_branch_id: branchId, funnel_id: input.funnelId, funnel_deleted: IsNull() } });
-                if (!dataFunnel) throw new Error("Bu nomdagi varonka mavjud");
+                // Find the funnel to update
+                const funnel = await funnelRepository.findOne({
+                    where: { funnel_branch_id: branchId, funnel_id: input.funnelId, funnel_deleted: IsNull() },
+                });
+                if (!funnel) throw new Error("Bu nomdagi varonka mavjud emas");
 
-                // Capture the original state for comparison
-                const originalFunnel = { ...dataFunnel };
+                // Capture original state for logging
+                const originalFunnel = { ...funnel };
 
                 // Update the funnel fields
-                dataFunnel.funnel_name = input.funnelName || dataFunnel.funnel_name;
-                let updatedFunnel = await funnelRepository.save(dataFunnel);
+                funnel.funnel_name = input.funnelName || funnel.funnel_name;
+                const updatedFunnel = await funnelRepository.save(funnel);
 
-                // Log the updates
+                // Log changes
                 const funnelChanges = getChanges(originalFunnel, updatedFunnel, ["funnel_name"]);
                 for (const change of funnelChanges) {
                     await writeActions({
@@ -119,9 +126,12 @@ const resolvers = {
                         eventObjectName: change.field,
                         employerId: context.colleagueId || "",
                         employerName: context.colleagueName || "",
-                        branchId: branchId
+                        branchId,
                     });
                 }
+
+                // Publish to WebSocket
+                pubsub.publish("UPDATE_FUNNEL", { updateFunnel: updatedFunnel });
 
                 return updatedFunnel;
             } catch (error) {
@@ -129,7 +139,6 @@ const resolvers = {
                 throw error;
             }
         },
-
         deleteFunnel: async (_parent: unknown, { Id }: { Id: string }, context: any): Promise<FunnelsEnitity> => {
             if (!context?.branchId) throw new Error("Not exist access token!");
             const catchErrors = context.catchErrors;
@@ -140,17 +149,19 @@ const resolvers = {
                 const funnelRepository = AppDataSource.getRepository(FunnelsEnitity);
 
                 // Find the funnel to delete
-                let dataFunnel = await funnelRepository.findOne({ where: { funnel_branch_id: branchId, funnel_id: Id, funnel_deleted: IsNull() } });
-                if (!dataFunnel) throw new Error("Bu nomdagi varonka mavjud");
+                const funnel = await funnelRepository.findOne({
+                    where: { funnel_branch_id: branchId, funnel_id: Id, funnel_deleted: IsNull() },
+                });
+                if (!funnel) throw new Error("Bu nomdagi varonka mavjud emas");
 
-                // Capture original state for deletion log
-                const originalFunnel = { ...dataFunnel };
+                // Capture original state for logging
+                const originalFunnel = { ...funnel };
 
-                // Set deletion timestamp
-                dataFunnel.funnel_deleted = new Date();
-                let deletedFunnel = await funnelRepository.save(dataFunnel);
+                // Mark funnel as deleted
+                funnel.funnel_deleted = new Date();
+                const deletedFunnel = await funnelRepository.save(funnel);
 
-                // Log the deletion action
+                // Log deletion
                 await writeActions({
                     objectId: deletedFunnel.funnel_id,
                     eventType: 3, // Assuming 3 represents "delete" actions
@@ -160,21 +171,34 @@ const resolvers = {
                     eventObjectName: "deleteFunnel",
                     employerId: context.colleagueId || "",
                     employerName: context.colleagueName || "",
-                    branchId: branchId
+                    branchId,
                 });
+
+                // Publish to WebSocket
+                pubsub.publish("DELETE_FUNNEL", { deleteFunnel: deletedFunnel });
 
                 return deletedFunnel;
             } catch (error) {
                 await catchErrors(error, 'deleteFunnel', branchId, Id);
                 throw error;
             }
-        }
-
+        },
+    },
+    Subscription: {
+        createFunnel: {
+            subscribe: () => pubsub.asyncIterator("CREATE_FUNNEL"),
+        },
+        updateFunnel: {
+            subscribe: () => pubsub.asyncIterator("UPDATE_FUNNEL"),
+        },
+        deleteFunnel: {
+            subscribe: () => pubsub.asyncIterator("DELETE_FUNNEL"),
+        },
     },
     Funnel: {
         funnelId: (global: Funnel) => global.funnel_id,
         funnelName: (global: Funnel) => global.funnel_name,
-    }
-}
+    },
+};
 
 export default resolvers;

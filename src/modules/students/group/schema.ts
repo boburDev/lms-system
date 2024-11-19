@@ -10,6 +10,20 @@ export default gql`
         deleteStudentGroup(input: DeleteStudentGroupInput): String
     }
 
+    type Subscription {
+        studentGroupCreated: StudentGroup
+        studentGroupUpdated: StudentGroup
+        studentGroupDeleted: StudentGroup
+    }
+
+    type StudentGroup {
+        studentId: ID
+        groupId: ID
+        studentGroupStatus: Int
+        addedDate: String
+    }
+
+
     input AddStudentGroupInput {
         studentId: ID
         groupId: ID!

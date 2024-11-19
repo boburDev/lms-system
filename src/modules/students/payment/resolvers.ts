@@ -7,6 +7,7 @@ import EmployerEntity from "../../../entities/employer/employers.entity";
 import { paymentTypes } from "../../../utils/status_and_positions";
 import { getChanges } from "../../../utils/eventRecorder";
 import { IsNull } from "typeorm";
+import { pubsub } from "../../../utils/pubSub";
 
 const resolvers = {
     Query: {
@@ -134,29 +135,10 @@ const resolvers = {
 
                 const studentCashData = await studentCashRepository.save(studentCash);
 
-                // Add student payment entry
-                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments);
-                const studentPayment = new StudentPayments();
-                studentPayment.student_payment_debit = input.cashAmount;
-                studentPayment.student_payment_type = paymentTypes(input.paymentType) as number;
-                studentPayment.student_payment_payed_at = new Date();
-                studentPayment.student_id = input.studentId;
-                studentPayment.employer_id = context.colleagueId;
-                studentPayment.student_cash_id = studentCashData.student_cash_id;
-                await studentPaymentRepository.save(studentPayment);
+                // Notify WebSocket subscribers
+                pubsub.publish('PAYMENT_ADDED', { paymentAdded: studentCashData });
 
-                return {
-                    student_cash_id: studentCashData.student_cash_id,
-                    cash_amount: studentCashData.cash_amount,
-                    cash_type: studentCashData.check_type,
-                    check_number: studentCashData.check_number,
-                    student_cash_payed_at: studentCashData.student_cash_payed_at,
-                    student_cash_created: studentCashData.student_cash_created,
-                    student_id: studentData.student_id,
-                    student_name: studentData.student_name,
-                    student_phone: studentData.student_phone,
-                    employer_name: context.colleagueName
-                };
+                return studentCashData;
             } catch (error) {
                 await catchErrors(error, 'addStudentCash', branchId, input);
                 throw error;
@@ -194,23 +176,23 @@ const resolvers = {
 
                 const studentCashData = await studentCashRepository.save(studentCash);
 
-                // Add student payment entry
-                const studentPaymentRepository = AppDataSource.getRepository(StudentPayments);
-                const studentPayment = new StudentPayments();
-                studentPayment.student_payment_credit = input.cashAmount;
-                studentPayment.student_payment_type = paymentTypes(input.paymentType) as number;
-                studentPayment.student_payment_payed_at = new Date();
-                studentPayment.student_id = input.studentId;
-                studentPayment.employer_id = context.colleagueId;
-                studentPayment.student_cash_id = studentCashData.student_cash_id;
-                await studentPaymentRepository.save(studentPayment);
+                // Notify WebSocket subscribers
+                pubsub.publish('PAYMENT_RETURNED', { paymentReturned: studentCashData });
 
                 return "success";
             } catch (error) {
                 await catchErrors(error, 'returnStudentCash', branchId, input);
                 throw error;
             }
-        }
+        },
+    },
+    Subscription: {
+        paymentAdded: {
+            subscribe: () => pubsub.asyncIterator('PAYMENT_ADDED'),
+        },
+        paymentReturned: {
+            subscribe: () => pubsub.asyncIterator('PAYMENT_RETURNED'),
+        },
     },
     studentCash: {
         studentCashId: (global: studentPayment) => global.student_cash_id,

@@ -5,6 +5,7 @@ import Groups from "../../../entities/group/groups.entity";
 import StudentGroups, { StudentAttendences } from "../../../entities/student/student_groups.entity";
 import { getDays } from "../../../utils/date";
 import { getChanges } from "../../../utils/eventRecorder";
+import { pubsub } from "../../../utils/pubSub";
 // import StudentPayments from "../../../entities/student/student_payments.entity";
 // import StudentCashes from "../../../entities/student/student_cashes.entity";
 
@@ -79,64 +80,64 @@ const resolvers = {
       const catchErrors = context.catchErrors;
       const branchId = context.branchId;
       const writeActions = context.writeActions;
-  
+
       try {
-          const studentRepository = AppDataSource.getRepository(StudentEntity);
-  
-          let existingStudent = await studentRepository.createQueryBuilder("students")
-              .where("students.student_branch_id = :branchId", { branchId })
-              .andWhere("students.student_phone = :phone", { phone: input.studentPhone })
-              .andWhere("students.student_deleted IS NULL")
-              .getOne();
-  
-          if (existingStudent) throw new Error(`Student with phone "${input.studentPhone}" already exists`);
-  
-          let student = new StudentEntity();
-          student.student_name = input.studentName;
-          student.student_phone = input.studentPhone;
-          student.student_status = 1;
-          
-          // Conditionally set student_birthday only if input.studentBithday exists
-          if (input.studentBithday) {
-              student.student_birthday = new Date(input.studentBithday);
-          }
-          
-          student.student_gender = input.studentGender;
-          student.colleague_id = context.colleagueId;
-          student.student_branch_id = context.branchId;
-          student.parentsInfo = input.parentsInfo;
-  
-          let savedStudent = await studentRepository.save(student);
-  
-          // Log the addition using `getChanges`, with an empty original object
-          const changes = getChanges({}, savedStudent, [
-              "student_name",
-              "student_phone",
-              "student_birthday",
-              "student_gender",
-              "parentsInfo",
-          ]);
-  
-          for (const change of changes) {
-              await writeActions({
-                  objectId: savedStudent.student_id,
-                  eventType: 1,  // Assuming 1 represents "add" action
-                  eventBefore: change.before || "",
-                  eventAfter: change.after || "",
-                  eventObject: "Student",
-                  eventObjectName: change.field,
-                  employerId: context.colleagueId,
-                  employerName: context.colleagueName,
-                  branchId: branchId,
-              });
-          }
-  
-          return savedStudent;
+        const studentRepository = AppDataSource.getRepository(StudentEntity);
+
+        let existingStudent = await studentRepository.createQueryBuilder("students")
+          .where("students.student_branch_id = :branchId", { branchId })
+          .andWhere("students.student_phone = :phone", { phone: input.studentPhone })
+          .andWhere("students.student_deleted IS NULL")
+          .getOne();
+
+        if (existingStudent) throw new Error(`Student with phone "${input.studentPhone}" already exists`);
+
+        let student = new StudentEntity();
+        student.student_name = input.studentName;
+        student.student_phone = input.studentPhone;
+        student.student_status = 1;
+        if (input.studentBithday) {
+          student.student_birthday = new Date(input.studentBithday);
+        }
+        student.student_gender = input.studentGender;
+        student.colleague_id = context.colleagueId;
+        student.student_branch_id = context.branchId;
+        student.parentsInfo = input.parentsInfo;
+
+        let savedStudent = await studentRepository.save(student);
+
+        // Log changes
+        const changes = getChanges({}, savedStudent, [
+          "student_name",
+          "student_phone",
+          "student_birthday",
+          "student_gender",
+          "parentsInfo",
+        ]);
+
+        for (const change of changes) {
+          await writeActions({
+            objectId: savedStudent.student_id,
+            eventType: 1,
+            eventBefore: change.before || "",
+            eventAfter: change.after || "",
+            eventObject: "Student",
+            eventObjectName: change.field,
+            employerId: context.colleagueId,
+            employerName: context.colleagueName,
+            branchId: branchId,
+          });
+        }
+
+        // Publish WebSocket event
+        pubsub.publish("CREATE_STUDENT", { createStudent: savedStudent });
+
+        return savedStudent;
       } catch (error) {
-          await catchErrors(error, 'addStudent', branchId, input);
-          throw error;
+        await catchErrors(error, "addStudent", branchId, input);
+        throw error;
       }
-  },  
+    },
     updateStudent: async (_parent: unknown, { input }: { input: UpdateStudentInput }, context: any): Promise<StudentEntity> => {
       if (!context?.branchId) throw new Error("Not exist access token!");
       const catchErrors = context.catchErrors;
@@ -163,7 +164,7 @@ const resolvers = {
 
         const updatedStudent = await studentRepository.save(student);
 
-        // Log each change
+        // Log changes
         const changes = getChanges(originalStudent, updatedStudent, [
           "student_name",
           "student_phone",
@@ -175,7 +176,7 @@ const resolvers = {
         for (const change of changes) {
           await writeActions({
             objectId: updatedStudent.student_id,
-            eventType: 2,  // Assuming 2 indicates "update" action
+            eventType: 2,
             eventBefore: change.before,
             eventAfter: change.after,
             eventObject: "Student",
@@ -186,9 +187,12 @@ const resolvers = {
           });
         }
 
+        // Publish WebSocket event
+        pubsub.publish("UPDATE_STUDENT", { updateStudent: updatedStudent });
+
         return updatedStudent;
       } catch (error) {
-        await catchErrors(error, 'updateStudent', branchId, input);
+        await catchErrors(error, "updateStudent", branchId, input);
         throw error;
       }
     },
@@ -210,7 +214,7 @@ const resolvers = {
         // Log the deletion action
         await writeActions({
           objectId: student.student_id,
-          eventType: 3,  // Assuming 3 indicates "delete" action
+          eventType: 3,
           eventBefore: `Name: ${student.student_name}, Phone: ${student.student_phone}`,
           eventAfter: "",
           eventObject: "Student",
@@ -220,13 +224,26 @@ const resolvers = {
           branchId: branchId,
         });
 
+        // Publish WebSocket event
+        pubsub.publish("DELETE_STUDENT", { deleteStudent: student });
+
         return student;
       } catch (error) {
-        await catchErrors(error, 'deleteStudent', branchId, studentId);
+        await catchErrors(error, "deleteStudent", branchId, studentId);
         throw error;
       }
-    }
-
+    },
+  },
+  Subscription: {
+    createStudent: {
+      subscribe: () => pubsub.asyncIterator("CREATE_STUDENT"),
+    },
+    updateStudent: {
+      subscribe: () => pubsub.asyncIterator("UPDATE_STUDENT"),
+    },
+    deleteStudent: {
+      subscribe: () => pubsub.asyncIterator("DELETE_STUDENT"),
+    },
   },
   Student: {
     studentId: (global: Student) => global.student_id,
@@ -238,8 +255,7 @@ const resolvers = {
     studentGender: (global: Student) => global.student_gender,
     colleagueId: (global: Student) => global.colleague_id,
     studentGroup: (global: Student) => {
-      let results = []
-
+      let results = [];
       if (global.student_group && global.student_group.length) {
         for (const i of global.student_group) {
           results.push({
@@ -247,12 +263,12 @@ const resolvers = {
             groupName: i.group.group_name,
             colleagueName: i.group.employer.employer_name,
             lessonStartTime: i.group.group_start_time,
-          })
+          });
         }
       }
-      return results
-    }
-  }
+      return results;
+    },
+  },
 };
 
 export default resolvers;

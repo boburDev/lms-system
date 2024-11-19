@@ -11,6 +11,11 @@ type Mutation {
     returnStudentCash(input: AddStudentCashInput): String
 }
 
+type Subscription {
+    paymentAdded: studentCash
+    paymentReturned: studentCash
+}
+
 type studentPaymentsByType {
     studentCash: [studentCash]
     PaymentHistory: [PaymentHistory]
@@ -43,5 +48,4 @@ input AddStudentCashInput {
     cashAmount: Float!,
     paymentType: String!,
     payedAt: String
-}
-`
+}`
