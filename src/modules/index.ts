@@ -20,6 +20,7 @@ import FunnelColumns from './leads/columns'
 import Leads from './leads/leads'
 import UserDashboard from './dashboard/user'
 import Forms from './forms'
+import Logout from './logout'
 
 export default makeExecutableSchema({
     typeDefs: [
@@ -43,6 +44,7 @@ export default makeExecutableSchema({
         Leads.schema,
         UserDashboard.schema,
         Forms.schema,
+        Logout.schema,
     ],
     resolvers: [
         Countries.resolvers,
@@ -65,5 +67,6 @@ export default makeExecutableSchema({
         Leads.resolvers,
         UserDashboard.resolvers,
         Forms.resolvers,
+        Logout.resolvers,
     ]
 })

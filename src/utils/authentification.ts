@@ -8,6 +8,7 @@ import { CompanyBranches } from "../entities/company/company.entity";
 import StudentsEntity from "../entities/student/students.entity";
 import PricesEntity from "../entities/options/price.entity";
 import BranchPaymentHistoryEntity from "../entities/company/company_payment_history.entity";
+import TokenDetails from "../entities/token_details.entity";
 
 let branches:any = {};
 
@@ -57,56 +58,79 @@ const activeBranch = async (branchId:string) => {
 }
 
 
-export const authentification = async (token:string) => {
+export const authentification = async (token: string) => {
     try {
         let isActive = true;
         let isAdmin = false;
-        let tokenDate: TokenData | null = verify(token)
-        if (!tokenDate) return null
-        
+        const tokenDetailsRepository = AppDataSource.getRepository(TokenDetails);
+        const tokenDate: TokenData | null = verify(token);
+
+        if (!tokenDate) return null;
+
+        // Admin authentication
         if (tokenDate && tokenDate.adminId) {
-            const adminRepository = AppDataSource.getRepository(AdminEntity)
-            let data = await adminRepository.createQueryBuilder("admin")
+            const adminRepository = AppDataSource.getRepository(AdminEntity);
+            let admin = await adminRepository.createQueryBuilder("admin")
                 .where("admin.admin_id = :Id", { Id: tokenDate.adminId })
                 .andWhere("admin.admin_status = 1")
-                .getOne()
-            if (!data || data.admin_status < 0) return { isActive: false }
-            isAdmin = true
-        } else if (tokenDate && tokenDate.branchId && tokenDate.colleagueId) {
-            const employerRepository = AppDataSource.getRepository(EmployersEntity)
-            const activityRepository = AppDataSource.getRepository(BranchActivityEntity)
+                .getOne();
+            if (!admin || admin.admin_status < 0) return { isActive: false };
+            isAdmin = true;
+        } 
+        // Employer authentication
+        else if (tokenDate && tokenDate.branchId && tokenDate.colleagueId) {
+            const employerRepository = AppDataSource.getRepository(EmployersEntity);
+            const activityRepository = AppDataSource.getRepository(BranchActivityEntity);
+
             let employer = await employerRepository.createQueryBuilder("employer")
                 .where("employer.employer_id = :Id", { Id: tokenDate.colleagueId })
                 .andWhere("employer.employer_branch_id = :id", { id: tokenDate.branchId })
                 .andWhere("employer.employer_deleted IS NULL")
-                .getOne()
-            if (!employer) return { isActive: false, isAdmin }
+                .getOne();
+
+            if (!employer) return { isActive: false, isAdmin };
 
             let activity = await activityRepository.createQueryBuilder("activity")
                 .where("activity.branch_activity_status = true")
                 .andWhere("activity.branch_id = :id", { id: tokenDate.branchId })
-                .getOne()
+                .getOne();
+
             if (!activity) {
-                isActive = false
+                isActive = false;
             } else if (new Date(activity.group_end_date).getTime() < new Date().getTime()) {
-                activity.branch_activity_status = false
-                await activityRepository.save(activity)
-                isActive = false
+                activity.branch_activity_status = false;
+                await activityRepository.save(activity);
+                isActive = false;
             }
 
             if (!isActive) {
                 isActive = await activeBranch(tokenDate.branchId);
             }
 
+            // Check if the user is already logged in
+            const existingToken = await tokenDetailsRepository.findOne({
+                where: { colleagueId: tokenDate.colleagueId },
+            });
+
+            if (existingToken) {
+                throw new Error("Bu foydalanuvchi allaqachon boshqa qurilmada tizimga kirgan.");
+            }
+
+            // Save new token details
+            const newTokenDetails = new TokenDetails();
+            newTokenDetails.colleagueId = tokenDate.colleagueId;
+            newTokenDetails.secretNum = new Date().getTime().toString();
+            await tokenDetailsRepository.save(newTokenDetails);
+
             if (isActive && !branches[tokenDate.branchId]) {
                 branches[tokenDate.branchId] = true;
             } else if (!isActive && branches[tokenDate.branchId]) {
                 branches[tokenDate.branchId] = false;
             }
-
         }
-        return { ...tokenDate, isAdmin, isActive }
+
+        return { ...tokenDate, isAdmin, isActive };
     } catch (error) {
-        return false
+        return false;
     }
-}
+};
